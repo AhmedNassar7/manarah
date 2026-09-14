@@ -4,10 +4,13 @@ export interface Verse {
   uthmaniText: string;
 }
 
+export type RevelationType = "Meccan" | "Medinan";
+
 export interface Surah {
   number: number;
   nameArabic: string;
   nameTransliterated: string;
+  revelationType: RevelationType;
   verseCount: number;
 }
 

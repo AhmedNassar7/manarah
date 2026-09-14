@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { computePrayerTimes, type DailyPrayerTimes } from "@manarah/core";
-import { PrayerCountdown } from "@manarah/ui";
+import { getSurah, getVersesForSurah } from "@manarah/data";
+import { PrayerCountdown, QuranReader } from "@manarah/ui";
 
 const DEFAULT_SETTINGS = { method: "UmmAlQura" as const, asrSchool: "Standard" as const };
+const AL_FATIHA = getSurah(1)!;
+const AL_FATIHA_VERSES = getVersesForSurah(1);
 
 export function App() {
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
@@ -32,6 +35,7 @@ export function App() {
       <h1>Manarah</h1>
       {error && <p role="alert">{error}</p>}
       {times && <PrayerCountdown todaysTimes={times} />}
+      <QuranReader surah={AL_FATIHA} verses={AL_FATIHA_VERSES} />
     </main>
   );
 }
