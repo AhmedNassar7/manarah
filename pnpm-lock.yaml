@@ -10,16 +10,16 @@ importers:
 
   apps/extension:
     dependencies:
-      '@quran-companion/core':
+      '@manarah/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@quran-companion/data':
+      '@manarah/data':
         specifier: workspace:*
         version: link:../../packages/data
-      '@quran-companion/storage':
+      '@manarah/storage':
         specifier: workspace:*
         version: link:../../packages/storage
-      '@quran-companion/ui':
+      '@manarah/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -53,16 +53,16 @@ importers:
 
   apps/web:
     dependencies:
-      '@quran-companion/core':
+      '@manarah/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@quran-companion/data':
+      '@manarah/data':
         specifier: workspace:*
         version: link:../../packages/data
-      '@quran-companion/storage':
+      '@manarah/storage':
         specifier: workspace:*
         version: link:../../packages/storage
-      '@quran-companion/ui':
+      '@manarah/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -103,7 +103,7 @@ importers:
 
   packages/data:
     dependencies:
-      '@quran-companion/core':
+      '@manarah/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -126,7 +126,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@quran-companion/core':
+      '@manarah/core':
         specifier: workspace:*
         version: link:../core
       react:

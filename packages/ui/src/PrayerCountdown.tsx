@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { DailyPrayerTimes } from "@quran-companion/core";
+import type { DailyPrayerTimes } from "@manarah/core";
 
 export interface PrayerCountdownProps {
   todaysTimes: DailyPrayerTimes;

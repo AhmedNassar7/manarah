@@ -19,7 +19,7 @@ class KvDatabase extends Dexie {
 export class IndexedDbStore implements Store {
   private db: KvDatabase;
 
-  constructor(databaseName = "quran-companion") {
+  constructor(databaseName = "manarah") {
     this.db = new KvDatabase(databaseName);
   }
 

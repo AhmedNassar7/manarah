@@ -12,11 +12,11 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg"],
       manifest: {
-        name: "Quran & Muslim Companion",
-        short_name: "Quran Companion",
+        name: "Manarah",
+        short_name: "Manarah",
         description:
           "Prayer times, azkar, Quran reading/audio/tafsir, radio, and Qibla — offline-first.",
-        theme_color: "#0f6b4c",
+        theme_color: "#1f6f5c",
         background_color: "#ffffff",
         display: "standalone",
         start_url: "/",

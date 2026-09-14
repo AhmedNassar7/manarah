@@ -1,4 +1,4 @@
-import type { CalculationMethodId } from "@quran-companion/core";
+import type { CalculationMethodId } from "@manarah/core";
 
 export interface CalculationMethodOption {
   id: CalculationMethodId;

@@ -9,10 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@quran-companion/core": "workspace:*",
-    "@quran-companion/data": "workspace:*",
-    "@quran-companion/storage": "workspace:*",
-    "@quran-companion/ui": "workspace:*",
+    "@manarah/core": "workspace:*",
+    "@manarah/data": "workspace:*",
+    "@manarah/storage": "workspace:*",
+    "@manarah/ui": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

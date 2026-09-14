@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { computePrayerTimes, type DailyPrayerTimes } from "@quran-companion/core";
-import { PrayerCountdown } from "@quran-companion/ui";
+import { computePrayerTimes, type DailyPrayerTimes } from "@manarah/core";
+import { PrayerCountdown } from "@manarah/ui";
 
 const DEFAULT_SETTINGS = { method: "UmmAlQura" as const, asrSchool: "Standard" as const };
 
@@ -29,7 +29,7 @@ export function App() {
 
   return (
     <main>
-      <h1>Quran & Muslim Companion</h1>
+      <h1>Manarah</h1>
       {error && <p role="alert">{error}</p>}
       {times && <PrayerCountdown todaysTimes={times} />}
     </main>

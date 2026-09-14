@@ -3,7 +3,7 @@ import packageJson from "./package.json" with { type: "json" };
 
 export default defineManifest({
   manifest_version: 3,
-  name: "Quran & Muslim Companion",
+  name: "Manarah",
   description:
     "Prayer times, customizable azkar reminders, Quran reading/audio/tafsir, radio, and Qibla.",
   version: packageJson.version,

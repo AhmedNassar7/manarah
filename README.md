@@ -1,4 +1,6 @@
-# Quran & Muslim Companion
+# Manarah
+
+منارة — lighthouse / minaret: the tower a light or a call is sent out from.
 
 Prayer times, customizable azkar/dua reminders, Quran (text/audio/tafsir), radio, and Qibla — as a Chrome extension, an installable web app, a desktop app, and a mobile app, all from one codebase. See the full plan in this session's plan file for architecture and phasing.
 
