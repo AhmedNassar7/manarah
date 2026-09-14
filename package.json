@@ -1,0 +1,16 @@
+{
+  "name": "quran-companion",
+  "private": true,
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:extension": "pnpm --filter extension dev",
+    "build:web": "pnpm --filter web build",
+    "build:extension": "pnpm --filter extension build",
+    "typecheck": "pnpm -r --parallel exec tsc --noEmit",
+    "lint": "pnpm -r --parallel exec eslint . --max-warnings 0"
+  }
+}
