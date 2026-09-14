@@ -1,5 +1,7 @@
 import type { AzkarCategory } from "../azkar-engine/index.js";
 import type { DailyPrayerTimes } from "../prayer-times/index.js";
+import { computePrayerTimes } from "../prayer-times/index.js";
+import { DEFAULT_SETTINGS, type UserSettings } from "../settings/index.js";
 
 const PRAYER_ORDER: Array<keyof Pick<DailyPrayerTimes, "fajr" | "dhuhr" | "asr" | "maghrib" | "isha">> = [
   "fajr",
@@ -104,4 +106,49 @@ export function computeDueNotifications(
   }
 
   return { due, nextState: state };
+}
+
+export interface NotificationCheckDeps {
+  getSettings: () => Promise<UserSettings | undefined>;
+  getNotificationState: () => Promise<NotificationState | undefined>;
+  setNotificationState: (state: NotificationState) => Promise<void>;
+  notify: (notification: DueNotification) => void;
+  morningAzkar: AzkarCategory[];
+  postSalahAzkar: AzkarCategory[];
+  /** Injectable for tests; defaults to the real current time. */
+  now?: Date;
+}
+
+/**
+ * Orchestrates one notification check: loads settings + prior state through
+ * the injected deps, runs the pure computeDueNotifications, fires `notify`
+ * for anything due, and persists the updated state. Every dependency is
+ * injected (no direct chrome.* or `new Date()` calls), so this — the part
+ * that actually decides what happens on each alarm tick — is unit-testable
+ * with fakes, without a real browser or waiting for real prayer times to
+ * pass. The extension's background script should be a thin wrapper around
+ * this that supplies real chrome.storage/chrome.notifications-backed deps.
+ */
+export async function runNotificationCheck(deps: NotificationCheckDeps): Promise<DueNotification[]> {
+  const settings = (await deps.getSettings()) ?? DEFAULT_SETTINGS;
+  if (!settings.coordinates) return [];
+
+  const now = deps.now ?? new Date();
+  const times = computePrayerTimes(settings.coordinates, now, settings.prayerTimesSettings);
+  const previousState = (await deps.getNotificationState()) ?? initialNotificationState(localDateKey(now));
+
+  const { due, nextState } = computeDueNotifications(
+    now,
+    times,
+    deps.morningAzkar,
+    deps.postSalahAzkar,
+    previousState
+  );
+
+  for (const notification of due) {
+    deps.notify(notification);
+  }
+  await deps.setNotificationState(nextState);
+
+  return due;
 }

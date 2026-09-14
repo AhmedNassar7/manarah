@@ -2,10 +2,13 @@ import type { AzkarCategory } from "@manarah/core";
 import categoriesData from "./categories.json";
 
 /**
- * Default Hisn al-Muslim azkar set (132 categories, 267 items), sourced from
+ * Default Hisn al-Muslim azkar set (132 categories, 266 items), sourced from
  * wafaaelmaandy/Hisn-Muslim-Json on GitHub — itself built from hisnmuslim.com's
  * text and per-dua audio. Content spot-checked against known texts (Ayat
- * al-Kursi, Sayyid al-Istighfar, etc.) at fetch time, 2026-09-15.
+ * al-Kursi, Sayyid al-Istighfar, etc.) at fetch time, 2026-09-15. One item
+ * from the upstream source (id 267, in the "community life" category) had no
+ * Arabic text at all — only an English translation — and was dropped rather
+ * than shipped incomplete or filled in from memory.
  *
  * `trigger` on each category is a heuristic default based on its title
  * (morning/evening, waking, before-sleep, post-salah, or "situational" for

@@ -1,7 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { AzkarCategory } from "../azkar-engine/index.js";
-import type { DailyPrayerTimes } from "../prayer-times/index.js";
-import { computeDueNotifications, initialNotificationState, localDateKey } from "./index.js";
+import { computePrayerTimes, type DailyPrayerTimes } from "../prayer-times/index.js";
+import type { UserSettings } from "../settings/index.js";
+import {
+  computeDueNotifications,
+  initialNotificationState,
+  localDateKey,
+  runNotificationCheck,
+  type NotificationState,
+} from "./index.js";
 
 function timesOn(dateStr: string): DailyPrayerTimes {
   return {
@@ -110,5 +117,103 @@ describe("computeDueNotifications", () => {
       initialNotificationState(localDateKey(times.fajr))
     );
     expect(due.map((d) => d.type)).toEqual(["prayer"]);
+  });
+});
+
+/**
+ * Simulates exactly the manual browser test this replaces: real geolocation
+ * coordinates, real adhan.js-computed prayer times, and a fake in-memory
+ * store standing in for chrome.storage.sync — but with `now` injected
+ * instead of waiting on the real clock, so "does it fire once Fajr has
+ * passed" is a deterministic, instant, repeatable assertion instead of
+ * something only verifiable by loading the extension and waiting.
+ */
+describe("runNotificationCheck", () => {
+  const cairo = { latitude: 30.1317, longitude: 31.3382 };
+  const prayerTimesSettings = { method: "UmmAlQura" as const, asrSchool: "Standard" as const };
+
+  function fakeStore() {
+    const data: { settings?: UserSettings; state?: NotificationState } = {};
+    return {
+      data,
+      getSettings: async () => data.settings,
+      setSettings: async (settings: UserSettings) => {
+        data.settings = settings;
+      },
+      getNotificationState: async () => data.state,
+      setNotificationState: async (state: NotificationState) => {
+        data.state = state;
+      },
+    };
+  }
+
+  it("does nothing when no location has been saved yet", async () => {
+    const store = fakeStore();
+    const notify = vi.fn();
+
+    const due = await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify,
+      morningAzkar,
+      postSalahAzkar,
+    });
+
+    expect(due).toEqual([]);
+    expect(notify).not.toHaveBeenCalled();
+    expect(store.data.state).toBeUndefined();
+  });
+
+  it("fires and persists state once a saved prayer time has passed", async () => {
+    const store = fakeStore();
+    await store.setSettings({ coordinates: cairo, prayerTimesSettings, azkarSchedules: [] });
+    const notify = vi.fn();
+
+    const times = computePrayerTimes(cairo, new Date("2026-09-15T12:00:00"), prayerTimesSettings);
+
+    const due = await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify,
+      morningAzkar,
+      postSalahAzkar,
+      now: times.fajr,
+    });
+
+    expect(due.map((d) => d.type)).toEqual(["prayer", "post-salah-azkar", "morning-azkar"]);
+    expect(notify).toHaveBeenCalledTimes(3);
+    expect(store.data.state).toMatchObject({ firedPrayers: ["fajr"], firedMorningAzkar: true });
+  });
+
+  it("does not re-notify on a second check moments later", async () => {
+    const store = fakeStore();
+    await store.setSettings({ coordinates: cairo, prayerTimesSettings, azkarSchedules: [] });
+    const times = computePrayerTimes(cairo, new Date("2026-09-15T12:00:00"), prayerTimesSettings);
+
+    await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify: vi.fn(),
+      morningAzkar,
+      postSalahAzkar,
+      now: times.fajr,
+    });
+
+    const secondNotify = vi.fn();
+    const secondDue = await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify: secondNotify,
+      morningAzkar,
+      postSalahAzkar,
+      now: new Date(times.fajr.getTime() + 60_000),
+    });
+
+    expect(secondDue).toEqual([]);
+    expect(secondNotify).not.toHaveBeenCalled();
   });
 });

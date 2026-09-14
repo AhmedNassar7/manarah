@@ -5,10 +5,15 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "@manarah/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.6.0"
+    "adhan": "^4.4.3",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.4"
   }
 }

@@ -35,6 +35,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm -r test
       - run: pnpm --filter web build
 
       - uses: actions/configure-pages@v5
