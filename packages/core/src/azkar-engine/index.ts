@@ -4,6 +4,8 @@ export type AzkarTrigger =
   | "post-salah"
   | "before-sleep"
   | "waking"
+  /** Contextual duas with no fixed daily time (travel, entering a mosque, sneezing, etc.) — shown on demand, not scheduled by default. */
+  | "situational"
   | "custom-time";
 
 export interface AzkarItem {
