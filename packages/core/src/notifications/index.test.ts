@@ -7,6 +7,7 @@ import {
   initialNotificationState,
   localDateKey,
   runNotificationCheck,
+  type CustomTimeAzkar,
   type NotificationState,
 } from "./index.js";
 
@@ -21,12 +22,28 @@ function timesOn(dateStr: string): DailyPrayerTimes {
   };
 }
 
-const morningAzkar: AzkarCategory[] = [
-  { id: "27", name: "Words of remembrance for morning and evening", trigger: "morning", items: [] },
-];
-const postSalahAzkar: AzkarCategory[] = [
-  { id: "25", name: "What to say after completing the prayer", trigger: "post-salah", items: [] },
-];
+const morningCategory: AzkarCategory = {
+  id: "27",
+  name: "Words of remembrance for morning and evening",
+  trigger: "morning",
+  items: [],
+};
+const postSalahCategory: AzkarCategory = {
+  id: "25",
+  name: "What to say after completing the prayer",
+  trigger: "post-salah",
+  items: [],
+};
+const travelCategory: AzkarCategory = {
+  id: "96",
+  name: "Invocation for traveling",
+  trigger: "situational",
+  items: [],
+};
+
+const morningAzkar = [morningCategory];
+const postSalahAzkar = [postSalahCategory];
+const noCustomAzkar: CustomTimeAzkar[] = [];
 
 describe("computeDueNotifications", () => {
   it("fires nothing before Fajr", () => {
@@ -36,6 +53,7 @@ describe("computeDueNotifications", () => {
       times,
       morningAzkar,
       postSalahAzkar,
+      noCustomAzkar,
       initialNotificationState(localDateKey(times.fajr))
     );
     expect(due).toEqual([]);
@@ -48,6 +66,7 @@ describe("computeDueNotifications", () => {
       times,
       morningAzkar,
       postSalahAzkar,
+      noCustomAzkar,
       initialNotificationState(localDateKey(times.fajr))
     );
     expect(due.map((d) => d.type)).toEqual(["prayer", "post-salah-azkar", "morning-azkar"]);
@@ -63,6 +82,7 @@ describe("computeDueNotifications", () => {
       times,
       morningAzkar,
       postSalahAzkar,
+      noCustomAzkar,
       initialNotificationState(localDateKey(times.fajr))
     );
     const second = computeDueNotifications(
@@ -70,6 +90,7 @@ describe("computeDueNotifications", () => {
       times,
       morningAzkar,
       postSalahAzkar,
+      noCustomAzkar,
       first.nextState
     );
     expect(second.due).toEqual([]);
@@ -82,9 +103,17 @@ describe("computeDueNotifications", () => {
       times,
       morningAzkar,
       postSalahAzkar,
+      noCustomAzkar,
       initialNotificationState(localDateKey(times.fajr))
     );
-    const atDhuhr = computeDueNotifications(times.dhuhr, times, morningAzkar, postSalahAzkar, afterFajr.nextState);
+    const atDhuhr = computeDueNotifications(
+      times.dhuhr,
+      times,
+      morningAzkar,
+      postSalahAzkar,
+      noCustomAzkar,
+      afterFajr.nextState
+    );
 
     expect(atDhuhr.due.map((d) => d.type)).toEqual(["prayer", "post-salah-azkar"]);
     expect(atDhuhr.nextState.firedPrayers).toEqual(["fajr", "dhuhr"]);
@@ -97,11 +126,19 @@ describe("computeDueNotifications", () => {
       day1,
       morningAzkar,
       postSalahAzkar,
+      noCustomAzkar,
       initialNotificationState(localDateKey(day1.fajr))
     );
 
     const day2 = timesOn("2026-09-16");
-    const day2Result = computeDueNotifications(day2.fajr, day2, morningAzkar, postSalahAzkar, day1Result.nextState);
+    const day2Result = computeDueNotifications(
+      day2.fajr,
+      day2,
+      morningAzkar,
+      postSalahAzkar,
+      noCustomAzkar,
+      day1Result.nextState
+    );
 
     expect(day2Result.due.map((d) => d.type)).toEqual(["prayer", "post-salah-azkar", "morning-azkar"]);
     expect(day2Result.nextState.date).toBe("2026-09-16");
@@ -114,9 +151,84 @@ describe("computeDueNotifications", () => {
       times,
       [],
       [],
+      noCustomAzkar,
       initialNotificationState(localDateKey(times.fajr))
     );
     expect(due.map((d) => d.type)).toEqual(["prayer"]);
+  });
+
+  describe("custom-time azkar", () => {
+    // All 5 prayers set to 23:59 so none of them are "due" during this
+    // block's test window (10:00-16:00) — isolates custom-time behavior
+    // from the prayer/post-salah/morning logic already covered above.
+    function noPrayersYetTimes(dateStr: string): DailyPrayerTimes {
+      const lateInTheDay = new Date(`${dateStr}T23:59:00`);
+      return {
+        fajr: lateInTheDay,
+        sunrise: lateInTheDay,
+        dhuhr: lateInTheDay,
+        asr: lateInTheDay,
+        maghrib: lateInTheDay,
+        isha: lateInTheDay,
+      };
+    }
+
+    it("fires once the custom time has passed, and only once", () => {
+      const times = noPrayersYetTimes("2026-09-15");
+      const customAzkar: CustomTimeAzkar[] = [{ category: travelCategory, time: "14:30" }];
+
+      const before = computeDueNotifications(
+        new Date("2026-09-15T14:00:00"),
+        times,
+        [],
+        [],
+        customAzkar,
+        initialNotificationState("2026-09-15")
+      );
+      expect(before.due).toEqual([]);
+
+      const atTime = computeDueNotifications(
+        new Date("2026-09-15T14:30:00"),
+        times,
+        [],
+        [],
+        customAzkar,
+        before.nextState
+      );
+      expect(atTime.due.map((d) => d.type)).toEqual(["custom-azkar"]);
+      expect(atTime.nextState.firedCustomAzkar).toEqual(["96"]);
+
+      const later = computeDueNotifications(
+        new Date("2026-09-15T15:00:00"),
+        times,
+        [],
+        [],
+        customAzkar,
+        atTime.nextState
+      );
+      expect(later.due).toEqual([]);
+    });
+
+    it("tracks multiple custom-time categories independently", () => {
+      const times = noPrayersYetTimes("2026-09-15");
+      const secondCategory: AzkarCategory = { id: "97", name: "Second custom dua", trigger: "situational", items: [] };
+      const customAzkar: CustomTimeAzkar[] = [
+        { category: travelCategory, time: "10:00" },
+        { category: secondCategory, time: "16:00" },
+      ];
+
+      const result = computeDueNotifications(
+        new Date("2026-09-15T11:00:00"),
+        times,
+        [],
+        [],
+        customAzkar,
+        initialNotificationState("2026-09-15")
+      );
+
+      expect(result.due).toHaveLength(1);
+      expect(result.nextState.firedCustomAzkar).toEqual(["96"]);
+    });
   });
 });
 
@@ -131,6 +243,7 @@ describe("computeDueNotifications", () => {
 describe("runNotificationCheck", () => {
   const cairo = { latitude: 30.1317, longitude: 31.3382 };
   const prayerTimesSettings = { method: "UmmAlQura" as const, asrSchool: "Standard" as const };
+  const allCategories = [morningCategory, postSalahCategory, travelCategory];
 
   function fakeStore() {
     const data: { settings?: UserSettings; state?: NotificationState } = {};
@@ -156,8 +269,7 @@ describe("runNotificationCheck", () => {
       getNotificationState: store.getNotificationState,
       setNotificationState: store.setNotificationState,
       notify,
-      morningAzkar,
-      postSalahAzkar,
+      azkarCategories: allCategories,
     });
 
     expect(due).toEqual([]);
@@ -177,8 +289,7 @@ describe("runNotificationCheck", () => {
       getNotificationState: store.getNotificationState,
       setNotificationState: store.setNotificationState,
       notify,
-      morningAzkar,
-      postSalahAzkar,
+      azkarCategories: allCategories,
       now: times.fajr,
     });
 
@@ -197,8 +308,7 @@ describe("runNotificationCheck", () => {
       getNotificationState: store.getNotificationState,
       setNotificationState: store.setNotificationState,
       notify: vi.fn(),
-      morningAzkar,
-      postSalahAzkar,
+      azkarCategories: allCategories,
       now: times.fajr,
     });
 
@@ -208,12 +318,69 @@ describe("runNotificationCheck", () => {
       getNotificationState: store.getNotificationState,
       setNotificationState: store.setNotificationState,
       notify: secondNotify,
-      morningAzkar,
-      postSalahAzkar,
+      azkarCategories: allCategories,
       now: new Date(times.fajr.getTime() + 60_000),
     });
 
     expect(secondDue).toEqual([]);
     expect(secondNotify).not.toHaveBeenCalled();
+  });
+
+  it("respects a muted schedule — a muted category never fires", async () => {
+    const store = fakeStore();
+    await store.setSettings({
+      coordinates: cairo,
+      prayerTimesSettings,
+      azkarSchedules: [{ categoryId: "27", trigger: "morning", muted: true }],
+    });
+    const notify = vi.fn();
+    const times = computePrayerTimes(cairo, new Date("2026-09-15T12:00:00"), prayerTimesSettings);
+
+    const due = await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify,
+      azkarCategories: allCategories,
+      now: times.fajr,
+    });
+
+    // Prayer + post-salah still fire; morning azkar (muted) does not.
+    expect(due.map((d) => d.type)).toEqual(["prayer", "post-salah-azkar"]);
+  });
+
+  it("fires a situational category remapped to a custom time, once that time passes", async () => {
+    const store = fakeStore();
+    await store.setSettings({
+      coordinates: cairo,
+      prayerTimesSettings,
+      azkarSchedules: [{ categoryId: "96", trigger: "custom-time", customTime: "14:30", muted: false }],
+    });
+    const notify = vi.fn();
+
+    const before = await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify,
+      azkarCategories: allCategories,
+      now: new Date("2026-09-15T14:00:00"),
+    });
+    expect(before.some((d) => d.type === "custom-azkar")).toBe(false);
+
+    // Asserting membership rather than an exact array: this only cares that
+    // the custom-time remap fired, not whether a real Cairo prayer also
+    // happened to fall in this 30-minute window (that's covered elsewhere).
+    const notify2 = vi.fn();
+    const after = await runNotificationCheck({
+      getSettings: store.getSettings,
+      getNotificationState: store.getNotificationState,
+      setNotificationState: store.setNotificationState,
+      notify: notify2,
+      azkarCategories: allCategories,
+      now: new Date("2026-09-15T14:30:00"),
+    });
+    expect(after.some((d) => d.type === "custom-azkar")).toBe(true);
+    expect(notify2).toHaveBeenCalledWith(expect.objectContaining({ title: travelCategory.name }));
   });
 });

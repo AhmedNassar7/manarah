@@ -1,4 +1,8 @@
-import type { AzkarCategory } from "../azkar-engine/index.js";
+import {
+  applyAzkarSchedules,
+  getEffectiveCategoriesForTrigger,
+  type AzkarCategory,
+} from "../azkar-engine/index.js";
 import type { DailyPrayerTimes } from "../prayer-times/index.js";
 import { computePrayerTimes } from "../prayer-times/index.js";
 import { DEFAULT_SETTINGS, type UserSettings } from "../settings/index.js";
@@ -25,12 +29,20 @@ export interface NotificationState {
   firedPrayers: string[];
   firedPostSalahAzkar: string[];
   firedMorningAzkar: boolean;
+  /** Category ids of custom-time azkar already fired today. */
+  firedCustomAzkar: string[];
 }
 
 export interface DueNotification {
-  type: "prayer" | "post-salah-azkar" | "morning-azkar";
+  type: "prayer" | "post-salah-azkar" | "morning-azkar" | "custom-azkar";
   title: string;
   body: string;
+}
+
+export interface CustomTimeAzkar {
+  category: AzkarCategory;
+  /** 24h "HH:mm" in the user's local time. */
+  time: string;
 }
 
 export function localDateKey(date: Date): string {
@@ -40,22 +52,38 @@ export function localDateKey(date: Date): string {
 }
 
 export function initialNotificationState(dateKey: string): NotificationState {
-  return { date: dateKey, firedPrayers: [], firedPostSalahAzkar: [], firedMorningAzkar: false };
+  return {
+    date: dateKey,
+    firedPrayers: [],
+    firedPostSalahAzkar: [],
+    firedMorningAzkar: false,
+    firedCustomAzkar: [],
+  };
+}
+
+/** Resolves a "HH:mm" time to a real Date on the same local day as `reference`. */
+function resolveTimeToday(time: string, reference: Date): Date {
+  const [hours, minutes] = time.split(":").map(Number);
+  const resolved = new Date(reference);
+  resolved.setHours(hours, minutes, 0, 0);
+  return resolved;
 }
 
 /**
  * Pure decision function: given the current time, today's computed prayer
  * times, the azkar categories currently assigned to the "morning" and
- * "post-salah" triggers, and yesterday's-or-today's fire state, returns
- * what's newly due right now plus the updated state to persist. Contains no
- * chrome.* calls so it can be unit-tested without a browser, and reused by
- * any platform's notification scheduler (extension, desktop, mobile).
+ * "post-salah" triggers, any user-remapped "custom-time" azkar, and
+ * yesterday's-or-today's fire state, returns what's newly due right now plus
+ * the updated state to persist. Contains no chrome.* calls so it can be
+ * unit-tested without a browser, and reused by any platform's notification
+ * scheduler (extension, desktop, mobile).
  */
 export function computeDueNotifications(
   now: Date,
   times: DailyPrayerTimes,
   morningAzkar: AzkarCategory[],
   postSalahAzkar: AzkarCategory[],
+  customTimeAzkar: CustomTimeAzkar[],
   previousState: NotificationState
 ): { due: DueNotification[]; nextState: NotificationState } {
   const todayKey = localDateKey(now);
@@ -66,6 +94,7 @@ export function computeDueNotifications(
           firedPrayers: [...previousState.firedPrayers],
           firedPostSalahAzkar: [...previousState.firedPostSalahAzkar],
           firedMorningAzkar: previousState.firedMorningAzkar,
+          firedCustomAzkar: [...previousState.firedCustomAzkar],
         }
       : initialNotificationState(todayKey);
 
@@ -105,6 +134,18 @@ export function computeDueNotifications(
     state.firedMorningAzkar = true;
   }
 
+  for (const { category, time } of customTimeAzkar) {
+    if (state.firedCustomAzkar.includes(category.id)) continue;
+    if (now < resolveTimeToday(time, now)) continue;
+
+    due.push({
+      type: "custom-azkar",
+      title: category.name,
+      body: `Scheduled for ${time}.`,
+    });
+    state.firedCustomAzkar.push(category.id);
+  }
+
   return { due, nextState: state };
 }
 
@@ -113,21 +154,23 @@ export interface NotificationCheckDeps {
   getNotificationState: () => Promise<NotificationState | undefined>;
   setNotificationState: (state: NotificationState) => Promise<void>;
   notify: (notification: DueNotification) => void;
-  morningAzkar: AzkarCategory[];
-  postSalahAzkar: AzkarCategory[];
+  /** All default azkar categories; per-category overrides come from settings.azkarSchedules. */
+  azkarCategories: AzkarCategory[];
   /** Injectable for tests; defaults to the real current time. */
   now?: Date;
 }
 
 /**
  * Orchestrates one notification check: loads settings + prior state through
- * the injected deps, runs the pure computeDueNotifications, fires `notify`
- * for anything due, and persists the updated state. Every dependency is
- * injected (no direct chrome.* or `new Date()` calls), so this — the part
- * that actually decides what happens on each alarm tick — is unit-testable
- * with fakes, without a real browser or waiting for real prayer times to
- * pass. The extension's background script should be a thin wrapper around
- * this that supplies real chrome.storage/chrome.notifications-backed deps.
+ * the injected deps, applies the user's azkar schedule overrides (mute/remap,
+ * including remapping to a custom daily time), runs the pure
+ * computeDueNotifications, fires `notify` for anything due, and persists the
+ * updated state. Every dependency is injected (no direct chrome.* or
+ * `new Date()` calls), so this — the part that actually decides what happens
+ * on each alarm tick — is unit-testable with fakes, without a real browser or
+ * waiting for real prayer times to pass. The extension's background script
+ * should be a thin wrapper around this that supplies real
+ * chrome.storage/chrome.notifications-backed deps.
  */
 export async function runNotificationCheck(deps: NotificationCheckDeps): Promise<DueNotification[]> {
   const settings = (await deps.getSettings()) ?? DEFAULT_SETTINGS;
@@ -137,11 +180,19 @@ export async function runNotificationCheck(deps: NotificationCheckDeps): Promise
   const times = computePrayerTimes(settings.coordinates, now, settings.prayerTimesSettings);
   const previousState = (await deps.getNotificationState()) ?? initialNotificationState(localDateKey(now));
 
+  const assignments = applyAzkarSchedules(deps.azkarCategories, settings.azkarSchedules);
+  const morningAzkar = getEffectiveCategoriesForTrigger(assignments, "morning");
+  const postSalahAzkar = getEffectiveCategoriesForTrigger(assignments, "post-salah");
+  const customTimeAzkar: CustomTimeAzkar[] = assignments
+    .filter((a): a is typeof a & { customTime: string } => a.trigger === "custom-time" && !!a.customTime)
+    .map((a) => ({ category: a.category, time: a.customTime }));
+
   const { due, nextState } = computeDueNotifications(
     now,
     times,
-    deps.morningAzkar,
-    deps.postSalahAzkar,
+    morningAzkar,
+    postSalahAzkar,
+    customTimeAzkar,
     previousState
   );
 
