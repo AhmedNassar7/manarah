@@ -3,3 +3,5 @@ export * from "./qibla/index.js";
 export * from "./azkar-engine/index.js";
 export * from "./quran-data/index.js";
 export * from "./hijri/index.js";
+export * from "./settings/index.js";
+export * from "./notifications/index.js";

@@ -15,7 +15,9 @@ export default defineManifest({
     type: "module",
   },
   permissions: ["storage", "alarms", "notifications", "geolocation"],
-  // TODO: add icons/icon-{16,48,128}.png and reference them here before
-  // loading unpacked / submitting to the Chrome Web Store. Omitted for now
-  // so the scaffold builds without placeholder art.
+  icons: {
+    16: "icons/icon-16.png",
+    48: "icons/icon-48.png",
+    128: "icons/icon-128.png",
+  },
 });
