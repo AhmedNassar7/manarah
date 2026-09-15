@@ -554,32 +554,120 @@ button {
   font-size: 0.9rem;
 }
 
-/* ---------- Surah list ---------- */
+/* ---------- Quran navigator ----------
+   The single entry point into Surah/Ayah/Juz'/Page navigation — a trigger
+   button (the current surah, styled like a dropdown) that expands into a
+   tabbed, searchable panel in place, rather than a separate route or a
+   layered modal that needs its own z-index/positioning story across both
+   the web app and the narrower extension popup. */
 
-.surah-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+.quran-navigator-trigger {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  max-height: 340px;
-  overflow-y: auto;
+  margin-top: 8px;
+  padding: 8px 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-page);
-  padding: 10px;
   background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1rem;
 }
 
-.surah-list li {
-  list-style: none;
+.quran-navigator-trigger span[lang="ar"] {
+  font-family: var(--font-arabic-ui);
 }
 
-.surah-list button {
-  width: 100%;
+.quran-navigator-panel {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.quran-navigator-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding: 4px 8px;
+}
+
+.quran-navigator-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.quran-navigator-tabs button {
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  border-bottom: 2px solid transparent;
+}
+
+.quran-navigator-tabs button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+}
+
+.quran-navigator-close {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 10px;
+}
+
+.quran-navigator-search {
+  display: block;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.quran-navigator-search:focus-visible {
+  outline: none;
+  background: var(--surface-sunken);
+}
+
+.quran-navigator-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 6px;
+}
+
+.quran-navigator-list li {
+  list-style: none;
+}
+
+.quran-navigator-empty {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 8px 4px;
+}
+
+.quran-navigator-list button {
+  width: 100%;
+  display: flex;
+  align-items: center;
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid transparent;
@@ -594,19 +682,31 @@ button {
     background-color 120ms var(--ease-quiet);
 }
 
-.surah-list button:hover {
+.quran-navigator-list button:hover {
   border-color: var(--accent);
 }
 
-.surah-list button[aria-current="true"] {
+.quran-navigator-list button[aria-current="true"] {
   background: var(--accent-soft);
   border-color: var(--accent);
   font-weight: 700;
 }
 
-.surah-list button span[lang="ar"] {
+.quran-navigator-number {
+  font-family: var(--font-mono);
+  color: var(--muted);
+  font-size: 0.75rem;
+  min-width: 1.6em;
+}
+
+.quran-navigator-list button span[lang="ar"] {
   font-family: var(--font-arabic-ui);
   font-size: 1.05rem;
+}
+
+.quran-navigator-translit {
+  color: var(--muted);
+  font-size: 0.78rem;
 }
 
 /* ---------- Quran reader ----------
@@ -706,6 +806,20 @@ button {
   line-height: 1.5;
   color: var(--muted);
   margin: 2px 0 10px;
+}
+
+.quran-reader-verse-highlight {
+  animation: verse-highlight-fade 2000ms var(--ease-quiet);
+  border-radius: var(--radius-page);
+}
+
+@keyframes verse-highlight-fade {
+  0% {
+    background: var(--accent-soft);
+  }
+  100% {
+    background: transparent;
+  }
 }
 
 /* ---------- Azkar list ----------

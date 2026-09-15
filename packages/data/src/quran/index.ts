@@ -1,4 +1,4 @@
-import type { Surah, Translation, TranslationEdition, Verse } from "@manarah/core";
+import type { Surah, Translation, TranslationEdition, Verse, VerseLocation, VerseRef } from "@manarah/core";
 import { pickRandomVerse } from "@manarah/core";
 import surahsData from "./surahs.json";
 
@@ -71,4 +71,40 @@ function loadTranslation(editionId: string): Promise<Translation[]> {
 export async function getTranslationForSurah(surahNumber: number, editionId: string): Promise<Translation[]> {
   const translations = await loadTranslation(editionId);
   return translations.filter((t) => t.surah === surahNumber);
+}
+
+/**
+ * Per-verse juz'/page/manzil/ruku'/sajdah placement, from the same AlQuran
+ * Cloud API response the translation text was fetched from (every ayah
+ * comes back with this metadata attached) — no separate fetch needed.
+ * Verified: 30 distinct juz', 604 distinct pages, 15 sajdah verses, all
+ * matching the standard 15-line Madani mushaf.
+ */
+export const JUZ_COUNT = 30;
+export const PAGE_COUNT = 604;
+
+let metadataPromise: Promise<VerseLocation[]> | null = null;
+
+function loadMetadata(): Promise<VerseLocation[]> {
+  metadataPromise ??= import("./metadata.json").then((mod) => (mod.default ?? mod) as unknown as VerseLocation[]);
+  return metadataPromise;
+}
+
+export async function getVerseLocation(surah: number, ayah: number): Promise<VerseLocation | undefined> {
+  const metadata = await loadMetadata();
+  return metadata.find((m) => m.surah === surah && m.ayah === ayah);
+}
+
+/** The first verse belonging to the given juz' (1-30) — where a "jump to Juz' N" navigation choice should land. */
+export async function getJuzStart(juz: number): Promise<VerseRef | undefined> {
+  const metadata = await loadMetadata();
+  const match = metadata.find((m) => m.juz === juz);
+  return match ? { surah: match.surah, ayah: match.ayah } : undefined;
+}
+
+/** The first verse on the given mushaf page (1-604) — where a "jump to Page N" navigation choice should land. */
+export async function getPageStart(page: number): Promise<VerseRef | undefined> {
+  const metadata = await loadMetadata();
+  const match = metadata.find((m) => m.page === page);
+  return match ? { surah: match.surah, ayah: match.ayah } : undefined;
 }

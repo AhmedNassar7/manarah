@@ -89,4 +89,20 @@ describe("QuranReader", () => {
     render(<QuranReader surah={alFatiha} verses={verses} />);
     expect(screen.queryByRole("button", { name: /translation/i })).not.toBeInTheDocument();
   });
+
+  it("reveals a focusAyah past the initial batch and highlights it", () => {
+    const longSurah: Surah = { ...alFatiha, number: 2, verseCount: 286 };
+    const longVerses: Verse[] = Array.from({ length: 286 }, (_, i) => ({
+      surah: 2,
+      ayah: i + 1,
+      uthmaniText: `verse ${i + 1}`,
+    }));
+
+    render(<QuranReader surah={longSurah} verses={longVerses} focusAyah={150} />);
+
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(150);
+    expect(items[149]).toHaveClass("quran-reader-verse-highlight");
+    expect(items[0]).not.toHaveClass("quran-reader-verse-highlight");
+  });
 });

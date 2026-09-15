@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   getAllVerses,
+  getJuzStart,
+  getPageStart,
   getRandomVerse,
   getSurah,
   getTranslationForSurah,
+  getVerseLocation,
   getVersesForSurah,
+  JUZ_COUNT,
+  PAGE_COUNT,
   SURAHS,
   TRANSLATION_EDITIONS,
 } from "./index.js";
@@ -83,5 +88,40 @@ describe("Quran data integrity", () => {
 
   it("getTranslationForSurah throws for an unknown edition id", async () => {
     await expect(getTranslationForSurah(1, "not.a.real.edition")).rejects.toThrow();
+  });
+
+  it("has verse-location metadata for every verse, with the Quran's first and last ayah at the expected boundaries", async () => {
+    const first = await getVerseLocation(1, 1);
+    expect(first).toEqual({ surah: 1, ayah: 1, juz: 1, page: 1, manzil: 1, ruku: 1, hizbQuarter: 1, sajda: false });
+
+    const last = await getVerseLocation(114, 6);
+    expect(last?.juz).toBe(30);
+    expect(last?.page).toBe(PAGE_COUNT);
+  });
+
+  it("has a start verse for every one of the 30 juz' and 604 pages", async () => {
+    for (let juz = 1; juz <= JUZ_COUNT; juz++) {
+      const start = await getJuzStart(juz);
+      expect(start).toBeDefined();
+      const location = await getVerseLocation(start!.surah, start!.ayah);
+      expect(location?.juz).toBe(juz);
+    }
+
+    for (let page = 1; page <= PAGE_COUNT; page++) {
+      const start = await getPageStart(page);
+      expect(start).toBeDefined();
+      const location = await getVerseLocation(start!.surah, start!.ayah);
+      expect(location?.page).toBe(page);
+    }
+  });
+
+  it("counts exactly 15 sajdah verses, the standard reckoning for this mushaf", async () => {
+    const verses = await getAllVerses();
+    let sajdaCount = 0;
+    for (const verse of verses) {
+      const location = await getVerseLocation(verse.surah, verse.ayah);
+      if (location?.sajda) sajdaCount++;
+    }
+    expect(sajdaCount).toBe(15);
   });
 });

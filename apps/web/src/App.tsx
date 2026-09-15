@@ -14,8 +14,9 @@ import {
   type Translation,
   type UserSettings,
   type Verse,
+  type VerseRef,
 } from "@manarah/core";
-import { getSurah, getTranslationForSurah, getVersesForSurah } from "@manarah/data";
+import { getJuzStart, getPageStart, getSurah, getTranslationForSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
 import { LanguageProvider, LanguageSwitcher, translate, useTranslation } from "@manarah/ui";
 import { Nav } from "./Nav.js";
@@ -46,6 +47,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [heading, setHeading] = useState<number | undefined>(undefined);
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number | null>(null);
+  const [focusAyah, setFocusAyah] = useState<number | undefined>(undefined);
   const [selectedSurahVerses, setSelectedSurahVerses] = useState<Verse[] | null>(null);
   const [selectedSurahTranslation, setSelectedSurahTranslation] = useState<Translation[] | null>(null);
 
@@ -58,6 +60,7 @@ export function App() {
       setSettings(stored);
       // Resume wherever the user last left off, rather than always starting at Al-Fatiha.
       setSelectedSurahNumber(stored.lastRead?.surah ?? 1);
+      if (stored.lastRead && stored.lastRead.ayah > 1) setFocusAyah(stored.lastRead.ayah);
       if (stored.coordinates) {
         setTimes(computePrayerTimes(stored.coordinates, new Date(), stored.prayerTimesSettings));
         setTomorrowsFajr(tomorrowsFajrFor(stored.coordinates, stored.prayerTimesSettings));
@@ -165,10 +168,11 @@ export function App() {
     setTomorrowsFajr(tomorrowsFajrFor(coordinates, settings.prayerTimesSettings));
   }
 
-  function handleSurahSelect(surahNumber: number) {
-    setSelectedSurahNumber(surahNumber);
+  function handleQuranNavigate(ref: VerseRef) {
+    setSelectedSurahNumber(ref.surah);
+    setFocusAyah(ref.ayah > 1 ? ref.ayah : undefined);
     setSettings((prev) => {
-      const next = { ...prev, lastRead: { surah: surahNumber, ayah: 1 } };
+      const next = { ...prev, lastRead: ref };
       void store.set(SETTINGS_STORAGE_KEY, next);
       return next;
     });
@@ -220,10 +224,13 @@ export function App() {
               element={
                 <QuranPage
                   selectedSurahNumber={selectedSurahNumber}
+                  focusAyah={focusAyah}
                   selectedSurah={selectedSurah}
                   selectedSurahVerses={selectedSurahVerses}
                   selectedSurahTranslation={selectedSurahTranslation}
-                  onSurahSelect={handleSurahSelect}
+                  onNavigate={handleQuranNavigate}
+                  resolveJuzStart={getJuzStart}
+                  resolvePageStart={getPageStart}
                 />
               }
             />

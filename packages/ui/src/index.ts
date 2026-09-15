@@ -6,6 +6,6 @@ export * from "./AzkarScheduleEditor.js";
 export * from "./QiblaCompass.js";
 export * from "./CitySearch.js";
 export * from "./VerseOfTheDay.js";
-export * from "./SurahList.js";
+export * from "./QuranNavigator.js";
 export * from "./LanguageSwitcher.js";
 export * from "./i18n/index.js";
