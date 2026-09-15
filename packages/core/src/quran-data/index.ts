@@ -4,6 +4,19 @@ export interface Verse {
   uthmaniText: string;
 }
 
+export interface Translation {
+  surah: number;
+  ayah: number;
+  text: string;
+}
+
+export interface TranslationEdition {
+  id: string;
+  name: string;
+  /** BCP-47-ish language tag for the translation text itself, e.g. "en". */
+  language: string;
+}
+
 export type RevelationType = "Meccan" | "Medinan";
 
 export interface Surah {

@@ -1,19 +1,22 @@
 import { useEffect, useState } from "react";
-import type { Surah, Verse } from "@manarah/core";
+import type { Surah, Translation, Verse } from "@manarah/core";
 import { formatVerseCount, useTranslation } from "./i18n/index.js";
 
 export interface QuranReaderProps {
   surah: Surah;
   verses: Verse[];
+  /** Same surah's translation text, one entry per verse; omitted while it's still loading or none is available. */
+  translations?: Translation[];
 }
 
 /** Verses shown before a "Load more" is needed — keeps a 200+ ayah surah (e.g. Al-Baqara) from rendering its entire text, and the whole page, in one go. */
 const BATCH_SIZE = 40;
 
 /** Renders one surah's Uthmani text, verse by verse, in a scrollable, batched view. Shared across web/extension/desktop/mobile. */
-export function QuranReader({ surah, verses }: QuranReaderProps) {
+export function QuranReader({ surah, verses, translations }: QuranReaderProps) {
   const { t, language } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, verses.length));
+  const [showTranslation, setShowTranslation] = useState(true);
 
   // A new surah means a new verses array — restart pagination rather than
   // carrying over how far the previous surah was scrolled.
@@ -23,6 +26,7 @@ export function QuranReader({ surah, verses }: QuranReaderProps) {
 
   const visibleVerses = verses.slice(0, visibleCount);
   const hasMore = visibleCount < verses.length;
+  const translationByAyah = new Map(translations?.map((tr) => [tr.ayah, tr.text]));
 
   return (
     <section className="quran-reader" dir="rtl" lang="ar">
@@ -31,11 +35,27 @@ export function QuranReader({ surah, verses }: QuranReaderProps) {
         <span dir="ltr">{surah.nameTransliterated}</span> · {t(`quran.revelation.${surah.revelationType}`)} ·{" "}
         {formatVerseCount(language, surah.verseCount)}
       </p>
+      {translations && translations.length > 0 && (
+        <button
+          type="button"
+          className="quran-reader-translation-toggle"
+          dir={language === "ar" ? "rtl" : "ltr"}
+          lang={language}
+          onClick={() => setShowTranslation((v) => !v)}
+        >
+          {showTranslation ? t("quranReader.hideTranslation") : t("quranReader.showTranslation")}
+        </button>
+      )}
       <div className="quran-reader-scroll">
         <ol>
           {visibleVerses.map((verse) => (
             <li key={verse.ayah} value={verse.ayah}>
               {verse.uthmaniText}
+              {showTranslation && translationByAyah.has(verse.ayah) && (
+                <p className="quran-reader-translation" dir="ltr" lang="en">
+                  {translationByAyah.get(verse.ayah)}
+                </p>
+              )}
             </li>
           ))}
         </ol>

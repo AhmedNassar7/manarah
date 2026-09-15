@@ -638,6 +638,18 @@ button {
   margin-top: 4px;
 }
 
+.quran-reader-translation-toggle {
+  margin-top: 12px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
 .quran-reader-scroll {
   max-height: min(70vh, 600px);
   overflow-y: auto;
@@ -686,6 +698,14 @@ button {
   font-size: 0.85rem;
   color: var(--gold);
   vertical-align: middle;
+}
+
+.quran-reader-translation {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 2px 0 10px;
 }
 
 /* ---------- Azkar list ----------

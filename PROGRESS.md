@@ -52,7 +52,7 @@ pnpm workspace monorepo, no Turborepo:
 |---|---|---|---|
 | Prayer times & Qibla | `adhan.js` (Batoul Apps), client-side from Geolocation coords | ✅ done | Pure math, zero network, works fully offline |
 | Quran text | Tanzil Uthmani corpus / AlQuran Cloud API, bundled as static JSON in `packages/data`; cross-checked against King Fahd Quran Complex's official Hafs Mushaf (qurancomplex.gov.sa) | ✅ done | All 114 surahs / 6236 verses, offline-guaranteed from first load |
-| Translations, tafsir, word-by-word | Quran.com / Quran Foundation API, AlQuran Cloud API | 🚧 Uthmani text only so far; translations/tafsir not yet fetched | Free, CORS-enabled, no key for most endpoints |
+| Translations, tafsir, word-by-word | Quran.com / Quran Foundation API, AlQuran Cloud API | 🚧 One translation (Saheeh International, `en.sahih`) fetched from AlQuran Cloud and wired into the reader; tafsir and further translations not yet fetched | Free, CORS-enabled, no key for most endpoints |
 | Word-by-word grammar (root, morphology, syntax) | Quranic Arabic Corpus dataset | ⬜ Phase 3 | Purpose-built for a future word-tap grammar feature |
 | Verse & surah audio | EveryAyah.com (per-verse), MP3Quran.net (per-surah, multi-reciter, live streams) | ⬜ Phase 2 | Direct `<audio>`/HLS playback, no proxy |
 | Tafsir corpus | Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi | ⬜ Phase 2 | Standard Ahl al-Sunnah tafsir canon; via Quran.com's tafsir API where available, else altafsir.com |
@@ -80,7 +80,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 
 - [x] Prayer times: geolocation + manual city search, calculation-method presets (MWL, ISNA, Umm al-Qura, Egyptian, Karachi, ...), Shafi/Hanafi Asr toggle, countdown widget (with tomorrow's-Fajr rollover), `PrayerSettingsEditor`
 - [x] Azkar engine v1: full default Hisn al-Muslim categories with remap/mute/custom-time (`AzkarScheduleEditor`), tally counter with tap-bounce + one-time gold-bloom completion animation
-- [x] Quran: full Uthmani text, all 114 surahs, `SurahList` browser, batched `QuranReader` (40 verses + "Load more"), `lastRead` (surah + ayah) tracking/resume
+- [x] Quran: full Uthmani text, all 114 surahs, `SurahList` browser, batched `QuranReader` (40 verses + "Load more"), `lastRead` (surah + ayah) tracking/resume, one bundled English translation (Saheeh International) shown per-verse with a show/hide toggle
 - [x] Qibla: pure bearing/distance geometry, two-tone needle compass UI, live device-orientation heading where available, "searching" state, one-time lock + ripple
 - [x] Extension: popup (today's prayers + Qibla + continue-reading shortcut to the web Quran reader), `chrome_url_overrides.newtab` (verse of the day + prayer countdown + static compass), background `chrome.alarms`, toolbar badge (minutes-to-next-prayer, teal → henna inside 15 min)
 - [x] Web: installable PWA (manual `virtual:pwa-register` + hourly update polling to avoid staleness), offline app shell + offline Quran text, `HashRouter`-based multi-page structure (Home/Prayer/Qibla/Quran/Azkar + persistent `Nav`)
@@ -90,7 +90,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 157 tests passing across all 4 packages (`core` 50, `storage` 17, `data` 23, `ui` 67), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 161 tests passing across all 4 packages (`core` 50, `storage` 17, `data` 25, `ui` 69), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Phase 2 — Growth — ⬜ not started
 
@@ -150,7 +150,7 @@ No working browser exists in the primary dev environment used to build this — 
 
 - **`packages/core/hijri`** — referenced in the architecture above but no logic exists yet. Smallest coherent Phase 3 starting point once Phase 2 is underway.
 - **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
-- **Translations/tafsir fetch** — only the bundled Uthmani Arabic text exists; no translation or tafsir text has been fetched or wired into the reader yet, despite the API sourcing being decided. First real Phase 2-adjacent content gap.
+- **Further translations/tafsir** — one English translation (Saheeh International) is fetched and wired in; other languages/editions and any tafsir text are still unfetched. Multi-translation/multi-tafsir library remains a Phase 2 item.
 
 ---
 

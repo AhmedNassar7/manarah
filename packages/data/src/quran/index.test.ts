@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { getAllVerses, getRandomVerse, getSurah, getVersesForSurah, SURAHS } from "./index.js";
+import {
+  getAllVerses,
+  getRandomVerse,
+  getSurah,
+  getTranslationForSurah,
+  getVersesForSurah,
+  SURAHS,
+  TRANSLATION_EDITIONS,
+} from "./index.js";
 
 describe("Quran data integrity", () => {
   it("has exactly the canonical 114 surahs and 6236 verses", async () => {
@@ -55,5 +63,25 @@ describe("Quran data integrity", () => {
     expect(verse.uthmaniText.trim().length).toBeGreaterThan(0);
     expect(verse.ayah).toBeGreaterThanOrEqual(1);
     expect(verse.ayah).toBeLessThanOrEqual(surah.verseCount);
+  });
+
+  it("every registered translation edition has exactly one entry per verse, with non-empty text", async () => {
+    const verses = await getAllVerses();
+    for (const edition of TRANSLATION_EDITIONS) {
+      let total = 0;
+      for (const surah of SURAHS) {
+        const translated = await getTranslationForSurah(surah.number, edition.id);
+        expect(translated).toHaveLength(surah.verseCount);
+        for (const t of translated) {
+          expect(t.text.trim().length).toBeGreaterThan(0);
+        }
+        total += translated.length;
+      }
+      expect(total).toBe(verses.length);
+    }
+  });
+
+  it("getTranslationForSurah throws for an unknown edition id", async () => {
+    await expect(getTranslationForSurah(1, "not.a.real.edition")).rejects.toThrow();
   });
 });

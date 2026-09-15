@@ -57,6 +57,8 @@ const EN: Dictionary = {
   "quran.revelation.Meccan": "Meccan",
   "quran.revelation.Medinan": "Medinan",
   "quranReader.loadMore": "Load more — {shown} of {total} verses",
+  "quranReader.showTranslation": "Show translation",
+  "quranReader.hideTranslation": "Hide translation",
 
   "popup.continueReading": "Continue reading",
   "popup.continueReadingHint": "Pick up right where you left off in the Quran reader.",
@@ -138,6 +140,8 @@ const AR: Dictionary = {
   "quran.revelation.Meccan": "مكية",
   "quran.revelation.Medinan": "مدنية",
   "quranReader.loadMore": "تحميل المزيد — {shown} من {total} آية",
+  "quranReader.showTranslation": "إظهار الترجمة",
+  "quranReader.hideTranslation": "إخفاء الترجمة",
 
   "popup.continueReading": "متابعة القراءة",
   "popup.continueReadingHint": "أكمل من حيث توقفت في قارئ القرآن.",

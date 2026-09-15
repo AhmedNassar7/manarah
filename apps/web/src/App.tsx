@@ -11,10 +11,11 @@ import {
   type DailyPrayerTimes,
   type Language,
   type PrayerTimesSettings,
+  type Translation,
   type UserSettings,
   type Verse,
 } from "@manarah/core";
-import { getSurah, getVersesForSurah } from "@manarah/data";
+import { getSurah, getTranslationForSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
 import { LanguageProvider, LanguageSwitcher, translate, useTranslation } from "@manarah/ui";
 import { Nav } from "./Nav.js";
@@ -27,6 +28,9 @@ import { QiblaPage } from "./pages/QiblaPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 
 const store = new IndexedDbStore();
+
+/** The one translation edition wired in so far — a per-user choice among TRANSLATION_EDITIONS is future work. */
+const DEFAULT_TRANSLATION_EDITION = "en.sahih";
 
 /** Tomorrow's Fajr — lets PrayerCountdown roll over once tonight's Isha has passed, instead of going dead until midnight. */
 function tomorrowsFajrFor(coordinates: Coordinates, settings: UserSettings["prayerTimesSettings"]): Date {
@@ -43,6 +47,7 @@ export function App() {
   const [heading, setHeading] = useState<number | undefined>(undefined);
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number | null>(null);
   const [selectedSurahVerses, setSelectedSurahVerses] = useState<Verse[] | null>(null);
+  const [selectedSurahTranslation, setSelectedSurahTranslation] = useState<Translation[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -91,6 +96,10 @@ export function App() {
     let cancelled = false;
     void getVersesForSurah(selectedSurahNumber).then((verses) => {
       if (!cancelled) setSelectedSurahVerses(verses);
+    });
+    setSelectedSurahTranslation(null);
+    void getTranslationForSurah(selectedSurahNumber, DEFAULT_TRANSLATION_EDITION).then((translation) => {
+      if (!cancelled) setSelectedSurahTranslation(translation);
     });
     return () => {
       cancelled = true;
@@ -213,6 +222,7 @@ export function App() {
                   selectedSurahNumber={selectedSurahNumber}
                   selectedSurah={selectedSurah}
                   selectedSurahVerses={selectedSurahVerses}
+                  selectedSurahTranslation={selectedSurahTranslation}
                   onSurahSelect={handleSurahSelect}
                 />
               }

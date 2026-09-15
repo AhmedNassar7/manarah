@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { Surah, Verse } from "@manarah/core";
+import type { Surah, Translation, Verse } from "@manarah/core";
 import { QuranReader } from "./QuranReader.js";
 
 const alFatiha: Surah = {
@@ -14,6 +14,11 @@ const alFatiha: Surah = {
 const verses: Verse[] = [
   { surah: 1, ayah: 1, uthmaniText: "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ" },
   { surah: 1, ayah: 2, uthmaniText: "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ" },
+];
+
+const translations: Translation[] = [
+  { surah: 1, ayah: 1, text: "In the name of Allah, the Entirely Merciful, the Especially Merciful." },
+  { surah: 1, ayah: 2, text: "[All] praise is [due] to Allah, Lord of the worlds." },
 ];
 
 describe("QuranReader", () => {
@@ -65,5 +70,23 @@ describe("QuranReader", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Load more/ }));
     expect(screen.getAllByRole("listitem")).toHaveLength(80);
+  });
+
+  it("shows translation text by default when translations are provided, and can be hidden", () => {
+    render(<QuranReader surah={alFatiha} verses={verses} translations={translations} />);
+
+    expect(screen.getByText(translations[0].text)).toBeInTheDocument();
+    expect(screen.getByText(translations[1].text)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide translation" }));
+    expect(screen.queryByText(translations[0].text)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show translation" }));
+    expect(screen.getByText(translations[0].text)).toBeInTheDocument();
+  });
+
+  it("renders no translation toggle or text when no translations are provided", () => {
+    render(<QuranReader surah={alFatiha} verses={verses} />);
+    expect(screen.queryByRole("button", { name: /translation/i })).not.toBeInTheDocument();
   });
 });

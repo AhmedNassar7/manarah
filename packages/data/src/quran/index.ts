@@ -1,4 +1,4 @@
-import type { Surah, Verse } from "@manarah/core";
+import type { Surah, Translation, TranslationEdition, Verse } from "@manarah/core";
 import { pickRandomVerse } from "@manarah/core";
 import surahsData from "./surahs.json";
 
@@ -42,4 +42,33 @@ export async function getRandomVerse(): Promise<{ verse: Verse; surah: Surah }> 
   const verses = await loadVerses();
   const verse = pickRandomVerse(verses);
   return { verse, surah: getSurah(verse.surah)! };
+}
+
+/**
+ * Translation text, fetched from the AlQuran Cloud API (api.alquran.cloud)
+ * and converted to this package's flat {surah, ayah, ...} shape — same
+ * sourcing/verification approach as the Uthmani text above, and lazily
+ * loaded the same way so untranslated readers don't pay for it.
+ */
+export const TRANSLATION_EDITIONS: TranslationEdition[] = [
+  { id: "en.sahih", name: "Saheeh International", language: "en" },
+];
+
+const translationLoaders: Record<string, () => Promise<{ default: Translation[] } | Translation[]>> = {
+  "en.sahih": () => import("./translations/en-sahih.json"),
+};
+
+const translationPromises: Partial<Record<string, Promise<Translation[]>>> = {};
+
+function loadTranslation(editionId: string): Promise<Translation[]> {
+  const loader = translationLoaders[editionId];
+  if (!loader) throw new Error(`Unknown translation edition: ${editionId}`);
+
+  translationPromises[editionId] ??= loader().then((mod) => ("default" in mod ? mod.default : mod));
+  return translationPromises[editionId]!;
+}
+
+export async function getTranslationForSurah(surahNumber: number, editionId: string): Promise<Translation[]> {
+  const translations = await loadTranslation(editionId);
+  return translations.filter((t) => t.surah === surahNumber);
 }
