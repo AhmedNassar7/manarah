@@ -17,9 +17,16 @@ type Dictionary = Record<string, string>;
 const EN: Dictionary = {
   "app.tagline": "Prayer, azkar, Qur'an, and Qibla",
   "app.geolocationUnavailable": "Geolocation is not available in this browser.",
+  "app.sectionHome": "Home",
+  "app.sectionPrayer": "Prayer",
   "app.sectionPrayerSettings": "Prayer settings",
+  "app.sectionQibla": "Qibla",
   "app.sectionQuran": "Quran",
+  "app.sectionAzkar": "Azkar",
   "app.sectionAzkarSettings": "Azkar settings",
+  "app.viewAll": "View all →",
+  "app.locationNeeded": "Set your location on the Home page to see this.",
+  "app.goHome": "Go to Home",
 
   "citySearch.placeholderDefault": "Search for a city…",
   "citySearch.placeholderManual": "Set location manually…",
@@ -85,9 +92,16 @@ const EN: Dictionary = {
 const AR: Dictionary = {
   "app.tagline": "الصلاة والأذكار والقرآن والقبلة",
   "app.geolocationUnavailable": "خدمة تحديد الموقع غير متاحة في هذا المتصفح.",
+  "app.sectionHome": "الرئيسية",
+  "app.sectionPrayer": "الصلاة",
   "app.sectionPrayerSettings": "إعدادات الصلاة",
+  "app.sectionQibla": "القبلة",
   "app.sectionQuran": "القرآن",
+  "app.sectionAzkar": "الأذكار",
   "app.sectionAzkarSettings": "إعدادات الأذكار",
+  "app.viewAll": "عرض الكل ←",
+  "app.locationNeeded": "حدد موقعك من الصفحة الرئيسية لعرض هذا القسم.",
+  "app.goHome": "الذهاب إلى الرئيسية",
 
   "citySearch.placeholderDefault": "ابحث عن مدينة…",
   "citySearch.placeholderManual": "تحديد الموقع يدويًا…",

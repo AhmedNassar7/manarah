@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import {
   computePrayerTimes,
-  qiblaBearing,
-  qiblaDistanceKm,
   withDefaultSettings,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
@@ -12,36 +11,18 @@ import {
   type DailyPrayerTimes,
   type Language,
   type PrayerTimesSettings,
-  type Surah,
   type UserSettings,
   type Verse,
 } from "@manarah/core";
-import {
-  AZKAR_CATEGORIES,
-  CALCULATION_METHODS,
-  findCities,
-  getAzkarCategory,
-  getSurah,
-  getVersesForSurah,
-  SURAHS,
-} from "@manarah/data";
+import { getSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import {
-  AzkarList,
-  AzkarScheduleEditor,
-  CitySearch,
-  LanguageProvider,
-  LanguageSwitcher,
-  PrayerCountdown,
-  PrayerSettingsEditor,
-  QiblaCompass,
-  QuranReader,
-  SurahList,
-  translate,
-  useTranslation,
-} from "@manarah/ui";
-
-const MORNING_EVENING_AZKAR = getAzkarCategory("27")!;
+import { LanguageProvider, LanguageSwitcher, translate, useTranslation } from "@manarah/ui";
+import { Nav } from "./Nav.js";
+import { AzkarPage } from "./pages/AzkarPage.js";
+import { Home } from "./pages/Home.js";
+import { PrayerPage } from "./pages/PrayerPage.js";
+import { QiblaPage } from "./pages/QiblaPage.js";
+import { QuranPage } from "./pages/QuranPage.js";
 
 const store = new IndexedDbStore();
 
@@ -189,54 +170,59 @@ export function App() {
 
   return (
     <LanguageProvider language={settings.language} onLanguageChange={handleLanguageChange}>
-      <AppBody
-        settings={settings}
-        times={times}
-        tomorrowsFajr={tomorrowsFajr}
-        error={error}
-        heading={heading}
-        selectedSurahNumber={selectedSurahNumber}
-        selectedSurah={selectedSurah}
-        selectedSurahVerses={selectedSurahVerses}
-        onCitySelect={handleCitySelect}
-        onPrayerSettingsChange={handlePrayerSettingsChange}
-        onSurahSelect={handleSurahSelect}
-        onSchedulesChange={handleSchedulesChange}
-      />
+      <HashRouter>
+        <AppShell>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home
+                  error={error}
+                  onCitySelect={handleCitySelect}
+                  coordinates={settings.coordinates}
+                  times={times}
+                  tomorrowsFajr={tomorrowsFajr}
+                  heading={heading}
+                />
+              }
+            />
+            <Route
+              path="/prayer"
+              element={
+                <PrayerPage
+                  coordinates={settings.coordinates}
+                  times={times}
+                  tomorrowsFajr={tomorrowsFajr}
+                  prayerTimesSettings={settings.prayerTimesSettings}
+                  onPrayerSettingsChange={handlePrayerSettingsChange}
+                />
+              }
+            />
+            <Route path="/qibla" element={<QiblaPage coordinates={settings.coordinates} heading={heading} />} />
+            <Route
+              path="/quran"
+              element={
+                <QuranPage
+                  selectedSurahNumber={selectedSurahNumber}
+                  selectedSurah={selectedSurah}
+                  selectedSurahVerses={selectedSurahVerses}
+                  onSurahSelect={handleSurahSelect}
+                />
+              }
+            />
+            <Route
+              path="/azkar"
+              element={<AzkarPage azkarSchedules={settings.azkarSchedules} onSchedulesChange={handleSchedulesChange} />}
+            />
+          </Routes>
+        </AppShell>
+      </HashRouter>
     </LanguageProvider>
   );
 }
 
-interface AppBodyProps {
-  settings: UserSettings;
-  times: DailyPrayerTimes | null;
-  tomorrowsFajr: Date | null;
-  error: string | null;
-  heading: number | undefined;
-  selectedSurahNumber: number | null;
-  selectedSurah: Surah | undefined;
-  selectedSurahVerses: Verse[] | null;
-  onCitySelect: (city: City) => void;
-  onPrayerSettingsChange: (settings: PrayerTimesSettings) => void;
-  onSurahSelect: (surahNumber: number) => void;
-  onSchedulesChange: (schedules: AzkarSchedule[]) => void;
-}
-
-/** The presentational half of the app — split out so it (and everything it renders) sits *inside* LanguageProvider and can call useTranslation(). */
-function AppBody({
-  settings,
-  times,
-  tomorrowsFajr,
-  error,
-  heading,
-  selectedSurahNumber,
-  selectedSurah,
-  selectedSurahVerses,
-  onCitySelect,
-  onPrayerSettingsChange,
-  onSurahSelect,
-  onSchedulesChange,
-}: AppBodyProps) {
+/** Header + nav, shared by every route. Sits inside LanguageProvider so it (and the routed page inside it) can call useTranslation(). */
+function AppShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
 
   return (
@@ -246,47 +232,8 @@ function AppBody({
         <span className="tagline">منارة — {t("app.tagline")}</span>
         <LanguageSwitcher />
       </header>
-
-      {error && <p className="alert">{error}</p>}
-
-      <CitySearch search={findCities} onSelect={onCitySelect} placeholder={t("citySearch.placeholderManual")} />
-
-      <div className="card-row">
-        {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
-        {settings.coordinates && (
-          <QiblaCompass
-            bearing={qiblaBearing(settings.coordinates)}
-            distanceKm={qiblaDistanceKm(settings.coordinates)}
-            heading={heading}
-          />
-        )}
-      </div>
-
-      <section>
-        <h2 className="section-title">{t("app.sectionPrayerSettings")}</h2>
-        <PrayerSettingsEditor
-          methods={CALCULATION_METHODS}
-          settings={settings.prayerTimesSettings}
-          onChange={onPrayerSettingsChange}
-        />
-      </section>
-
-      <section>
-        <h2 className="section-title">{t("app.sectionQuran")}</h2>
-        <SurahList surahs={SURAHS} onSelect={onSurahSelect} selectedSurah={selectedSurahNumber ?? undefined} />
-        {selectedSurah && selectedSurahVerses && <QuranReader surah={selectedSurah} verses={selectedSurahVerses} />}
-      </section>
-
-      <AzkarList category={MORNING_EVENING_AZKAR} />
-
-      <section>
-        <h2 className="section-title">{t("app.sectionAzkarSettings")}</h2>
-        <AzkarScheduleEditor
-          categories={AZKAR_CATEGORIES}
-          schedules={settings.azkarSchedules}
-          onChange={onSchedulesChange}
-        />
-      </section>
+      <Nav />
+      {children}
     </main>
   );
 }

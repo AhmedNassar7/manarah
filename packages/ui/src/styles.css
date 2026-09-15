@@ -170,6 +170,39 @@ button {
   font-weight: 700;
 }
 
+/* ---------- Section nav ---------- */
+
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+}
+
+.app-nav a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-page) var(--radius-page) 0 0;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: background-color 120ms var(--ease-quiet), color 120ms var(--ease-quiet);
+}
+
+.app-nav a:hover {
+  background: var(--surface-sunken);
+  color: var(--ink);
+}
+
+.app-nav a.active {
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--accent-soft);
+}
+
 .section-title {
   font-size: 1.2rem;
   margin-bottom: 12px;
@@ -188,6 +221,12 @@ button {
 
 .alert > p {
   margin: 0;
+}
+
+.alert a {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
 }
 
 /* ---------- Card primitive ----------
@@ -209,6 +248,47 @@ button {
 
 .card-row > .card {
   flex: 1 1 220px;
+}
+
+/* ---------- Home quick links ---------- */
+
+.home-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.home-link-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: border-color 120ms var(--ease-quiet), background-color 120ms var(--ease-quiet);
+}
+
+.home-link-card span:first-child {
+  font-size: 1.8rem;
+}
+
+.home-link-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* ---------- Qibla page ---------- */
+
+.qibla-page {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
 }
 
 /* ---------- Prayer countdown ---------- */
