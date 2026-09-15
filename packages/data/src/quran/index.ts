@@ -1,4 +1,5 @@
 import type { Surah, Verse } from "@manarah/core";
+import { pickRandomVerse } from "@manarah/core";
 import surahsData from "./surahs.json";
 
 /**
@@ -34,4 +35,11 @@ export async function getVersesForSurah(surahNumber: number): Promise<Verse[]> {
 /** All 6236 verses — for data-integrity checks/tooling. App code should prefer getVersesForSurah, which loads on demand. */
 export function getAllVerses(): Promise<Verse[]> {
   return loadVerses();
+}
+
+/** Picks a verse uniformly at random (e.g. for a new-tab "verse of the day"), with its surah metadata attached. */
+export async function getRandomVerse(): Promise<{ verse: Verse; surah: Surah }> {
+  const verses = await loadVerses();
+  const verse = pickRandomVerse(verses);
+  return { verse, surah: getSurah(verse.surah)! };
 }

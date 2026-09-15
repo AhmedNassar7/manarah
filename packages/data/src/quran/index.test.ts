@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAllVerses, getSurah, getVersesForSurah, SURAHS } from "./index.js";
+import { getAllVerses, getRandomVerse, getSurah, getVersesForSurah, SURAHS } from "./index.js";
 
 describe("Quran data integrity", () => {
   it("has exactly the canonical 114 surahs and 6236 verses", async () => {
@@ -47,5 +47,13 @@ describe("Quran data integrity", () => {
     const first = await getVersesForSurah(2);
     const second = await getVersesForSurah(2);
     expect(first).toEqual(second);
+  });
+
+  it("getRandomVerse returns a real verse with its matching surah attached", async () => {
+    const { verse, surah } = await getRandomVerse();
+    expect(surah.number).toBe(verse.surah);
+    expect(verse.uthmaniText.trim().length).toBeGreaterThan(0);
+    expect(verse.ayah).toBeGreaterThanOrEqual(1);
+    expect(verse.ayah).toBeLessThanOrEqual(surah.verseCount);
   });
 });
