@@ -5,3 +5,4 @@ export * from "./AzkarScheduleEditor.js";
 export * from "./QiblaCompass.js";
 export * from "./CitySearch.js";
 export * from "./VerseOfTheDay.js";
+export * from "./SurahList.js";

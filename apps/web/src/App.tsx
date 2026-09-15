@@ -11,7 +11,7 @@ import {
   type UserSettings,
   type Verse,
 } from "@manarah/core";
-import { AZKAR_CATEGORIES, findCities, getAzkarCategory, getSurah, getVersesForSurah } from "@manarah/data";
+import { AZKAR_CATEGORIES, findCities, getAzkarCategory, getSurah, getVersesForSurah, SURAHS } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
 import {
   AzkarList,
@@ -20,9 +20,9 @@ import {
   PrayerCountdown,
   QiblaCompass,
   QuranReader,
+  SurahList,
 } from "@manarah/ui";
 
-const AL_FATIHA = getSurah(1)!;
 const MORNING_EVENING_AZKAR = getAzkarCategory("27")!;
 
 const store = new IndexedDbStore();
@@ -32,11 +32,8 @@ export function App() {
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heading, setHeading] = useState<number | undefined>(undefined);
-  const [alFatihaVerses, setAlFatihaVerses] = useState<Verse[] | null>(null);
-
-  useEffect(() => {
-    void getVersesForSurah(1).then(setAlFatihaVerses);
-  }, []);
+  const [selectedSurahNumber, setSelectedSurahNumber] = useState<number | null>(null);
+  const [selectedSurahVerses, setSelectedSurahVerses] = useState<Verse[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +42,8 @@ export function App() {
       const stored = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
       if (cancelled) return;
       setSettings(stored);
+      // Resume wherever the user last left off, rather than always starting at Al-Fatiha.
+      setSelectedSurahNumber(stored.lastRead?.surah ?? 1);
       if (stored.coordinates) {
         setTimes(computePrayerTimes(stored.coordinates, new Date(), stored.prayerTimesSettings));
       }
@@ -75,6 +74,17 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedSurahNumber === null) return;
+    let cancelled = false;
+    void getVersesForSurah(selectedSurahNumber).then((verses) => {
+      if (!cancelled) setSelectedSurahVerses(verses);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSurahNumber]);
 
   useEffect(() => {
     // Best-effort live compass heading — most desktops/laptops have no
@@ -117,6 +127,17 @@ export function App() {
     setTimes(computePrayerTimes(coordinates, new Date(), settings.prayerTimesSettings));
   }
 
+  function handleSurahSelect(surahNumber: number) {
+    setSelectedSurahNumber(surahNumber);
+    setSettings((prev) => {
+      const next = { ...prev, lastRead: { surah: surahNumber, ayah: 1 } };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
+  const selectedSurah = selectedSurahNumber !== null ? getSurah(selectedSurahNumber) : undefined;
+
   return (
     <main>
       <h1>Manarah</h1>
@@ -130,7 +151,9 @@ export function App() {
           heading={heading}
         />
       )}
-      {alFatihaVerses && <QuranReader surah={AL_FATIHA} verses={alFatihaVerses} />}
+      <h2>Quran</h2>
+      <SurahList surahs={SURAHS} onSelect={handleSurahSelect} selectedSurah={selectedSurahNumber ?? undefined} />
+      {selectedSurah && selectedSurahVerses && <QuranReader surah={selectedSurah} verses={selectedSurahVerses} />}
       <AzkarList category={MORNING_EVENING_AZKAR} />
       <h2>Azkar settings</h2>
       <AzkarScheduleEditor
