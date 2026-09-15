@@ -80,17 +80,17 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 
 - [x] Prayer times: geolocation + manual city search, calculation-method presets (MWL, ISNA, Umm al-Qura, Egyptian, Karachi, ...), Shafi/Hanafi Asr toggle, countdown widget (with tomorrow's-Fajr rollover), `PrayerSettingsEditor`
 - [x] Azkar engine v1: full default Hisn al-Muslim categories with remap/mute/custom-time (`AzkarScheduleEditor`), tally counter with tap-bounce + one-time gold-bloom completion animation
-- [x] Quran: full Uthmani text, all 114 surahs, `SurahList` browser, batched `QuranReader` (40 verses + "Load more"), `lastRead` (surah + ayah) tracking/resume, one bundled English translation (Saheeh International) shown per-verse with a show/hide toggle
+- [x] Quran: full Uthmani text, all 114 surahs, `QuranNavigator` (Surah/Ayah/Juz'/Page tabs with search), batched `QuranReader` (40 verses + "Load more", jump-to-ayah with scroll+highlight), `lastRead` (surah + ayah) tracking/resume to the exact verse, one bundled English translation (Saheeh International) shown per-verse with a show/hide toggle
 - [x] Qibla: pure bearing/distance geometry, two-tone needle compass UI, live device-orientation heading where available, "searching" state, one-time lock + ripple
 - [x] Extension: popup (today's prayers + Qibla + continue-reading shortcut to the web Quran reader), `chrome_url_overrides.newtab` (verse of the day + prayer countdown + static compass), background `chrome.alarms`, toolbar badge (minutes-to-next-prayer, teal → henna inside 15 min)
 - [x] Web: installable PWA (manual `virtual:pwa-register` + hourly update polling to avoid staleness), offline app shell + offline Quran text, `HashRouter`-based multi-page structure (Home/Prayer/Qibla/Quran/Azkar + persistent `Nav`)
 - [x] i18n: English + Arabic throughout (~130+ keys), `LanguageProvider`/`useTranslation()`/`LanguageSwitcher`, `<html lang/dir>` kept in sync for RTL
-- [x] Manuscript design system: parchment/indigo-night palette, gold-leaf reserved for completion moments, teal-tile accent, henna for time-critical states, Amiri (Quran-script Arabic) vs. Cairo (UI Arabic), Fraunces + Inter (Latin), CSS-only motion scoped to 3 meaningful moments, global `prefers-reduced-motion` kill-switch
+- [x] Manuscript design system: parchment/indigo-night palette, gold-leaf reserved for completion moments, teal-tile accent, henna for time-critical states, Amiri (Quran-script Arabic) vs. Cairo (UI Arabic), Fraunces + Inter (Latin), CSS-only motion (hover/press feedback, panel open transitions, verse jump-to highlight fade — expanded from the original 3-moment scope on explicit request for a more interactive feel), global `prefers-reduced-motion` kill-switch still the hard ceiling on all of it
 - [x] Storage: `Store` interface, `IndexedDbStore` (Dexie, web) / `ChromeSyncStore` (extension), JSON export/import, `withDefaultSettings()` safe-merge helper
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 169 tests passing across all 4 packages (`core` 58, `storage` 17, `data` 25, `ui` 69), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 176 tests passing across all 4 packages (`core` 58, `storage` 17, `data` 28, `ui` 73), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Phase 2 — Growth — ⬜ not started
 
@@ -120,6 +120,26 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - Sound effects (tasbih click, completion chime) — needs asset sourcing + an audio-preference setting
 - Native mobile widgets (iOS Live Activities / Android Dynamic Island) — needs a native Capacitor target, reopens the store-fee question above
 - KFGQPC Uthmanic Script HAFS font — no verified, licensed, freely-linkable source found; Amiri is the substitute, not expected to change without a real source turning up
+
+---
+
+## Quran reader parity roadmap
+
+Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail — the goal is a reader that matches their depth and interaction quality (audio, per-word detail, tafsir, notes, every navigation mode), not just their data. Ordered by dependency: each item mostly builds on the one before it. Supersedes the scattered Quran-related bullets in Phase 2/3 below — those still show status, but this is the authoritative build order.
+
+1. [x] **Translation display** — one bundled edition (Saheeh International), show/hide toggle in `QuranReader`. *(Multi-edition selection is still open — see Phase 2 list.)*
+2. [x] **Navigation overhaul** — `QuranNavigator`: tabbed Surah/Ayah/Juz'/Page picker with search, replacing the old surah-only list; per-verse `focusAyah` jump-and-highlight in `QuranReader`; juz'/page/manzil/ruku'/sajdah metadata (`packages/data/quran/metadata.json`, sourced free from the same AlQuran Cloud response as the translation).
+3. [ ] **Audio recitation player** — reciter selection, per-verse/surah playback, repeat count, speed, auto-scroll to the playing verse. Source: EveryAyah.com (per-verse) / MP3Quran.net (per-surah, multi-reciter), already the decided sourcing in the data table above. *Recommended next.*
+4. [ ] **Per-verse action toolbar + notes/bookmarks** — copy, share, bookmark/pin, personal notes per verse. Needs a notes/bookmarks table in `packages/storage` (same `Store` interface, new keys) — the audio player's per-verse "now playing" row is the natural place this toolbar attaches to, hence after it.
+5. [ ] **Tafsir panel** — Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi, via Quran.com's tafsir API where available, else altafsir.com (already the decided sourcing).
+6. [ ] **Word-by-word grammar** — tap a word for its own translation/root/morphology, from the Quranic Arabic Corpus dataset (corpus.quran.com). **License check needed before bundling**: the corpus site states its data is "available under the GNU public license" — confirm GPL terms are compatible with bundling into this project before fetching/committing any of it (unlike the Uthmani text/translations, which come from AlQuran Cloud under separate, already-verified terms).
+7. [ ] **Full-text search** — search Arabic text and translation, jump to a result (distinct from the Ayah/Juz'/Page *navigation* search added in step 2, which only searches numbers/surah names, not verse content).
+8. [ ] **Reading settings panel** — script style (Uthmani/IndoPak), font size, default reciter, default/managed translation editions — consolidates choices steps 1, 3, and 6 each introduce into one place instead of scattering controls.
+9. [ ] **Hadith library** (sunnah.com API, the Nine Books + selections) — already Phase 3 below; cross-links from the tafsir panel (step 5) once both exist.
+
+**Reviewed but not queued — conflicts with this project's own constraints, flagged rather than silently dropped:**
+- **QuranReflect.com-style reflections/notes sharing** — a social/community feed, which the "Explicitly deferred" list below already rules out to stay lean.
+- **Quran.AI-style assistant** — needs a hosted LLM backend; conflicts with the zero-server/zero-cost constraint that's been unchanged since day one. Would need its own explicit decision to add a paid/hosted dependency before any work starts here.
 
 ---
 
