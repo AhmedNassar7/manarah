@@ -25,6 +25,13 @@ import {
 
 const store = new ChromeSyncStore();
 
+// The extension popup has no Quran reader of its own, and its
+// chrome.storage.sync data is a separate store from the web app's IndexedDB
+// (no bridge between them). Rather than fake a "last read" preview from data
+// the popup can't actually see, this links straight to the web app, which
+// already resumes to `settings.lastRead` itself on load.
+const MANARAH_WEB_URL = "https://ahmednassar7.github.io/manarah/";
+
 function tomorrowsFajrFor(coordinates: Coordinates, settings: UserSettings["prayerTimesSettings"]): Date {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -131,6 +138,10 @@ function PopupBody({ times, tomorrowsFajr, coordinates, error, onCitySelect }: P
         // No orientation sensor in a browser extension popup — static, north-up compass.
         <QiblaCompass bearing={qiblaBearing(coordinates)} distanceKm={qiblaDistanceKm(coordinates)} />
       )}
+      <a className="popup-continue-reading" href={`${MANARAH_WEB_URL}#/quran`} target="_blank" rel="noreferrer">
+        <span className="popup-continue-reading-title">{t("popup.continueReading")}</span>
+        <span className="popup-continue-reading-hint">{t("popup.continueReadingHint")}</span>
+      </a>
     </div>
   );
 }

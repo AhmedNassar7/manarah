@@ -229,6 +229,38 @@ button {
   text-decoration: underline;
 }
 
+/* ---------- Popup: continue-reading shortcut ----------
+   Opens the web app's Quran reader in a new tab; the web app resumes to
+   settings.lastRead itself, so this link carries no state of its own. */
+
+.popup-continue-reading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--accent-soft);
+  text-decoration: none;
+  transition: border-color var(--dur-tap) var(--ease-quiet);
+}
+
+.popup-continue-reading:hover,
+.popup-continue-reading:focus-visible {
+  border-color: var(--accent);
+}
+
+.popup-continue-reading-title {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.popup-continue-reading-hint {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 /* ---------- Card primitive ----------
    Elevation reads as a page laid over another page — a hairline border and
    a faint tint, not a grey drop-shadow blur. */

@@ -55,6 +55,9 @@ const EN: Dictionary = {
   "quran.revelation.Medinan": "Medinan",
   "quranReader.loadMore": "Load more — {shown} of {total} verses",
 
+  "popup.continueReading": "Continue reading",
+  "popup.continueReadingHint": "Pick up right where you left off in the Quran reader.",
+
   "azkarSchedule.headerCategory": "Category",
   "azkarSchedule.headerMuted": "Muted",
   "azkarSchedule.headerTrigger": "Trigger",
@@ -129,6 +132,9 @@ const AR: Dictionary = {
   "quran.revelation.Meccan": "مكية",
   "quran.revelation.Medinan": "مدنية",
   "quranReader.loadMore": "تحميل المزيد — {shown} من {total} آية",
+
+  "popup.continueReading": "متابعة القراءة",
+  "popup.continueReadingHint": "أكمل من حيث توقفت في قارئ القرآن.",
 
   "azkarSchedule.headerCategory": "الفئة",
   "azkarSchedule.headerMuted": "صامت",
