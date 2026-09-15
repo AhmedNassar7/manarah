@@ -19,6 +19,7 @@ const store = new ChromeSyncStore();
 
 export function NewTab() {
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
+  const [tomorrowsFajr, setTomorrowsFajr] = useState<Date | null>(null);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [verseOfTheDay, setVerseOfTheDay] = useState<{ verse: Verse; surah: Surah } | null>(null);
 
@@ -37,6 +38,9 @@ export function NewTab() {
       if (cancelled || !settings.coordinates) return;
       setCoordinates(settings.coordinates);
       setTimes(computePrayerTimes(settings.coordinates, new Date(), settings.prayerTimesSettings));
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setTomorrowsFajr(computePrayerTimes(settings.coordinates, tomorrow, settings.prayerTimesSettings).fajr);
     }
 
     void load();
@@ -49,7 +53,7 @@ export function NewTab() {
     <main className="newtab-shell">
       {verseOfTheDay && <VerseOfTheDay verse={verseOfTheDay.verse} surah={verseOfTheDay.surah} />}
       <div className="card-row">
-        {times && <PrayerCountdown todaysTimes={times} />}
+        {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
         {coordinates && (
           <QiblaCompass bearing={qiblaBearing(coordinates)} distanceKm={qiblaDistanceKm(coordinates)} />
         )}

@@ -48,9 +48,18 @@ describe("PrayerCountdown", () => {
     expect(screen.getByText("00:59:55")).toBeInTheDocument();
   });
 
-  it("skips to the next day's first prayer name once past Isha (shows 'No more prayers today' for today's window)", () => {
+  it("shows 'No more prayers today' once past Isha when tomorrow's Fajr isn't known yet", () => {
     vi.setSystemTime(new Date("2026-09-15T23:00:00"));
     render(<PrayerCountdown todaysTimes={timesOn("2026-09-15")} />);
     expect(screen.getByText("No more prayers today")).toBeInTheDocument();
+  });
+
+  it("rolls over to tomorrow's Fajr once past Isha, instead of going dead until midnight", () => {
+    vi.setSystemTime(new Date("2026-09-15T23:00:00"));
+    const tomorrowsFajr = new Date("2026-09-16T05:01:00");
+    render(<PrayerCountdown todaysTimes={timesOn("2026-09-15")} tomorrowsFajr={tomorrowsFajr} />);
+
+    expect(screen.getByText("Fajr")).toBeInTheDocument();
+    expect(screen.getByText("06:01:00")).toBeInTheDocument();
   });
 });

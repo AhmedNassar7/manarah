@@ -7,6 +7,7 @@ import {
   SETTINGS_STORAGE_KEY,
   type AzkarSchedule,
   type City,
+  type Coordinates,
   type DailyPrayerTimes,
   type UserSettings,
   type Verse,
@@ -27,9 +28,17 @@ const MORNING_EVENING_AZKAR = getAzkarCategory("27")!;
 
 const store = new IndexedDbStore();
 
+/** Tomorrow's Fajr — lets PrayerCountdown roll over once tonight's Isha has passed, instead of going dead until midnight. */
+function tomorrowsFajrFor(coordinates: Coordinates, settings: UserSettings["prayerTimesSettings"]): Date {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return computePrayerTimes(coordinates, tomorrow, settings).fajr;
+}
+
 export function App() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
+  const [tomorrowsFajr, setTomorrowsFajr] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heading, setHeading] = useState<number | undefined>(undefined);
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number | null>(null);
@@ -46,6 +55,7 @@ export function App() {
       setSelectedSurahNumber(stored.lastRead?.surah ?? 1);
       if (stored.coordinates) {
         setTimes(computePrayerTimes(stored.coordinates, new Date(), stored.prayerTimesSettings));
+        setTomorrowsFajr(tomorrowsFajrFor(stored.coordinates, stored.prayerTimesSettings));
       }
 
       if (!("geolocation" in navigator)) {
@@ -62,6 +72,7 @@ export function App() {
             return next;
           });
           setTimes(computePrayerTimes(coordinates, new Date(), stored.prayerTimesSettings));
+          setTomorrowsFajr(tomorrowsFajrFor(coordinates, stored.prayerTimesSettings));
         },
         (geoError) => {
           if (!cancelled && !stored.coordinates) setError(geoError.message);
@@ -125,6 +136,7 @@ export function App() {
     });
     setError(null);
     setTimes(computePrayerTimes(coordinates, new Date(), settings.prayerTimesSettings));
+    setTomorrowsFajr(tomorrowsFajrFor(coordinates, settings.prayerTimesSettings));
   }
 
   function handleSurahSelect(surahNumber: number) {
@@ -150,7 +162,7 @@ export function App() {
       <CitySearch search={findCities} onSelect={handleCitySelect} placeholder="Set location manually…" />
 
       <div className="card-row">
-        {times && <PrayerCountdown todaysTimes={times} />}
+        {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
         {settings.coordinates && (
           <QiblaCompass
             bearing={qiblaBearing(settings.coordinates)}

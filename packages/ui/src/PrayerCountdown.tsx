@@ -3,6 +3,14 @@ import { nextPrayer, type DailyPrayerTimes } from "@manarah/core";
 
 export interface PrayerCountdownProps {
   todaysTimes: DailyPrayerTimes;
+  /**
+   * Tomorrow's Fajr time. Once tonight's Isha has passed, the countdown
+   * rolls over to this instead of going dead until midnight — matching
+   * how Athan/prayer-time apps always show a live countdown to the next
+   * prayer. Optional so callers that don't have it yet still get the
+   * "No more prayers today" fallback rather than breaking.
+   */
+  tomorrowsFajr?: Date;
 }
 
 function formatCountdown(msRemaining: number): string {
@@ -14,7 +22,7 @@ function formatCountdown(msRemaining: number): string {
 }
 
 /** Shared prayer-countdown widget: used in the extension popup, the web/PWA header, and the desktop tray. */
-export function PrayerCountdown({ todaysTimes }: PrayerCountdownProps) {
+export function PrayerCountdown({ todaysTimes, tomorrowsFajr }: PrayerCountdownProps) {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -22,7 +30,7 @@ export function PrayerCountdown({ todaysTimes }: PrayerCountdownProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const upcoming = nextPrayer(todaysTimes, now);
+  const upcoming = nextPrayer(todaysTimes, now) ?? (tomorrowsFajr ? { name: "Fajr", at: tomorrowsFajr } : null);
 
   if (!upcoming) {
     return (

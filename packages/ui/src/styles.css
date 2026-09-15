@@ -152,6 +152,13 @@ button {
   border-radius: var(--radius-page);
   padding: 10px 14px;
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alert > p {
+  margin: 0;
 }
 
 /* ---------- Card primitive ----------
@@ -529,14 +536,24 @@ button {
 
 .azkar-list button {
   align-self: flex-start;
+  /* 44px is the minimum recommended touch target — this button gets tapped
+     rapidly and repeatedly while counting, so it needs to be easy to hit. */
+  min-height: 44px;
+  min-width: 64px;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
-  padding: 5px 12px;
+  font-size: 0.95rem;
+  padding: 10px 18px;
   border-radius: var(--radius-round);
   border: 1px solid var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
   cursor: pointer;
+  transition: background-color 120ms var(--ease-quiet);
+}
+
+.azkar-list button:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .azkar-list button.tapped {
