@@ -27,7 +27,8 @@ describe("PrayerCountdown", () => {
     vi.setSystemTime(new Date("2026-09-15T11:00:00"));
     render(<PrayerCountdown todaysTimes={timesOn("2026-09-15")} />);
 
-    expect(screen.getByText("Next: Dhuhr")).toBeInTheDocument();
+    expect(screen.getByText("Next prayer")).toBeInTheDocument();
+    expect(screen.getByText("Dhuhr")).toBeInTheDocument();
     expect(screen.getByText("01:00:00")).toBeInTheDocument();
   });
 

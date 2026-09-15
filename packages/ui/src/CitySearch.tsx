@@ -45,7 +45,7 @@ export function CitySearch({ search, onSelect, placeholder = "Search for a cityâ
   }
 
   return (
-    <div>
+    <div className="city-search">
       <input
         type="text"
         role="searchbox"

@@ -9,7 +9,7 @@ export interface SurahListProps {
 /** A browsable list of all 114 surahs — the entry point into reading anything besides whatever's hardcoded as a default. */
 export function SurahList({ surahs, onSelect, selectedSurah }: SurahListProps) {
   return (
-    <ol>
+    <ol className="surah-list">
       {surahs.map((surah) => (
         <li key={surah.number} value={surah.number}>
           <button

@@ -52,9 +52,9 @@ export function Popup() {
   }, []);
 
   return (
-    <div>
+    <div className="popup-shell">
       <h1>Manarah</h1>
-      {error && <p role="alert">{error}</p>}
+      {error && <p className="alert">{error}</p>}
       {times && <PrayerCountdown todaysTimes={times} />}
       {coordinates && (
         // No orientation sensor in a browser extension popup — static, north-up compass.

@@ -44,60 +44,64 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
   }
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Muted</th>
-          <th>Trigger</th>
-          <th>Custom time</th>
-        </tr>
-      </thead>
-      <tbody>
-        {categories.map((category) => {
-          const schedule = scheduleFor(category.id, schedules);
-          const trigger = schedule?.trigger ?? category.trigger;
-          const muted = schedule?.muted ?? false;
+    <div className="azkar-schedule-editor">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Muted</th>
+            <th>Trigger</th>
+            <th>Custom time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category) => {
+            const schedule = scheduleFor(category.id, schedules);
+            const trigger = schedule?.trigger ?? category.trigger;
+            const muted = schedule?.muted ?? false;
 
-          return (
-            <tr key={category.id}>
-              <td>{category.name}</td>
-              <td>
-                <input
-                  type="checkbox"
-                  aria-label={`Mute ${category.name}`}
-                  checked={muted}
-                  onChange={(event) => updateSchedule(category, { muted: event.target.checked })}
-                />
-              </td>
-              <td>
-                <select
-                  aria-label={`Trigger for ${category.name}`}
-                  value={trigger}
-                  disabled={muted}
-                  onChange={(event) => updateSchedule(category, { trigger: event.target.value as AzkarTrigger })}
-                >
-                  {TRIGGER_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                {trigger === "custom-time" && !muted && (
+            return (
+              <tr key={category.id}>
+                <td>{category.name}</td>
+                <td>
                   <input
-                    type="time"
-                    aria-label={`Custom time for ${category.name}`}
-                    value={schedule?.customTime ?? ""}
-                    onChange={(event) => updateSchedule(category, { customTime: event.target.value })}
+                    type="checkbox"
+                    aria-label={`Mute ${category.name}`}
+                    checked={muted}
+                    onChange={(event) => updateSchedule(category, { muted: event.target.checked })}
                   />
-                )}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+                </td>
+                <td>
+                  <select
+                    aria-label={`Trigger for ${category.name}`}
+                    value={trigger}
+                    disabled={muted}
+                    onChange={(event) =>
+                      updateSchedule(category, { trigger: event.target.value as AzkarTrigger })
+                    }
+                  >
+                    {TRIGGER_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  {trigger === "custom-time" && !muted && (
+                    <input
+                      type="time"
+                      aria-label={`Custom time for ${category.name}`}
+                      value={schedule?.customTime ?? ""}
+                      onChange={(event) => updateSchedule(category, { customTime: event.target.value })}
+                    />
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }

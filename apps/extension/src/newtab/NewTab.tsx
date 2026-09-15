@@ -46,12 +46,14 @@ export function NewTab() {
   }, []);
 
   return (
-    <main>
+    <main className="newtab-shell">
       {verseOfTheDay && <VerseOfTheDay verse={verseOfTheDay.verse} surah={verseOfTheDay.surah} />}
-      {times && <PrayerCountdown todaysTimes={times} />}
-      {coordinates && (
-        <QiblaCompass bearing={qiblaBearing(coordinates)} distanceKm={qiblaDistanceKm(coordinates)} />
-      )}
+      <div className="card-row">
+        {times && <PrayerCountdown todaysTimes={times} />}
+        {coordinates && (
+          <QiblaCompass bearing={qiblaBearing(coordinates)} distanceKm={qiblaDistanceKm(coordinates)} />
+        )}
+      </div>
     </main>
   );
 }

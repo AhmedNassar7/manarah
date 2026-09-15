@@ -139,28 +139,43 @@ export function App() {
   const selectedSurah = selectedSurahNumber !== null ? getSurah(selectedSurahNumber) : undefined;
 
   return (
-    <main>
-      <h1>Manarah</h1>
-      {error && <p role="alert">{error}</p>}
+    <main className="app-shell">
+      <header className="app-header">
+        <h1>Manarah</h1>
+        <span className="tagline">منارة — prayer, azkar, Qur'an, and Qibla</span>
+      </header>
+
+      {error && <p className="alert">{error}</p>}
+
       <CitySearch search={findCities} onSelect={handleCitySelect} placeholder="Set location manually…" />
-      {times && <PrayerCountdown todaysTimes={times} />}
-      {settings.coordinates && (
-        <QiblaCompass
-          bearing={qiblaBearing(settings.coordinates)}
-          distanceKm={qiblaDistanceKm(settings.coordinates)}
-          heading={heading}
-        />
-      )}
-      <h2>Quran</h2>
-      <SurahList surahs={SURAHS} onSelect={handleSurahSelect} selectedSurah={selectedSurahNumber ?? undefined} />
-      {selectedSurah && selectedSurahVerses && <QuranReader surah={selectedSurah} verses={selectedSurahVerses} />}
+
+      <div className="card-row">
+        {times && <PrayerCountdown todaysTimes={times} />}
+        {settings.coordinates && (
+          <QiblaCompass
+            bearing={qiblaBearing(settings.coordinates)}
+            distanceKm={qiblaDistanceKm(settings.coordinates)}
+            heading={heading}
+          />
+        )}
+      </div>
+
+      <section>
+        <h2 className="section-title">Quran</h2>
+        <SurahList surahs={SURAHS} onSelect={handleSurahSelect} selectedSurah={selectedSurahNumber ?? undefined} />
+        {selectedSurah && selectedSurahVerses && <QuranReader surah={selectedSurah} verses={selectedSurahVerses} />}
+      </section>
+
       <AzkarList category={MORNING_EVENING_AZKAR} />
-      <h2>Azkar settings</h2>
-      <AzkarScheduleEditor
-        categories={AZKAR_CATEGORIES}
-        schedules={settings.azkarSchedules}
-        onChange={handleSchedulesChange}
-      />
+
+      <section>
+        <h2 className="section-title">Azkar settings</h2>
+        <AzkarScheduleEditor
+          categories={AZKAR_CATEGORIES}
+          schedules={settings.azkarSchedules}
+          onChange={handleSchedulesChange}
+        />
+      </section>
     </main>
   );
 }

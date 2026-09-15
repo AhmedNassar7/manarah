@@ -38,13 +38,19 @@ export function PrayerCountdown({ todaysTimes }: PrayerCountdownProps) {
   const upcoming = nextPrayer(todaysTimes, now);
 
   if (!upcoming) {
-    return <div>No more prayers today</div>;
+    return (
+      <div className="prayer-countdown card">
+        <p className="prayer-countdown-label">Today's prayers</p>
+        <div className="prayer-countdown-name">No more prayers today</div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <div>Next: {upcoming.name}</div>
-      <div>{formatCountdown(upcoming.at.getTime() - now.getTime())}</div>
+    <div className="prayer-countdown card">
+      <div className="prayer-countdown-label">Next prayer</div>
+      <div className="prayer-countdown-name">{upcoming.name}</div>
+      <div className="prayer-countdown-time">{formatCountdown(upcoming.at.getTime() - now.getTime())}</div>
     </div>
   );
 }

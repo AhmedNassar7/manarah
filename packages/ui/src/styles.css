@@ -1,0 +1,533 @@
+/* Manarah design tokens — same palette as the brand identity (logo, icons,
+   theme_color): deep teal-emerald + brass on a sage-stone neutral. Shared by
+   web, extension popup, and extension new-tab, so every surface matches. */
+
+:root {
+  --bg: #eef0e6;
+  --surface: #ffffff;
+  --surface-sunken: #e5e8da;
+  --ink: #1a231e;
+  --muted: #5c665e;
+  --accent: #1f6f5c;
+  --accent-ink: #ffffff;
+  --accent-soft: #d9e6de;
+  --accent-2: #b3843a;
+  --accent-2-soft: #f1e3cc;
+  --line: #cbd0bd;
+  --danger: #b3402f;
+  --danger-soft: #f3ddd7;
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-body: "Karla", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "Amiri", "Traditional Arabic", "Segoe UI", serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(26, 35, 30, 0.06), 0 4px 14px rgba(26, 35, 30, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101713;
+    --surface: #17211b;
+    --surface-sunken: #1c2620;
+    --ink: #eae7dc;
+    --muted: #93a69c;
+    --accent: #55c2a1;
+    --accent-ink: #0b1712;
+    --accent-soft: #1c3129;
+    --accent-2: #dba85b;
+    --accent-2-soft: #2c2318;
+    --line: #2a362e;
+    --danger: #e08876;
+    --danger-soft: #34211d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #101713;
+  --surface: #17211b;
+  --surface-sunken: #1c2620;
+  --ink: #eae7dc;
+  --muted: #93a69c;
+  --accent: #55c2a1;
+  --accent-ink: #0b1712;
+  --accent-soft: #1c3129;
+  --accent-2: #dba85b;
+  --accent-2-soft: #2c2318;
+  --line: #2a362e;
+  --danger: #e08876;
+  --danger-soft: #34211d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ---------- Layout shell ---------- */
+
+.app-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.app-header h1 {
+  font-size: 1.9rem;
+  color: var(--accent);
+}
+
+.app-header .tagline {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.alert {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+}
+
+/* ---------- Card primitive ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+
+.card-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.card-row > .card {
+  flex: 1 1 220px;
+}
+
+/* ---------- Prayer countdown ---------- */
+
+.prayer-countdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prayer-countdown .prayer-countdown-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.prayer-countdown .prayer-countdown-name {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+
+.prayer-countdown .prayer-countdown-time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.8rem;
+  color: var(--accent);
+}
+
+/* ---------- Qibla compass ---------- */
+
+.qibla-compass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.qibla-compass-dial {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+}
+
+.qibla-compass-dial svg {
+  width: 48px;
+  height: 48px;
+}
+
+.qibla-compass-bearing {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.qibla-compass-distance {
+  font-size: 0.95rem;
+}
+
+/* ---------- City search ---------- */
+
+.city-search {
+  position: relative;
+}
+
+.city-search input[type="text"] {
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.city-search input[type="text"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.city-search ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  max-width: 320px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.city-search li + li {
+  border-top: 1px solid var(--line);
+}
+
+.city-search li button {
+  width: 100%;
+  text-align: left;
+  padding: 9px 14px;
+  border: none;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.city-search li button:hover {
+  background: var(--accent-soft);
+}
+
+.city-search li:not(:has(button)) {
+  padding: 9px 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Surah list ---------- */
+
+.surah-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: var(--surface);
+}
+
+.surah-list li {
+  list-style: none;
+}
+
+.surah-list button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-sunken);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.surah-list button:hover {
+  border-color: var(--accent);
+}
+
+.surah-list button[aria-current="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.surah-list button span[lang="ar"] {
+  font-family: var(--font-arabic);
+  font-size: 1.05rem;
+}
+
+/* ---------- Quran reader ---------- */
+
+.quran-reader {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-top: 16px;
+  box-shadow: var(--shadow);
+}
+
+.quran-reader h2 {
+  font-family: var(--font-arabic);
+  font-size: 1.8rem;
+  color: var(--accent);
+}
+
+.quran-reader > p {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+
+.quran-reader ol {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  counter-reset: ayah;
+}
+
+.quran-reader li {
+  font-family: var(--font-arabic);
+  font-size: 1.65rem;
+  line-height: 2.4;
+  padding: 4px 0;
+}
+
+.quran-reader li::after {
+  content: " \FD3F" counter(ayah) "\FD3E";
+  counter-increment: ayah;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--accent-2);
+  vertical-align: middle;
+}
+
+/* ---------- Azkar list ---------- */
+
+.azkar-list {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+
+.azkar-list ul {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.azkar-list li {
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.azkar-list li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.azkar-list p[lang="ar"] {
+  font-family: var(--font-arabic);
+  font-size: 1.3rem;
+  line-height: 2;
+  margin: 0;
+}
+
+.azkar-list li > p:not([lang="ar"]) {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.azkar-list button {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+/* ---------- Azkar schedule editor ---------- */
+
+.azkar-schedule-editor {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.azkar-schedule-editor table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  min-width: 640px;
+}
+
+.azkar-schedule-editor th {
+  text-align: left;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.azkar-schedule-editor td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.azkar-schedule-editor tr:last-child td {
+  border-bottom: none;
+}
+
+.azkar-schedule-editor select {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.azkar-schedule-editor input[type="time"] {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* ---------- Extension shells ---------- */
+
+.popup-shell {
+  width: 320px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.popup-shell h1 {
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+.newtab-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 32px 20px;
+}
+
+/* ---------- Verse of the day (extension new tab) ---------- */
+
+.verse-of-the-day {
+  max-width: 560px;
+  text-align: center;
+  margin: 0;
+}
+
+.verse-of-the-day blockquote {
+  font-family: var(--font-arabic);
+  font-size: 2rem;
+  line-height: 2.1;
+  margin: 0;
+  color: var(--ink);
+}
+
+.verse-of-the-day figcaption {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.03em;
+}

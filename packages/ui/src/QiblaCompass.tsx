@@ -32,22 +32,23 @@ export function QiblaCompass({ bearing, distanceKm, heading }: QiblaCompassProps
   const roundedBearing = Math.round(normalizeDegrees(bearing));
 
   return (
-    <div>
+    <div className="qibla-compass card">
       <div
+        className="qibla-compass-dial"
         role="img"
         aria-label={
           heading === undefined
             ? `Qibla direction: ${roundedBearing} degrees from north`
             : `Qibla direction relative to your current heading`
         }
-        style={{ transform: `rotate(${rotation}deg)`, width: "80px", height: "80px" }}
+        style={{ transform: `rotate(${rotation}deg)` }}
       >
-        <svg viewBox="0 0 24 24" width="80" height="80" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
           <polygon points="12,2 18,20 12,15 6,20" fill="currentColor" />
         </svg>
       </div>
-      <p>{roundedBearing}° from North</p>
-      <p>{formatDistance(distanceKm)} to the Kaaba</p>
+      <p className="qibla-compass-bearing">{roundedBearing}° from North</p>
+      <p className="qibla-compass-distance">{formatDistance(distanceKm)} to the Kaaba</p>
     </div>
   );
 }

@@ -17,7 +17,7 @@ export function AzkarList({ category }: AzkarListProps) {
   }
 
   return (
-    <section>
+    <section className="azkar-list">
       <h2>{category.name}</h2>
       <ul>
         {category.items.map((item) => {
