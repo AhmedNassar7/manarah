@@ -1,74 +1,164 @@
-# Manarah (منارة) — Progress & Roadmap
+# Manarah (منارة) — Master Plan & Progress
 
-**Status as of 2026-09-16.** This file is the source of truth for what's built, tested, and next in this repo. It lives in the codebase (not in any AI tool's local plan storage) so any contributor — human or LLM — can read it directly. Update it whenever a phase item lands or a decision changes.
+**Status as of 2026-09-16.** Single source of truth for this project: the full plan (architecture, data sourcing, phased roadmap, testing strategy) *and* what's actually done vs. in progress vs. not started. Lives in the codebase — not in any AI tool's local plan storage — so any contributor, human or LLM, can read it directly. Update this file whenever a plan item's status changes or a decision changes; don't let it drift from reality.
+
+Status markers used throughout: ✅ done &nbsp;·&nbsp; 🚧 in progress &nbsp;·&nbsp; ⬜ not started
 
 Zero-cost constraint, unchanged since day one: **no server, no database, no paid tier, ever.** Static hosting (GitHub Pages) + free public APIs called directly from the client + on-device storage only.
 
-## Architecture
+---
+
+## Product framing
+
+One product spanning a Chrome extension (MV3), an installable web PWA, and eventually desktop (Tauri) and mobile (Capacitor), sharing one codebase and one settings/data model — combining what's otherwise scattered across a dozen separate apps: accurate prayer times, a genuinely customizable azkar/dua reminder engine, full Quran text/audio/tafsir, live radio, Qibla, and memorization (hifz) tools.
+
+**Sync**: local-only — IndexedDB (web/desktop/mobile) and `chrome.storage.sync` (extension), plus manual JSON export/import for backup and device-to-device transfer. No accounts, no OAuth, no third-party sync backend. The storage layer (`packages/storage`) is designed so an opt-in sync mechanism could be added later without a rewrite, but it is **not planned** — see "Explicitly deferred" below.
+
+**Framework**: React + Vite + TypeScript, not Next.js — the MV3 extension is a first-class target, not an afterthought, and Vite/CRXJS packages that cleanly; Next's static-export mode would give up most of what Next is for anyway.
+
+---
+
+## Architecture — ✅ done
 
 pnpm workspace monorepo, no Turborepo:
 
 ```
-packages/core     prayer-times, qibla, notifications, badge, azkar schedule logic — pure, platform-agnostic
-packages/ui       shared React components + design system (styles.css) + i18n
-packages/storage  Store interface — IndexedDbStore (web, via Dexie) / ChromeSyncStore (extension) + JSON export/import
-packages/data     bundled datasets — Quran text, surah metadata, azkar, GeoNames cities
-apps/web          React + Vite PWA, routed multi-page app (HashRouter)
-apps/extension    MV3 Chrome extension (CRXJS) — popup, new-tab override, background alarms
+/apps
+  /web         React+Vite PWA — the full-featured hub (installable, offline-first)
+  /extension   MV3 Chrome extension (Vite + CRXJS) — popup, new-tab override, background alarms
+  /desktop     Tauri shell wrapping the /web build — system tray, native notifications        ⬜ Phase 2
+  /mobile      Capacitor shell wrapping the /web build — native notifications                  ⬜ Phase 2
+/packages
+  /core        Platform-agnostic domain logic (no DOM/browser globals baked in)
+                 - prayer-times: wraps adhan.js, calculation-method presets                     ✅
+                 - azkar-engine: schedule model, default Hisn al-Muslim sets, remap/mute/custom-time ✅
+                 - quran-data: access layer over bundled Tanzil/AlQuran-Cloud text               ✅
+                 - qibla: great-circle bearing/distance math                                     ✅
+                 - notifications, badge: pure decision logic for scheduling/toolbar state        ✅
+                 - settings: UserSettings model, defaulting/merge logic (withDefaultSettings)    ✅
+                 - hijri: date conversion, Islamic calendar events                                ⬜ Phase 3, no logic yet
+  /ui          Shared React components + design system (styles.css) + i18n                       ✅
+  /storage     Store interface — IndexedDbStore (Dexie) / ChromeSyncStore + JSON export/import    ✅
+  /data        Static bundled assets: Quran text, surah metadata, azkar corpus, GeoNames cities   ✅
 ```
 
-React + Vite + TypeScript (not Next.js — MV3 extension is a first-class target). Vitest everywhere. GitHub Actions CI gates both builds + full test suite on every push/PR; `deploy-web.yml` additionally requires tests to pass before publishing to Pages.
+`apps/*` are thin: they wire `packages/ui` + `packages/core` + `packages/storage` into a platform shell and add platform-specific bits (MV3 manifest + `chrome.alarms`, Tauri notification/tray calls, Capacitor plugins). This is what lets one build target four surfaces without duplicating feature logic.
 
-## What's built and tested
+---
 
-**Prayer times & Qibla** — `adhan.js`-based calculation, calculation-method presets, Shafi/Hanafi Asr toggle, geolocation + city search fallback, countdown widget with tomorrow's-Fajr rollover, `PrayerSettingsEditor` for method/Asr school. Qibla compass: pure bearing/distance geometry, two-tone needle SVG, live device-orientation heading when available, a "searching" state while the heading settles, and a one-time lock state/ripple once the bearing is reached. Everything here has a static, north-up fallback when there's no orientation sensor (e.g. extension popup).
+## Data sourcing (all free, all called directly from the client)
 
-**Quran** — Tanzil/AlQuran Cloud Uthmani text for all 114 surahs, bundled and lazy-loaded per surah (code-split, not eagerly bundled). `SurahList` browser, `QuranReader` with batched rendering (40 verses at a time + "Load more") for long surahs, verse-of-the-day on the extension new tab, `lastRead` (surah + ayah) persisted so reopening resumes where you left off.
+| Need | Source | Status | Notes |
+|---|---|---|---|
+| Prayer times & Qibla | `adhan.js` (Batoul Apps), client-side from Geolocation coords | ✅ done | Pure math, zero network, works fully offline |
+| Quran text | Tanzil Uthmani corpus / AlQuran Cloud API, bundled as static JSON in `packages/data`; cross-checked against King Fahd Quran Complex's official Hafs Mushaf (qurancomplex.gov.sa) | ✅ done | All 114 surahs / 6236 verses, offline-guaranteed from first load |
+| Translations, tafsir, word-by-word | Quran.com / Quran Foundation API, AlQuran Cloud API | 🚧 Uthmani text only so far; translations/tafsir not yet fetched | Free, CORS-enabled, no key for most endpoints |
+| Word-by-word grammar (root, morphology, syntax) | Quranic Arabic Corpus dataset | ⬜ Phase 3 | Purpose-built for a future word-tap grammar feature |
+| Verse & surah audio | EveryAyah.com (per-verse), MP3Quran.net (per-surah, multi-reciter, live streams) | ⬜ Phase 2 | Direct `<audio>`/HLS playback, no proxy |
+| Tafsir corpus | Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi | ⬜ Phase 2 | Standard Ahl al-Sunnah tafsir canon; via Quran.com's tafsir API where available, else altafsir.com |
+| Azkar corpus | Hisn al-Muslim (`wafaaelmaandy/Hisn-Muslim-Json`); Al-Adhkar (an-Nawawi) and Saheeh al-Kalim at-Tayyib (Al-Albani) as richer optional packs | ✅ Hisn al-Muslim (266 items) done · ⬜ optional packs Phase 2/3 | Hisn al-Muslim is the standard compact daily-azkar reference every competitor app also uses |
+| City search | GeoNames `cities15000.txt` (CC BY 4.0) | ✅ done | Latin-script alternate names extracted for searchability (e.g. "Mecca"/"Medina") |
+| Hadith | sunnah.com API, six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) | ⬜ Phase 3 | Free key via signup, fine for non-commercial use |
+| Hijri calendar | Small local JS conversion library | ⬜ Phase 3 | Computed client-side, no network call |
 
-**Azkar** — Hisn al-Muslim corpus (266 items — 1 item dropped for having no Arabic text, documented in code/tests rather than guessed), `AzkarScheduleEditor` for per-category remap/mute/custom-time, tally counter with tap-bounce + one-time gold-bloom completion animation.
+## Notifications (all scheduled on-device, no push server anywhere)
 
-**Notifications** — pure decision logic (`computeDueNotifications`) separated from the `chrome.alarms`/`chrome.notifications`-calling orchestration wrapper, so scheduling correctness is unit-testable without a real browser. 1-minute background alarm tick.
+| Surface | Mechanism | Status |
+|---|---|---|
+| Extension | `chrome.alarms` (background service worker, 1-minute tick) → `chrome.notifications` + toolbar badge | ✅ done |
+| Web/PWA | Service Worker + `Notification` API; next-trigger times recomputed each time the app opens | 🚧 PWA service worker + update polling done; on-schedule `Notification` firing not yet wired for web specifically (extension has it, web reuses the same core logic but hasn't wired the trigger) |
+| Desktop (Tauri) | Native OS notification API via Tauri, same locally-computed trigger times | ⬜ Phase 2 |
+| Mobile (Capacitor) | `@capacitor/local-notifications`, pre-scheduled daily windows | ⬜ Phase 2 |
 
-**Extension badge** — `computeBadgeState` (pure): shows minutes/hours to next prayer on the toolbar icon, teal normally, henna inside the last 15 minutes. Shares `nextPrayer()` with the countdown widget (single source of truth).
+Orchestration logic that glues a pure decision function to a platform API is refactored so the platform-specific calls are injected as parameters — `runNotificationCheck` / `computeBadgeState` in `packages/core` are the pattern: no direct `chrome.*` or `new Date()` calls inside the decision logic itself, so it's unit-testable with fakes even though the real `chrome.alarms`/`chrome.notifications` firing isn't.
 
-**i18n** — `packages/ui/src/i18n` (English + Arabic), `LanguageProvider`/`useTranslation()`/`translate()`, `LanguageSwitcher` component. Every shared component (Qibla compass, nav, prayer settings, popup) reads strings through `t(...)` rather than hardcoded English. ~130+ translation keys.
+---
 
-**Routing** — `apps/web` restructured from a single-page app into `HashRouter`-based pages: Home, Prayer, Qibla, Quran, Azkar, each with a persistent `Nav`. Extension keeps its separate popup/new-tab entry points (no router needed there).
+## Feature set by phase
 
-**Design system** — manuscript-derived identity in `packages/ui/src/styles.css`: parchment/indigo-night palette, gold-leaf reserved for completion moments only, teal-tile working accent, henna for time-critical states, Amiri for Quran-script Arabic vs. Cairo for UI Arabic, Fraunces (display) + Inter (body/UI) for Latin script. Global `prefers-reduced-motion` kill-switch. Motion is deliberately scoped to three meaningful moments (Qibla lock ripple, azkar tally bounce + bloom, verse-of-the-day reveal) — not generic hover/fade effects everywhere. CSS-only, no animation library.
+### Phase 1 — MVP core — ✅ done
 
-**Storage** — single `Store` interface, `IndexedDbStore` (Dexie, web) and `ChromeSyncStore` (extension) adapters, JSON export/import for manual backup, `withDefaultSettings()` helper to safely merge partial/older stored settings with current defaults.
+- [x] Prayer times: geolocation + manual city search, calculation-method presets (MWL, ISNA, Umm al-Qura, Egyptian, Karachi, ...), Shafi/Hanafi Asr toggle, countdown widget (with tomorrow's-Fajr rollover), `PrayerSettingsEditor`
+- [x] Azkar engine v1: full default Hisn al-Muslim categories with remap/mute/custom-time (`AzkarScheduleEditor`), tally counter with tap-bounce + one-time gold-bloom completion animation
+- [x] Quran: full Uthmani text, all 114 surahs, `SurahList` browser, batched `QuranReader` (40 verses + "Load more"), `lastRead` (surah + ayah) tracking/resume
+- [x] Qibla: pure bearing/distance geometry, two-tone needle compass UI, live device-orientation heading where available, "searching" state, one-time lock + ripple
+- [x] Extension: popup (today's prayers + Qibla + continue-reading shortcut to the web Quran reader), `chrome_url_overrides.newtab` (verse of the day + prayer countdown + static compass), background `chrome.alarms`, toolbar badge (minutes-to-next-prayer, teal → henna inside 15 min)
+- [x] Web: installable PWA (manual `virtual:pwa-register` + hourly update polling to avoid staleness), offline app shell + offline Quran text, `HashRouter`-based multi-page structure (Home/Prayer/Qibla/Quran/Azkar + persistent `Nav`)
+- [x] i18n: English + Arabic throughout (~130+ keys), `LanguageProvider`/`useTranslation()`/`LanguageSwitcher`, `<html lang/dir>` kept in sync for RTL
+- [x] Manuscript design system: parchment/indigo-night palette, gold-leaf reserved for completion moments, teal-tile accent, henna for time-critical states, Amiri (Quran-script Arabic) vs. Cairo (UI Arabic), Fraunces + Inter (Latin), CSS-only motion scoped to 3 meaningful moments, global `prefers-reduced-motion` kill-switch
+- [x] Storage: `Store` interface, `IndexedDbStore` (Dexie, web) / `ChromeSyncStore` (extension), JSON export/import, `withDefaultSettings()` safe-merge helper
+- [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
+- [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Bundle size** — verified fixed, not just patched: Quran verse text and the GeoNames city list are lazy `import()`-loaded per-surah/on-search rather than eagerly bundled, keeping the PWA precache under Workbox's default 2MB-per-file limit. Confirmed by direct inspection of built output.
+**Test count**: 157 tests passing across all 4 packages (`core` 50, `storage` 17, `data` 23, `ui` 67), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
-**Extension popup "continue reading" shortcut** — the popup links straight to the web app's Quran page (`${MANARAH_WEB_URL}#/quran`). It deliberately doesn't try to preview *which* surah — the popup's `chrome.storage.sync` and the web app's `IndexedDB` are separate stores with no bridge between them, so any preview shown in the popup would either be stale or fabricated. The web app already resumes to `settings.lastRead` itself on load, so the link alone delivers the "continue where I left off" behavior correctly.
+### Phase 2 — Growth — ⬜ not started
 
-**Tests** — 157 tests passing across all 4 packages (`core` 50, `storage` 17, `data` 23, `ui` 67) as of this writing. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly (`tsc --noEmit` + `vite build`).
+- [ ] Azkar engine v2: richer customization (per-category remap to any time/trigger, custom dua playlists, notification style choice, snooze)
+- [ ] Radio module: curated live Quran stations + MP3Quran.net catalog player, persists across tabs/screen-off
+- [ ] Memorization mode: mic-based recitation tracking via `MediaRecorder`/`SpeechRecognition` (free/on-device, no paid speech service), hide/reveal verses, hifz progress dashboard
+- [ ] Multi-translation/multi-tafsir library (Ibn Kathir, Tabari, Qurtubi, Saadi, Jalalayn), offline audio downloads cached in IndexedDB
+- [ ] Desktop: Tauri build wired up, system tray + native azan notifications
+- [ ] Mobile: Capacitor build wired up, native notifications + home-screen install polish
 
-## Explicitly deferred (decided with the user, not started)
+### Phase 3 — Depth — ⬜ not started
 
-- Three-column desktop reader layout (index / page / marginalia) + "immersive reader" mode that hides chrome on scroll.
-- Prayer-time-driven ambient background gradient (Fajr → indigo, Dhuhr → neutral, Asr → amber, ...).
-- Hand-drawn geometric icon set (rub el-hizb/star motifs) replacing inline SVGs.
-- Sound effects (tasbih click, completion chime) — needs asset sourcing + an audio-preference setting.
-- Native mobile widgets (iOS Live Activities / Android Dynamic Island) — needs a native Capacitor target, which reopens the App Store/Play Store fee question.
-- Cross-device sync beyond local storage (e.g. GitHub Gist) — deliberately out of scope to preserve the zero-server constraint; storage layer is designed so this could be added later without a rewrite, but it is not planned.
-- KFGQPC Uthmanic Script HAFS font — no verified, licensed, freely-linkable source found; Amiri is the substitute and this is not expected to change without a real source turning up.
+- [ ] Hadith/books library (sunnah.com), cross-linked from tafsir
+- [ ] Hijri calendar with holiday reminders (Ramadan, Eid, Ashura, White Days), Qada/fasting tracker, Zakat calculator
+- [ ] Khatmah (completion) reading-plan generator
+- [ ] AR/camera-assisted Qibla on mobile
 
-## Known gaps / real next steps
+### Explicitly deferred / optional — not part of the build
 
-- **`packages/core/hijri`** — referenced in the original architecture (Hijri calendar, Ramadan/Eid/Ashura reminders) but no logic exists yet. Phase 3 item, entirely unstarted.
-- **E2E/browser testing (Playwright)** — blocked in the current local dev environment (Chromium fails to launch, looks like a machine-level restriction). Deferred to CI (GitHub Actions Linux runners don't hit this), not abandoned. Not yet wired into `ci.yml`.
-- **Visual verification** — no working browser in this environment; all styling/motion work has been verified by inspecting built CSS/JS output, not by looking at rendered pixels. The user's own screenshots remain the real verification step for anything visual.
+- GitHub Gist or Firebase/Supabase-based cross-device sync — breaks the zero-server constraint's spirit; storage layer allows it later without a rewrite, but not planned
+- Any social/community feed — keeps the product lean against Muslim Pro-style bloat
+- Native App Store/Play Store listings — PWA + Capacitor sideload/Chrome Web Store cover "mobile"/"extension" without the $99/yr + $25 store fees; revisit only if official store listings are explicitly wanted later
+- Three-column desktop reader layout (index / page / marginalia) + "immersive reader" mode that hides chrome on scroll — real layout restructuring, not a styling tweak
+- Framer Motion / Rive — deliberately staying CSS-only; revisit only if a specific interaction genuinely can't be done in CSS
+- Prayer-time-driven ambient background gradient (Fajr → indigo, Dhuhr → neutral, Asr → amber, ...) — needs new "what period is it right now" logic, a real feature addition
+- Hand-drawn geometric icon set (rub el-hizb/star motifs) replacing inline SVGs — one-time illustration effort
+- Sound effects (tasbih click, completion chime) — needs asset sourcing + an audio-preference setting
+- Native mobile widgets (iOS Live Activities / Android Dynamic Island) — needs a native Capacitor target, reopens the store-fee question above
+- KFGQPC Uthmanic Script HAFS font — no verified, licensed, freely-linkable source found; Amiri is the substitute, not expected to change without a real source turning up
 
-## Phase 2/3 roadmap (unstarted)
+---
 
-Radio module (MP3Quran.net catalog + live streams), memorization/hifz mode (mic-based recitation tracking via `MediaRecorder`/`SpeechRecognition`), multi-translation/multi-tafsir library (Ibn Kathir, Tabari, Qurtubi, Saadi, Jalalayn), hadith library (sunnah.com, six canonical collections), Hijri calendar + Zakat calculator + Khatmah reading-plan generator, desktop shell (Tauri), mobile shell (Capacitor). See the fuller original plan for source/API details on each of these — nothing here has changed since it was drafted, only Phase 1 work has landed so far.
+## Testing strategy — ✅ framework in place, coverage ongoing
 
-## Conventions for anyone (human or LLM) picking this up
+One framework everywhere: **Vitest**, with `@testing-library/react` + `jsdom` for component tests. Four layers, in priority order:
 
-- Pure decision logic goes in `packages/core`, kept free of `chrome.*`/DOM calls, with a thin platform-specific wrapper injecting those calls — this is what makes notification/badge logic unit-testable. Keep following this pattern for new platform-integrated features.
-- Every new dataset or data-derived function gets a data-integrity test (exact counts, no empty required fields) — two real bugs (a missing-Arabic-text azkar item, unsearchable Mecca/Medina) were caught this way before shipping.
-- No new runtime dependencies for things CSS can already do (this is why there's no Framer Motion/Rive here).
-- Don't guess a font/API URL if you can't verify it's licensed and reachable — substitute a verified alternative and say so explicitly, as was done for KFGQPC → Amiri.
+1. **Domain-logic unit tests (`packages/core`)** — ✅ pure functions only, no `chrome.*`/DOM: prayer times vs. known reference values, Qibla bearing/distance vs. known landmarks, notification/badge decision logic. Highest-value layer: religious/time-sensitive correctness bugs here are the worst kind to ship.
+2. **Data integrity tests (`packages/data`)** — ✅ exact surah/verse counts (114/6236), no empty verse text, azkar category/item counts, no orphaned trigger values, city data sanity checks.
+3. **Storage adapter tests (`packages/storage`)** — ✅ IndexedDB adapter (via `fake-indexeddb`), `chrome.storage.sync` adapter (via a minimal fake `chrome` global), export/import JSON round-trip.
+4. **Component tests (`packages/ui`)** — ✅ render + interaction tests for shared components via Testing Library, not full browser rendering.
+5. **End-to-end/browser testing (Playwright)** — ⬜ not run locally: launching Chromium fails in the primary dev environment (`spawn UNKNOWN`, looks like a machine-level restriction, not a project/Playwright problem). Should still be written and wired into CI (a GitHub Actions Linux runner won't hit this restriction) — deferred, not abandoned, and not yet in `ci.yml`.
+
+**CI**: `.github/workflows/ci.yml` runs `pnpm typecheck && pnpm -r test` plus both app builds on every push/PR; `deploy-web.yml` additionally requires tests to pass before publishing to Pages. ✅ both in place.
+
+## Verification (manual, per surface)
+
+- **Web/PWA**: `pnpm --filter web dev`; confirm prayer times match a known reference (e.g. IslamicFinder, same city/method) within a minute; confirm offline mode (DevTools → Offline) still renders cached Quran text and previously-fetched azkar.
+- **Extension**: `pnpm --filter extension build`, load unpacked in `chrome://extensions`; confirm popup shows correct prayer countdown; confirm a `chrome.alarms`-triggered notification fires at the next scheduled azkar/prayer time; confirm settings persist via `chrome.storage.sync`.
+- **Storage layer**: unit tests in `packages/storage` for the IndexedDB adapter and export/import round-trip (export → clear store → import → data matches).
+- **Desktop/mobile** (Phase 2+): `tauri dev` / Capacitor emulator run; confirm native notifications fire and system tray/menu bar icon behaves correctly.
+
+No working browser exists in the primary dev environment used to build this — all styling/motion work is verified by inspecting built CSS/JS output (grepping for expected class names, hex colors, strings), not rendered pixels. The user's own screenshots remain the real verification step for anything visual. This has not changed and won't until a real browser becomes available in-session.
+
+---
+
+## Known gaps / smallest real next steps
+
+- **`packages/core/hijri`** — referenced in the architecture above but no logic exists yet. Smallest coherent Phase 3 starting point once Phase 2 is underway.
+- **Web push notifications** — the extension has working `chrome.alarms`-based notification firing; the web app has the PWA shell and service worker but hasn't wired a `Notification`-API trigger loop using the same `packages/core` decision logic. Worth closing before calling Phase 1 notifications fully cross-surface.
+- **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
+- **Translations/tafsir fetch** — only the bundled Uthmani Arabic text exists; no translation or tafsir text has been fetched or wired into the reader yet, despite the API sourcing being decided. First real Phase 2-adjacent content gap.
+
+---
+
+## Working conventions
+
+- Pure decision logic goes in `packages/core`, free of `chrome.*`/DOM calls, with a thin platform-specific wrapper injecting those calls.
+- Every new dataset or data-derived function gets a data-integrity test.
+- No new runtime dependencies for things CSS can already do — deliberately no Framer Motion/Rive; CSS-only motion, revisit only if a specific interaction genuinely can't be done in CSS.
+- Don't guess a font/API URL that can't be verified as licensed and reachable — substitute a verified alternative and say so explicitly (e.g. KFGQPC Uthmanic Script HAFS → Amiri).
 - Commits and PRs in this repo must never carry Claude/Anthropic attribution.
