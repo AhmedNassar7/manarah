@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import {
   computePrayerTimes,
+  qiblaBearing,
+  qiblaDistanceKm,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
   type AzkarSchedule,
@@ -9,7 +11,7 @@ import {
 } from "@manarah/core";
 import { AZKAR_CATEGORIES, getAzkarCategory, getSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { AzkarList, AzkarScheduleEditor, PrayerCountdown, QuranReader } from "@manarah/ui";
+import { AzkarList, AzkarScheduleEditor, PrayerCountdown, QiblaCompass, QuranReader } from "@manarah/ui";
 
 const AL_FATIHA = getSurah(1)!;
 const AL_FATIHA_VERSES = getVersesForSurah(1);
@@ -21,6 +23,7 @@ export function App() {
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [heading, setHeading] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +63,28 @@ export function App() {
     };
   }, []);
 
+  useEffect(() => {
+    // Best-effort live compass heading — most desktops/laptops have no
+    // orientation sensor at all, in which case no event ever fires and
+    // QiblaCompass just stays in its static, north-up fallback mode.
+    function handleOrientation(event: DeviceOrientationEvent) {
+      const webkitHeading = (event as DeviceOrientationEvent & { webkitCompassHeading?: number })
+        .webkitCompassHeading;
+      if (typeof webkitHeading === "number") {
+        setHeading(webkitHeading);
+      } else if (event.absolute && event.alpha !== null) {
+        setHeading(360 - event.alpha);
+      }
+    }
+
+    window.addEventListener("deviceorientationabsolute", handleOrientation);
+    window.addEventListener("deviceorientation", handleOrientation);
+    return () => {
+      window.removeEventListener("deviceorientationabsolute", handleOrientation);
+      window.removeEventListener("deviceorientation", handleOrientation);
+    };
+  }, []);
+
   function handleSchedulesChange(azkarSchedules: AzkarSchedule[]) {
     setSettings((prev) => {
       const next = { ...prev, azkarSchedules };
@@ -73,6 +98,13 @@ export function App() {
       <h1>Manarah</h1>
       {error && <p role="alert">{error}</p>}
       {times && <PrayerCountdown todaysTimes={times} />}
+      {settings.coordinates && (
+        <QiblaCompass
+          bearing={qiblaBearing(settings.coordinates)}
+          distanceKm={qiblaDistanceKm(settings.coordinates)}
+          heading={heading}
+        />
+      )}
       <QuranReader surah={AL_FATIHA} verses={AL_FATIHA_VERSES} />
       <AzkarList category={MORNING_EVENING_AZKAR} />
       <h2>Azkar settings</h2>
