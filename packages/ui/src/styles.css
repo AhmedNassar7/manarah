@@ -1,65 +1,87 @@
-/* Manarah design tokens — same palette as the brand identity (logo, icons,
-   theme_color): deep teal-emerald + brass on a sage-stone neutral. Shared by
-   web, extension popup, and extension new-tab, so every surface matches. */
+/* Manarah design system — manuscript-derived, not generic mosque-clipart:
+   warm parchment paper, deep indigo night, a gold-leaf mark reserved for
+   genuine completion moments, deep teal-tile as the working accent, muted
+   henna for time-critical/destructive states. Shared by web, extension
+   popup, and extension new-tab via @manarah/ui/styles.css.
+
+   Quran-script Arabic (Amiri) and UI Arabic (Cairo) are deliberately
+   different typefaces — see --font-arabic-quran vs --font-arabic-ui below —
+   so scripture and interface chrome never compete on the same register. */
 
 :root {
-  --bg: #eef0e6;
-  --surface: #ffffff;
-  --surface-sunken: #e5e8da;
-  --ink: #1a231e;
-  --muted: #5c665e;
-  --accent: #1f6f5c;
-  --accent-ink: #ffffff;
-  --accent-soft: #d9e6de;
-  --accent-2: #b3843a;
-  --accent-2-soft: #f1e3cc;
-  --line: #cbd0bd;
-  --danger: #b3402f;
-  --danger-soft: #f3ddd7;
+  --ink: #26221c;
+  --bg: #f1e9d8;
+  --surface: #faf5ea;
+  --surface-sunken: #e9ddc4;
+  --muted: #6b6152;
+  --accent: #1e5c55;
+  --accent-ink: #f6f2e6;
+  --accent-soft: #dce6e0;
+  --gold: #b08d3e;
+  --gold-soft: #ede1c2;
+  --danger: #7a3b2e;
+  --danger-soft: #ecdcd3;
+  --line: rgba(38, 34, 28, 0.14);
 
   --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-body: "Karla", ui-sans-serif, system-ui, sans-serif;
-  --font-arabic: "Amiri", "Traditional Arabic", "Segoe UI", serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic-quran: "Amiri", "Traditional Arabic", serif;
+  --font-arabic-ui: "Cairo", "Tahoma", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(26, 35, 30, 0.06), 0 4px 14px rgba(26, 35, 30, 0.06);
+  --radius-page: 3px;
+  --radius-round: 999px;
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-quiet: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-tap: 180ms;
+  --dur-bloom: 550ms;
+  --dur-needle: 500ms;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #101713;
-    --surface: #17211b;
-    --surface-sunken: #1c2620;
-    --ink: #eae7dc;
-    --muted: #93a69c;
-    --accent: #55c2a1;
+    --ink: #ece4d2;
+    --bg: #141b2e;
+    --surface: #1b2438;
+    --surface-sunken: #232e46;
+    --muted: #96a0bd;
+    --accent: #4fa89c;
     --accent-ink: #0b1712;
-    --accent-soft: #1c3129;
-    --accent-2: #dba85b;
-    --accent-2-soft: #2c2318;
-    --line: #2a362e;
-    --danger: #e08876;
-    --danger-soft: #34211d;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+    --accent-soft: #1f3a37;
+    --gold: #d9b768;
+    --gold-soft: #33291a;
+    --danger: #d99483;
+    --danger-soft: #35221c;
+    --line: rgba(236, 228, 210, 0.14);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #101713;
-  --surface: #17211b;
-  --surface-sunken: #1c2620;
-  --ink: #eae7dc;
-  --muted: #93a69c;
-  --accent: #55c2a1;
+  --ink: #ece4d2;
+  --bg: #141b2e;
+  --surface: #1b2438;
+  --surface-sunken: #232e46;
+  --muted: #96a0bd;
+  --accent: #4fa89c;
   --accent-ink: #0b1712;
-  --accent-soft: #1c3129;
-  --accent-2: #dba85b;
-  --accent-2-soft: #2c2318;
-  --line: #2a362e;
-  --danger: #e08876;
-  --danger-soft: #34211d;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  --accent-soft: #1f3a37;
+  --gold: #d9b768;
+  --gold-soft: #33291a;
+  --danger: #d99483;
+  --danger-soft: #35221c;
+  --line: rgba(236, 228, 210, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 * {
@@ -85,6 +107,11 @@ h3 {
 
 button {
   font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 /* ---------- Layout shell ---------- */
@@ -122,19 +149,20 @@ button {
 .alert {
   background: var(--danger-soft);
   color: var(--danger);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   padding: 10px 14px;
   font-size: 0.9rem;
 }
 
-/* ---------- Card primitive ---------- */
+/* ---------- Card primitive ----------
+   Elevation reads as a page laid over another page — a hairline border and
+   a faint tint, not a grey drop-shadow blur. */
 
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   padding: 18px 20px;
-  box-shadow: var(--shadow);
 }
 
 .card-row {
@@ -175,7 +203,12 @@ button {
   color: var(--accent);
 }
 
-/* ---------- Qibla compass ---------- */
+/* ---------- Qibla compass ----------
+   The needle settles with damped, slightly-overshooting spring easing, like
+   a real compass — anything linear reads as fake. A single radial ripple
+   marks the moment the heading actually locks onto true bearing; it
+   disappears the instant the heading drifts off again, so it never becomes
+   a fake "achievement" badge. */
 
 .qibla-compass {
   display: flex;
@@ -186,18 +219,41 @@ button {
 }
 
 .qibla-compass-dial {
+  position: relative;
   width: 96px;
   height: 96px;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--accent-soft);
   color: var(--accent);
   display: grid;
   place-items: center;
+  transition: transform var(--dur-needle) var(--ease-spring);
 }
 
 .qibla-compass-dial svg {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  z-index: 1;
+}
+
+.qibla-compass-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-round);
+  border: 2px solid var(--gold);
+  animation: qibla-ripple 900ms var(--ease-quiet);
+}
+
+@keyframes qibla-ripple {
+  from {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
 }
 
 .qibla-compass-bearing {
@@ -208,6 +264,10 @@ button {
 
 .qibla-compass-distance {
   font-size: 0.95rem;
+}
+
+.qibla-compass-locked .qibla-compass-bearing {
+  color: var(--gold);
 }
 
 /* ---------- City search ---------- */
@@ -221,15 +281,10 @@ button {
   max-width: 320px;
   padding: 10px 14px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   background: var(--surface);
   color: var(--ink);
   font-size: 0.95rem;
-}
-
-.city-search input[type="text"]:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
 }
 
 .city-search ul {
@@ -238,9 +293,8 @@ button {
   padding: 0;
   max-width: 320px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   background: var(--surface);
-  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -257,6 +311,7 @@ button {
   color: var(--ink);
   cursor: pointer;
   font-size: 0.9rem;
+  transition: background-color 120ms var(--ease-quiet);
 }
 
 .city-search li button:hover {
@@ -281,7 +336,7 @@ button {
   max-height: 340px;
   overflow-y: auto;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   padding: 10px;
   background: var(--surface);
 }
@@ -298,12 +353,15 @@ button {
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-page);
   background: var(--surface-sunken);
   color: var(--ink);
   cursor: pointer;
   font-size: 0.85rem;
   text-align: left;
+  transition:
+    border-color 120ms var(--ease-quiet),
+    background-color 120ms var(--ease-quiet);
 }
 
 .surah-list button:hover {
@@ -317,23 +375,27 @@ button {
 }
 
 .surah-list button span[lang="ar"] {
-  font-family: var(--font-arabic);
+  font-family: var(--font-arabic-ui);
   font-size: 1.05rem;
 }
 
-/* ---------- Quran reader ---------- */
+/* ---------- Quran reader ----------
+   Scripture-only Arabic (Amiri), generous line-height (Arabic diacritics
+   need real vertical room — this is a technical requirement, not a style
+   choice), and each verse ends with a gold-leaf ornate marker rather than a
+   default list bullet — the one place gold appears as ambient decoration,
+   because it's echoing an illuminated mushaf's own convention. */
 
 .quran-reader {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px 24px;
+  border-radius: var(--radius-page);
+  padding: 24px 28px;
   margin-top: 16px;
-  box-shadow: var(--shadow);
 }
 
 .quran-reader h2 {
-  font-family: var(--font-arabic);
+  font-family: var(--font-arabic-quran);
   font-size: 1.8rem;
   color: var(--accent);
 }
@@ -354,9 +416,9 @@ button {
 }
 
 .quran-reader li {
-  font-family: var(--font-arabic);
-  font-size: 1.65rem;
-  line-height: 2.4;
+  font-family: var(--font-arabic-quran);
+  font-size: 1.7rem;
+  line-height: 2.1;
   padding: 4px 0;
 }
 
@@ -364,19 +426,22 @@ button {
   content: " \FD3F" counter(ayah) "\FD3E";
   counter-increment: ayah;
   font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--accent-2);
+  font-size: 0.85rem;
+  color: var(--gold);
   vertical-align: middle;
 }
 
-/* ---------- Azkar list ---------- */
+/* ---------- Azkar list ----------
+   The tally button is the single most-clicked control in the product — this
+   is where the physical, misbaha-bead feel lives: a scale bounce per tap,
+   and a one-time gold bloom exactly once a set is completed (gold as a
+   reward for finishing, never a decorative wash). */
 
 .azkar-list {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   padding: 18px 20px;
-  box-shadow: var(--shadow);
 }
 
 .azkar-list ul {
@@ -394,6 +459,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  border-radius: var(--radius-page);
+  transition: background-color var(--dur-bloom) var(--ease-quiet);
 }
 
 .azkar-list li:first-child {
@@ -401,8 +468,27 @@ button {
   padding-top: 0;
 }
 
+.azkar-list li.completed {
+  animation: azkar-bloom var(--dur-bloom) var(--ease-quiet);
+}
+
+@keyframes azkar-bloom {
+  0% {
+    background-color: var(--surface);
+    box-shadow: 0 0 0 0 rgba(176, 141, 62, 0);
+  }
+  35% {
+    background-color: var(--gold-soft);
+    box-shadow: 0 0 0 6px rgba(176, 141, 62, 0.18);
+  }
+  100% {
+    background-color: var(--surface);
+    box-shadow: 0 0 0 0 rgba(176, 141, 62, 0);
+  }
+}
+
 .azkar-list p[lang="ar"] {
-  font-family: var(--font-arabic);
+  font-family: var(--font-arabic-ui);
   font-size: 1.3rem;
   line-height: 2;
   margin: 0;
@@ -419,11 +505,27 @@ button {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   padding: 5px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-round);
   border: 1px solid var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
   cursor: pointer;
+}
+
+.azkar-list button.tapped {
+  animation: azkar-tap var(--dur-tap) var(--ease-spring);
+}
+
+@keyframes azkar-tap {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ---------- Azkar schedule editor ---------- */
@@ -432,7 +534,7 @@ button {
   width: 100%;
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-page);
   background: var(--surface);
 }
 
@@ -461,23 +563,17 @@ button {
   padding: 8px 14px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
+  transition: background-color 60ms linear;
 }
 
 .azkar-schedule-editor tr:last-child td {
   border-bottom: none;
 }
 
-.azkar-schedule-editor select {
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-}
-
+.azkar-schedule-editor select,
 .azkar-schedule-editor input[type="time"] {
   padding: 5px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-page);
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
@@ -508,16 +604,30 @@ button {
   padding: 32px 20px;
 }
 
-/* ---------- Verse of the day (extension new tab) ---------- */
+/* ---------- Verse of the day (extension new tab) ----------
+   One quiet, calligraphic-feeling reveal per new tab — never repeats
+   mid-session, never a word-by-word typewriter gimmick. */
 
 .verse-of-the-day {
   max-width: 560px;
   text-align: center;
   margin: 0;
+  animation: verse-reveal 500ms var(--ease-quiet) both;
+}
+
+@keyframes verse-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .verse-of-the-day blockquote {
-  font-family: var(--font-arabic);
+  font-family: var(--font-arabic-quran);
   font-size: 2rem;
   line-height: 2.1;
   margin: 0;
@@ -525,9 +635,34 @@ button {
 }
 
 .verse-of-the-day figcaption {
-  margin-top: 14px;
+  position: relative;
+  display: inline-block;
+  margin-top: 16px;
+  padding-top: 10px;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--accent);
   letter-spacing: 0.03em;
+}
+
+.verse-of-the-day figcaption::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  animation: verse-rule 500ms 400ms var(--ease-quiet) forwards;
+}
+
+@keyframes verse-rule {
+  from {
+    width: 0;
+    left: 50%;
+  }
+  to {
+    width: 100%;
+    left: 0%;
+  }
 }

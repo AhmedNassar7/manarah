@@ -20,8 +20,8 @@ export default defineConfig({
         short_name: "Manarah",
         description:
           "Prayer times, azkar, Quran reading/audio/tafsir, radio, and Qibla — offline-first.",
-        theme_color: "#1f6f5c",
-        background_color: "#ffffff",
+        theme_color: "#1e5c55",
+        background_color: "#f1e9d8",
         display: "standalone",
         start_url: "/manarah/",
         icons: [

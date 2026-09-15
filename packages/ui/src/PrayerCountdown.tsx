@@ -1,21 +1,8 @@
 import { useEffect, useState } from "react";
-import type { DailyPrayerTimes } from "@manarah/core";
+import { nextPrayer, type DailyPrayerTimes } from "@manarah/core";
 
 export interface PrayerCountdownProps {
   todaysTimes: DailyPrayerTimes;
-}
-
-function nextPrayer(times: DailyPrayerTimes, now: Date): { name: string; at: Date } | null {
-  const entries: Array<[string, Date]> = [
-    ["Fajr", times.fajr],
-    ["Sunrise", times.sunrise],
-    ["Dhuhr", times.dhuhr],
-    ["Asr", times.asr],
-    ["Maghrib", times.maghrib],
-    ["Isha", times.isha],
-  ];
-  const upcoming = entries.find(([, at]) => at.getTime() > now.getTime());
-  return upcoming ? { name: upcoming[0], at: upcoming[1] } : null;
 }
 
 function formatCountdown(msRemaining: number): string {

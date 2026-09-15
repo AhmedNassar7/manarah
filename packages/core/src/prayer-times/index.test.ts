@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { computePrayerTimes, type CalculationMethodId } from "./index.js";
+import { computePrayerTimes, nextPrayer, type CalculationMethodId, type DailyPrayerTimes } from "./index.js";
 
 const cairo = { latitude: 30.0444, longitude: 31.2357 };
 const date = new Date("2026-06-15T00:00:00");
+
+function timesOn(dateStr: string): DailyPrayerTimes {
+  return {
+    fajr: new Date(`${dateStr}T05:00:00`),
+    sunrise: new Date(`${dateStr}T06:20:00`),
+    dhuhr: new Date(`${dateStr}T12:00:00`),
+    asr: new Date(`${dateStr}T15:30:00`),
+    maghrib: new Date(`${dateStr}T18:00:00`),
+    isha: new Date(`${dateStr}T19:30:00`),
+  };
+}
 
 describe("computePrayerTimes", () => {
   it("returns the five daily prayers plus sunrise in chronological order", () => {
@@ -44,5 +55,23 @@ describe("computePrayerTimes", () => {
     for (const method of methods) {
       expect(() => computePrayerTimes(cairo, date, { method, asrSchool: "Standard" })).not.toThrow();
     }
+  });
+});
+
+describe("nextPrayer", () => {
+  it("finds the next upcoming waypoint, including sunrise", () => {
+    const times = timesOn("2026-09-15");
+    expect(nextPrayer(times, new Date("2026-09-15T05:30:00"))).toEqual({ name: "Sunrise", at: times.sunrise });
+    expect(nextPrayer(times, new Date("2026-09-15T04:00:00"))).toEqual({ name: "Fajr", at: times.fajr });
+  });
+
+  it("returns null once every waypoint for the day has passed", () => {
+    const times = timesOn("2026-09-15");
+    expect(nextPrayer(times, new Date("2026-09-15T23:00:00"))).toBeNull();
+  });
+
+  it("returns the very next waypoint exactly at a boundary instant", () => {
+    const times = timesOn("2026-09-15");
+    expect(nextPrayer(times, times.dhuhr)).toEqual({ name: "Asr", at: times.asr });
   });
 });

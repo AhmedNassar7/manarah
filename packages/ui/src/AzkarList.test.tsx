@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import type { AzkarCategory } from "@manarah/core";
@@ -57,5 +57,48 @@ describe("AzkarList", () => {
     await user.click(screen.getByRole("button", { name: "0 / 3" }));
     expect(screen.getByRole("button", { name: "1 / 3" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "0 / 1" })).toBeInTheDocument();
+  });
+
+  describe("tap and completion motion", () => {
+    it("marks the just-tapped button with the bounce class, and only that button", async () => {
+      const user = userEvent.setup();
+      render(<AzkarList category={category} />);
+
+      await user.click(screen.getByRole("button", { name: "0 / 3" }));
+
+      expect(screen.getByRole("button", { name: "1 / 3" })).toHaveClass("tapped");
+      expect(screen.getByRole("button", { name: "0 / 1" })).not.toHaveClass("tapped");
+    });
+
+    it("clears the bounce class once its animation ends", async () => {
+      const user = userEvent.setup();
+      render(<AzkarList category={category} />);
+
+      const button = screen.getByRole("button", { name: "0 / 3" });
+      await user.click(button);
+      expect(screen.getByRole("button", { name: "1 / 3" })).toHaveClass("tapped");
+
+      fireEvent.animationEnd(screen.getByRole("button", { name: "1 / 3" }));
+      expect(screen.getByRole("button", { name: "1 / 3" })).not.toHaveClass("tapped");
+    });
+
+    it("marks the item as completed only once its tally reaches the repeat count", async () => {
+      const user = userEvent.setup();
+      render(<AzkarList category={category} />);
+
+      const singleRepeatButton = screen.getByRole("button", { name: "0 / 1" });
+      expect(singleRepeatButton.closest("li")).not.toHaveClass("completed");
+
+      await user.click(singleRepeatButton);
+      expect(screen.getByRole("button", { name: "1 / 1" }).closest("li")).toHaveClass("completed");
+    });
+
+    it("does not mark a partially-tallied item as completed", async () => {
+      const user = userEvent.setup();
+      render(<AzkarList category={category} />);
+
+      await user.click(screen.getByRole("button", { name: "0 / 3" }));
+      expect(screen.getByRole("button", { name: "1 / 3" }).closest("li")).not.toHaveClass("completed");
+    });
   });
 });

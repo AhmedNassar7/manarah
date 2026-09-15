@@ -59,4 +59,49 @@ describe("QiblaCompass", () => {
       "Qibla direction relative to your current heading"
     );
   });
+
+  describe("lock state", () => {
+    it("never locks in static mode, no matter how close the bearing is to 0", () => {
+      render(<QiblaCompass bearing={0.5} distanceKm={100} />);
+      expect(screen.getByRole("img")).not.toHaveAttribute(
+        "aria-label",
+        "Qibla direction: locked onto the Kaaba"
+      );
+    });
+
+    it("locks once the live heading is within the threshold of the bearing", () => {
+      // bearing 120, heading 119 -> rotation 1deg, well under the 3deg threshold
+      render(<QiblaCompass bearing={120} distanceKm={100} heading={119} />);
+      expect(screen.getByRole("img")).toHaveAttribute(
+        "aria-label",
+        "Qibla direction: locked onto the Kaaba"
+      );
+    });
+
+    it("locks across the 0/360 wrap boundary", () => {
+      // bearing 2, heading 359 -> rotation 3deg... just at the edge; use 358 for a clear 4deg -> not locked,
+      // and 359.5 for a clear <3deg case that wraps through 0.
+      render(<QiblaCompass bearing={2} distanceKm={100} heading={359.5} />);
+      expect(screen.getByRole("img")).toHaveAttribute(
+        "aria-label",
+        "Qibla direction: locked onto the Kaaba"
+      );
+    });
+
+    it("does not lock when the heading is off by more than the threshold", () => {
+      render(<QiblaCompass bearing={120} distanceKm={100} heading={90} />);
+      expect(screen.getByRole("img")).not.toHaveAttribute(
+        "aria-label",
+        "Qibla direction: locked onto the Kaaba"
+      );
+    });
+
+    it("adds the locked class to the card only while locked", () => {
+      const { container, rerender } = render(<QiblaCompass bearing={120} distanceKm={100} heading={119} />);
+      expect(container.querySelector(".qibla-compass")).toHaveClass("qibla-compass-locked");
+
+      rerender(<QiblaCompass bearing={120} distanceKm={100} heading={90} />);
+      expect(container.querySelector(".qibla-compass")).not.toHaveClass("qibla-compass-locked");
+    });
+  });
 });
