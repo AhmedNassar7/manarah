@@ -408,9 +408,15 @@ button {
   margin-top: 4px;
 }
 
+.quran-reader-scroll {
+  max-height: min(70vh, 600px);
+  overflow-y: auto;
+  margin-top: 18px;
+}
+
 .quran-reader ol {
   list-style: none;
-  margin: 18px 0 0;
+  margin: 0;
   padding: 0;
   counter-reset: ayah;
 }
@@ -420,6 +426,27 @@ button {
   font-size: 1.7rem;
   line-height: 2.1;
   padding: 4px 0;
+  animation: verse-reveal var(--dur-bloom) var(--ease-quiet) both;
+}
+
+.quran-reader-load-more {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-page);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-quiet);
+}
+
+.quran-reader-load-more:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .quran-reader li::after {

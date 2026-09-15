@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Surah, Verse } from "@manarah/core";
 import { QuranReader } from "./QuranReader.js";
@@ -43,5 +43,22 @@ describe("QuranReader", () => {
   it("renders nothing but the header when there are no verses", () => {
     render(<QuranReader surah={{ ...alFatiha, verseCount: 0 }} verses={[]} />);
     expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+  });
+
+  it("renders a long surah in batches instead of every verse at once", () => {
+    const longSurah: Surah = { ...alFatiha, number: 2, verseCount: 286 };
+    const longVerses: Verse[] = Array.from({ length: 286 }, (_, i) => ({
+      surah: 2,
+      ayah: i + 1,
+      uthmaniText: `verse ${i + 1}`,
+    }));
+
+    render(<QuranReader surah={longSurah} verses={longVerses} />);
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(40);
+    expect(screen.getByRole("button", { name: /Load more — 40 of 286 verses/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Load more/ }));
+    expect(screen.getAllByRole("listitem")).toHaveLength(80);
   });
 });
