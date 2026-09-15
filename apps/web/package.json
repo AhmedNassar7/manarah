@@ -14,7 +14,8 @@
     "@manarah/storage": "workspace:*",
     "@manarah/ui": "workspace:*",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "workbox-window": "^7.3.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.280",

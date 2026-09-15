@@ -11,6 +11,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      // Registered manually in main.tsx instead, so we can poll for updates
+      // on an interval — see the comment there for why.
+      injectRegister: false,
       includeAssets: ["favicon.svg"],
       manifest: {
         name: "Manarah",
