@@ -19,19 +19,32 @@ function fakeSearch(query: string): City[] {
   return query.toLowerCase().includes("mecca") || query.toLowerCase().includes("makkah") ? [makkah] : [];
 }
 
+function fakeAsyncSearch(query: string): Promise<City[]> {
+  return Promise.resolve(fakeSearch(query));
+}
+
 describe("CitySearch", () => {
   it("shows no results list before anything is typed", () => {
     render(<CitySearch search={fakeSearch} onSelect={vi.fn()} />);
     expect(screen.queryByRole("list")).toBeNull();
   });
 
-  it("shows matching results as the user types", async () => {
+  it("shows matching results as the user types (synchronous search)", async () => {
     const user = userEvent.setup();
     render(<CitySearch search={fakeSearch} onSelect={vi.fn()} />);
 
     await user.type(screen.getByRole("searchbox"), "Mecca");
 
-    expect(screen.getByRole("button", { name: "Makkah, SA" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Makkah, SA" })).toBeInTheDocument();
+  });
+
+  it("shows matching results once an async search resolves — the real @manarah/data shape", async () => {
+    const user = userEvent.setup();
+    render(<CitySearch search={fakeAsyncSearch} onSelect={vi.fn()} />);
+
+    await user.type(screen.getByRole("searchbox"), "Mecca");
+
+    expect(await screen.findByRole("button", { name: "Makkah, SA" })).toBeInTheDocument();
   });
 
   it("shows a 'no results' message when nothing matches", async () => {
@@ -40,7 +53,7 @@ describe("CitySearch", () => {
 
     await user.type(screen.getByRole("searchbox"), "Nowhereville");
 
-    expect(screen.getByText("No matching cities")).toBeInTheDocument();
+    expect(await screen.findByText("No matching cities")).toBeInTheDocument();
   });
 
   it("calls onSelect with the chosen city and clears the query", async () => {
@@ -49,7 +62,7 @@ describe("CitySearch", () => {
     render(<CitySearch search={fakeSearch} onSelect={onSelect} />);
 
     await user.type(screen.getByRole("searchbox"), "Mecca");
-    await user.click(screen.getByRole("button", { name: "Makkah, SA" }));
+    await user.click(await screen.findByRole("button", { name: "Makkah, SA" }));
 
     expect(onSelect).toHaveBeenCalledWith(makkah);
     expect(screen.getByRole("searchbox")).toHaveValue("");

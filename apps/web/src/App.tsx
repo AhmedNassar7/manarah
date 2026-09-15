@@ -9,6 +9,7 @@ import {
   type City,
   type DailyPrayerTimes,
   type UserSettings,
+  type Verse,
 } from "@manarah/core";
 import { AZKAR_CATEGORIES, findCities, getAzkarCategory, getSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
@@ -22,7 +23,6 @@ import {
 } from "@manarah/ui";
 
 const AL_FATIHA = getSurah(1)!;
-const AL_FATIHA_VERSES = getVersesForSurah(1);
 const MORNING_EVENING_AZKAR = getAzkarCategory("27")!;
 
 const store = new IndexedDbStore();
@@ -32,6 +32,11 @@ export function App() {
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [heading, setHeading] = useState<number | undefined>(undefined);
+  const [alFatihaVerses, setAlFatihaVerses] = useState<Verse[] | null>(null);
+
+  useEffect(() => {
+    void getVersesForSurah(1).then(setAlFatihaVerses);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -125,7 +130,7 @@ export function App() {
           heading={heading}
         />
       )}
-      <QuranReader surah={AL_FATIHA} verses={AL_FATIHA_VERSES} />
+      {alFatihaVerses && <QuranReader surah={AL_FATIHA} verses={alFatihaVerses} />}
       <AzkarList category={MORNING_EVENING_AZKAR} />
       <h2>Azkar settings</h2>
       <AzkarScheduleEditor

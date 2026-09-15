@@ -1,21 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { City } from "@manarah/core";
 
 export interface CitySearchProps {
-  search: (query: string) => City[];
+  search: (query: string) => City[] | Promise<City[]>;
   onSelect: (city: City) => void;
   placeholder?: string;
 }
 
 /**
  * A manual location picker — the fallback (or deliberate override) for
- * geolocation. Search is synchronous and injected rather than hard-wired to
- * @manarah/data, so this stays a pure, easily-testable component regardless
- * of how large the underlying city list grows.
+ * geolocation. `search` may return synchronously or a Promise (the real
+ * @manarah/data implementation lazy-loads its dataset on first search), so
+ * this stays a pure, easily-testable component regardless of how the
+ * underlying city list is loaded or how large it grows. Guards against
+ * out-of-order results: if the user keeps typing, an older search that
+ * resolves after a newer one is discarded rather than clobbering the
+ * up-to-date results.
  */
 export function CitySearch({ search, onSelect, placeholder = "Search for a city…" }: CitySearchProps) {
   const [query, setQuery] = useState("");
-  const results = query.trim() ? search(query) : [];
+  const [results, setResults] = useState<City[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const trimmed = query.trim();
+
+    if (!trimmed) {
+      setResults([]);
+      return;
+    }
+
+    void Promise.resolve(search(trimmed)).then((found) => {
+      if (!cancelled) setResults(found);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query, search]);
 
   function handleSelect(city: City) {
     onSelect(city);
