@@ -36,7 +36,7 @@ pnpm workspace monorepo, no Turborepo:
                  - qibla: great-circle bearing/distance math                                     ✅
                  - notifications, badge: pure decision logic for scheduling/toolbar state        ✅
                  - settings: UserSettings model, defaulting/merge logic (withDefaultSettings)    ✅
-                 - hijri: date conversion, Islamic calendar events                                ⬜ Phase 3, no logic yet
+                 - hijri: Gregorian↔Hijri conversion, fixed-date Islamic events, nextOccurrence     ✅
   /ui          Shared React components + design system (styles.css) + i18n                       ✅
   /storage     Store interface — IndexedDbStore (Dexie) / ChromeSyncStore + JSON export/import    ✅
   /data        Static bundled assets: Quran text, surah metadata, azkar corpus, GeoNames cities   ✅
@@ -59,7 +59,7 @@ pnpm workspace monorepo, no Turborepo:
 | Azkar corpus | Hisn al-Muslim (`wafaaelmaandy/Hisn-Muslim-Json`); Al-Adhkar (an-Nawawi) and Saheeh al-Kalim at-Tayyib (Al-Albani) as richer optional packs | ✅ Hisn al-Muslim (266 items) done · ⬜ optional packs Phase 2/3 | Hisn al-Muslim is the standard compact daily-azkar reference every competitor app also uses |
 | City search | GeoNames `cities15000.txt` (CC BY 4.0) | ✅ done | Latin-script alternate names extracted for searchability (e.g. "Mecca"/"Medina") |
 | Hadith | sunnah.com API, six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) | ⬜ Phase 3 | Free key via signup, fine for non-commercial use |
-| Hijri calendar | Small local JS conversion library | ⬜ Phase 3 | Computed client-side, no network call |
+| Hijri calendar | Self-contained tabular/arithmetic conversion in `packages/core/hijri` | ✅ conversion + fixed-date events done | Computed client-side, no network call; arithmetic estimate, ±1-2 days from real moon-sighting-based announcements — not authoritative for determining observances |
 
 ## Notifications (all scheduled on-device, no push server anywhere)
 
@@ -90,7 +90,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 161 tests passing across all 4 packages (`core` 50, `storage` 17, `data` 25, `ui` 69), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 169 tests passing across all 4 packages (`core` 58, `storage` 17, `data` 25, `ui` 69), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Phase 2 — Growth — ⬜ not started
 
@@ -148,8 +148,8 @@ No working browser exists in the primary dev environment used to build this — 
 
 ## Known gaps / smallest real next steps
 
-- **`packages/core/hijri`** — referenced in the architecture above but no logic exists yet. Smallest coherent Phase 3 starting point once Phase 2 is underway.
 - **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
+- **Hijri calendar UI** — the `packages/core/hijri` conversion logic is done, but there's no calendar page/reminder UI consuming it yet (that's the Phase 3 feature item below).
 - **Further translations/tafsir** — one English translation (Saheeh International) is fetched and wired in; other languages/editions and any tafsir text are still unfetched. Multi-translation/multi-tafsir library remains a Phase 2 item.
 
 ---
