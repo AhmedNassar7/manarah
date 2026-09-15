@@ -5,7 +5,7 @@ import {
 } from "../azkar-engine/index.js";
 import type { DailyPrayerTimes } from "../prayer-times/index.js";
 import { computePrayerTimes } from "../prayer-times/index.js";
-import { DEFAULT_SETTINGS, type UserSettings } from "../settings/index.js";
+import { withDefaultSettings, type UserSettings } from "../settings/index.js";
 
 const PRAYER_ORDER: Array<keyof Pick<DailyPrayerTimes, "fajr" | "dhuhr" | "asr" | "maghrib" | "isha">> = [
   "fajr",
@@ -173,7 +173,7 @@ export interface NotificationCheckDeps {
  * chrome.storage/chrome.notifications-backed deps.
  */
 export async function runNotificationCheck(deps: NotificationCheckDeps): Promise<DueNotification[]> {
-  const settings = (await deps.getSettings()) ?? DEFAULT_SETTINGS;
+  const settings = withDefaultSettings(await deps.getSettings());
   if (!settings.coordinates) return [];
 
   const now = deps.now ?? new Date();

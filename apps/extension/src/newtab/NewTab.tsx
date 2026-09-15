@@ -3,6 +3,7 @@ import {
   computePrayerTimes,
   qiblaBearing,
   qiblaDistanceKm,
+  withDefaultSettings,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
   type Coordinates,
@@ -36,7 +37,7 @@ export function NewTab() {
     // request geolocation itself. Prompting for location on every new tab a
     // user opens would be intrusive; the popup is where that happens once.
     async function load() {
-      const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+      const settings = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
       if (cancelled) return;
       setLanguage(settings.language);
       if (!settings.coordinates) return;
@@ -55,7 +56,7 @@ export function NewTab() {
 
   async function handleLanguageChange(nextLanguage: Language) {
     setLanguage(nextLanguage);
-    const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+    const settings = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
     await store.set(SETTINGS_STORAGE_KEY, { ...settings, language: nextLanguage });
   }
 

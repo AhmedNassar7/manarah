@@ -3,6 +3,7 @@ import {
   computePrayerTimes,
   qiblaBearing,
   qiblaDistanceKm,
+  withDefaultSettings,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
   type City,
@@ -41,7 +42,7 @@ export function Popup() {
     let cancelled = false;
 
     async function load() {
-      const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+      const settings = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
       setLanguage(settings.language);
 
       if (settings.coordinates) {
@@ -74,7 +75,7 @@ export function Popup() {
 
   async function handleCitySelect(city: City) {
     const nextCoordinates = { latitude: city.latitude, longitude: city.longitude };
-    const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+    const settings = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
     const nextSettings: UserSettings = { ...settings, coordinates: nextCoordinates };
     await store.set(SETTINGS_STORAGE_KEY, nextSettings);
     setError(null);
@@ -85,7 +86,7 @@ export function Popup() {
 
   async function handleLanguageChange(nextLanguage: Language) {
     setLanguage(nextLanguage);
-    const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+    const settings = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
     await store.set(SETTINGS_STORAGE_KEY, { ...settings, language: nextLanguage });
   }
 

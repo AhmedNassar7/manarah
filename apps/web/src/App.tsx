@@ -3,6 +3,7 @@ import {
   computePrayerTimes,
   qiblaBearing,
   qiblaDistanceKm,
+  withDefaultSettings,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
   type AzkarSchedule,
@@ -64,7 +65,7 @@ export function App() {
     let cancelled = false;
 
     async function load() {
-      const stored = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+      const stored = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
       if (cancelled) return;
       setSettings(stored);
       // Resume wherever the user last left off, rather than always starting at Al-Fatiha.

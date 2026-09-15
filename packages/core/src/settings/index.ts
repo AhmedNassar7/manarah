@@ -26,3 +26,17 @@ export const DEFAULT_SETTINGS: UserSettings = {
 };
 
 export const SETTINGS_STORAGE_KEY = "manarah:settings";
+
+/**
+ * Backfills any fields missing from a persisted settings object with
+ * current defaults. `UserSettings` has grown fields over time (most
+ * recently `language`); a value saved by an older build won't have them,
+ * and reading `undefined` where a field is assumed always-present (e.g.
+ * `settings.language` used as a dictionary key) crashes rather than
+ * degrading gracefully. Every settings read from storage should go
+ * through this rather than a bare `?? DEFAULT_SETTINGS`, which only
+ * covers a wholly-missing value, not a partially-stale one.
+ */
+export function withDefaultSettings(stored: Partial<UserSettings> | undefined | null): UserSettings {
+  return { ...DEFAULT_SETTINGS, ...stored };
+}

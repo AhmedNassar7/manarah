@@ -2,7 +2,7 @@ import {
   computeBadgeState,
   computePrayerTimes,
   runNotificationCheck,
-  DEFAULT_SETTINGS,
+  withDefaultSettings,
   SETTINGS_STORAGE_KEY,
   type NotificationState,
   type UserSettings,
@@ -38,7 +38,7 @@ async function tick(): Promise<void> {
 }
 
 async function updateBadge(): Promise<void> {
-  const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+  const settings = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
   if (!settings.coordinates) {
     await chrome.action.setBadgeText({ text: "" });
     return;

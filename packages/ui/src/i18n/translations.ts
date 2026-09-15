@@ -157,7 +157,11 @@ export const DICTIONARIES_FOR_TESTING = DICTIONARIES;
 
 /** Looks up `key` in `language`'s dictionary, falling back to English and then the raw key, and substitutes any `{name}` placeholders from `vars`. */
 export function translate(language: Language, key: string, vars?: TranslationVars): string {
-  const template = DICTIONARIES[language][key] ?? EN[key] ?? key;
+  // `language` ultimately traces back to persisted data (UserSettings loaded
+  // from storage); an unrecognized or missing value must degrade to English
+  // rather than throw and take the whole render tree down with it.
+  const dictionary = DICTIONARIES[language] ?? EN;
+  const template = dictionary[key] ?? EN[key] ?? key;
   if (!vars) return template;
   return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match));
 }
