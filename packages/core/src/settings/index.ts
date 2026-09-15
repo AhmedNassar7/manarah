@@ -17,12 +17,15 @@ export interface UserSettings {
   /** The last surah/ayah the user opened in the Quran reader, if any. */
   lastRead?: LastRead;
   language: Language;
+  /** Reciter id (see @manarah/data's RECITERS) used for Quran audio playback. */
+  reciterId: string;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {
   prayerTimesSettings: { method: "UmmAlQura", asrSchool: "Standard" },
   azkarSchedules: [],
   language: "en",
+  reciterId: "alafasy",
 };
 
 export const SETTINGS_STORAGE_KEY = "manarah:settings";

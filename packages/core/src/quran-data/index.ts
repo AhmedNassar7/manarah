@@ -29,9 +29,15 @@ export interface Surah {
 
 export interface Reciter {
   id: string;
-  name: string;
-  /** Base URL template for per-surah MP3s, e.g. from mp3quran.net. */
-  audioBaseUrl: string;
+  /** EveryAyah.com's per-reciter folder name, e.g. "Alafasy_128kbps" — combine with ayahAudioUrl. */
+  everyAyahSubfolder: string;
+}
+
+/** Direct, CORS-enabled per-verse recitation URL from EveryAyah.com — verified against the reciter's own published folder listing. No proxy or server needed. */
+export function ayahAudioUrl(reciter: Reciter, surah: number, ayah: number): string {
+  const surahPart = String(surah).padStart(3, "0");
+  const ayahPart = String(ayah).padStart(3, "0");
+  return `https://everyayah.com/data/${reciter.everyAyahSubfolder}/${surahPart}${ayahPart}.mp3`;
 }
 
 /** A single verse's place in every standard navigation scheme of the printed mushaf — juz'/hizb-quarter, ruku', and the 604-page Madani layout. */

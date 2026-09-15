@@ -186,6 +186,14 @@ export function App() {
     });
   }
 
+  function handleReciterChange(reciterId: string) {
+    setSettings((prev) => {
+      const next = { ...prev, reciterId };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   const selectedSurah = selectedSurahNumber !== null ? getSurah(selectedSurahNumber) : undefined;
 
   return (
@@ -231,6 +239,8 @@ export function App() {
                   onNavigate={handleQuranNavigate}
                   resolveJuzStart={getJuzStart}
                   resolvePageStart={getPageStart}
+                  reciterId={settings.reciterId}
+                  onReciterChange={handleReciterChange}
                 />
               }
             />

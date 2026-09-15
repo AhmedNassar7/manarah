@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Surah, Translation, Verse } from "@manarah/core";
 import { QuranReader } from "./QuranReader.js";
 
@@ -104,5 +104,37 @@ describe("QuranReader", () => {
     expect(items).toHaveLength(150);
     expect(items[149]).toHaveClass("quran-reader-verse-highlight");
     expect(items[0]).not.toHaveClass("quran-reader-verse-highlight");
+  });
+
+  it("reveals and persistently highlights a playingAyah past the initial batch", () => {
+    const longSurah: Surah = { ...alFatiha, number: 2, verseCount: 286 };
+    const longVerses: Verse[] = Array.from({ length: 286 }, (_, i) => ({
+      surah: 2,
+      ayah: i + 1,
+      uthmaniText: `verse ${i + 1}`,
+    }));
+
+    render(<QuranReader surah={longSurah} verses={longVerses} playingAyah={150} />);
+
+    const items = screen.getAllByRole("listitem");
+    expect(items).toHaveLength(150);
+    expect(items[149]).toHaveClass("quran-reader-verse-playing");
+    expect(items[0]).not.toHaveClass("quran-reader-verse-playing");
+  });
+
+  it("renders a per-verse play button only when onPlayAyah is supplied, and calls it with that verse's ayah", () => {
+    const onPlayAyah = vi.fn();
+    render(<QuranReader surah={alFatiha} verses={verses} onPlayAyah={onPlayAyah} />);
+
+    const playButtons = screen.getAllByRole("button", { name: /Play verse/ });
+    expect(playButtons).toHaveLength(2);
+
+    fireEvent.click(playButtons[1]);
+    expect(onPlayAyah).toHaveBeenCalledWith(2);
+  });
+
+  it("renders no play buttons when onPlayAyah is not supplied", () => {
+    render(<QuranReader surah={alFatiha} verses={verses} />);
+    expect(screen.queryByRole("button", { name: /Play verse/ })).not.toBeInTheDocument();
   });
 });

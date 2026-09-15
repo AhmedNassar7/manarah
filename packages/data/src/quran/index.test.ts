@@ -10,6 +10,7 @@ import {
   getVersesForSurah,
   JUZ_COUNT,
   PAGE_COUNT,
+  RECITERS,
   SURAHS,
   TRANSLATION_EDITIONS,
 } from "./index.js";
@@ -123,5 +124,14 @@ describe("Quran data integrity", () => {
       if (location?.sajda) sajdaCount++;
     }
     expect(sajdaCount).toBe(15);
+  });
+
+  it("has unique reciter ids and non-empty EveryAyah folder names", () => {
+    expect(RECITERS.length).toBeGreaterThan(0);
+    const ids = RECITERS.map((r) => r.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const reciter of RECITERS) {
+      expect(reciter.everyAyahSubfolder.trim().length).toBeGreaterThan(0);
+    }
   });
 });

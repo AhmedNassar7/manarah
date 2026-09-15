@@ -1,6 +1,7 @@
 export * from "./PrayerCountdown.js";
 export * from "./PrayerSettingsEditor.js";
 export * from "./QuranReader.js";
+export * from "./QuranAudioPlayer.js";
 export * from "./AzkarList.js";
 export * from "./AzkarScheduleEditor.js";
 export * from "./QiblaCompass.js";

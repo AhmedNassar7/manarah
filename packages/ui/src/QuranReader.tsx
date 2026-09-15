@@ -9,13 +9,17 @@ export interface QuranReaderProps {
   translations?: Translation[];
   /** An ayah to reveal (past the batched "Load more" cutoff if needed), scroll into view, and briefly highlight — set by Ayah/Juz'/Page navigation, which can land anywhere in a long surah. */
   focusAyah?: number;
+  /** The ayah currently sounding from QuranAudioPlayer, if any — reveals it past the batch cutoff and keeps it highlighted for as long as it's playing (unlike focusAyah's highlight, which fades after a few seconds). */
+  playingAyah?: number | null;
+  /** Renders a small play button on each verse; omitted entirely when no audio player is wired up. */
+  onPlayAyah?: (ayah: number) => void;
 }
 
 /** Verses shown before a "Load more" is needed — keeps a 200+ ayah surah (e.g. Al-Baqara) from rendering its entire text, and the whole page, in one go. */
 const BATCH_SIZE = 40;
 
 /** Renders one surah's Uthmani text, verse by verse, in a scrollable, batched view. Shared across web/extension/desktop/mobile. */
-export function QuranReader({ surah, verses, translations, focusAyah }: QuranReaderProps) {
+export function QuranReader({ surah, verses, translations, focusAyah, playingAyah, onPlayAyah }: QuranReaderProps) {
   const { t, language } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, verses.length));
   const [showTranslation, setShowTranslation] = useState(true);
@@ -45,6 +49,18 @@ export function QuranReader({ surah, verses, translations, focusAyah }: QuranRea
     const timeout = setTimeout(() => setHighlightedAyah(null), 2000);
     return () => clearTimeout(timeout);
   }, [focusAyah, visibleCount]);
+
+  // Same batch-reveal need as focusAyah — surah playback can advance past
+  // what's currently rendered in a long surah.
+  useEffect(() => {
+    if (playingAyah == null) return;
+    setVisibleCount((n) => Math.max(n, Math.min(playingAyah, verses.length)));
+  }, [playingAyah, surah.number, verses.length]);
+
+  useEffect(() => {
+    if (playingAyah == null || playingAyah > visibleCount) return;
+    verseRefs.current.get(playingAyah)?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [playingAyah, visibleCount]);
 
   const visibleVerses = verses.slice(0, visibleCount);
   const hasMore = visibleCount < verses.length;
@@ -78,14 +94,33 @@ export function QuranReader({ surah, verses, translations, focusAyah }: QuranRea
                 if (el) verseRefs.current.set(verse.ayah, el);
                 else verseRefs.current.delete(verse.ayah);
               }}
-              className={verse.ayah === highlightedAyah ? "quran-reader-verse-highlight" : undefined}
+              className={
+                verse.ayah === playingAyah
+                  ? "quran-reader-verse-playing"
+                  : verse.ayah === highlightedAyah
+                    ? "quran-reader-verse-highlight"
+                    : undefined
+              }
             >
-              {verse.uthmaniText}
-              {showTranslation && translationByAyah.has(verse.ayah) && (
-                <p className="quran-reader-translation" dir="ltr" lang="en">
-                  {translationByAyah.get(verse.ayah)}
-                </p>
+              {onPlayAyah && (
+                <button
+                  type="button"
+                  className="quran-reader-play-button"
+                  dir="ltr"
+                  aria-label={t("quranReader.playAyah", { ayah: verse.ayah })}
+                  onClick={() => onPlayAyah(verse.ayah)}
+                >
+                  ▶
+                </button>
               )}
+              <span className="quran-reader-verse-text">
+                {verse.uthmaniText}
+                {showTranslation && translationByAyah.has(verse.ayah) && (
+                  <p className="quran-reader-translation" dir="ltr" lang="en">
+                    {translationByAyah.get(verse.ayah)}
+                  </p>
+                )}
+              </span>
             </li>
           ))}
         </ol>

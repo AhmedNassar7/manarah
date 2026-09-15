@@ -812,11 +812,49 @@ button {
 }
 
 .quran-reader li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   font-family: var(--font-arabic-quran);
   font-size: 1.7rem;
   line-height: 2.1;
   padding: 4px 0;
   animation: verse-reveal var(--dur-bloom) var(--ease-quiet) both;
+}
+
+.quran-reader-verse-text {
+  flex: 1;
+}
+
+.quran-reader-play-button {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface-sunken);
+  color: var(--accent);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 120ms var(--ease-quiet),
+    border-color 120ms var(--ease-quiet),
+    transform 120ms var(--ease-quiet);
+}
+
+.quran-reader-play-button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.quran-reader-play-button:active {
+  transform: scale(0.92);
 }
 
 .quran-reader-load-more {
@@ -856,9 +894,15 @@ button {
   margin: 2px 0 10px;
 }
 
+.quran-reader-verse-highlight,
+.quran-reader-verse-playing {
+  border-radius: var(--radius-page);
+  padding-inline: 8px;
+  margin-inline: -8px;
+}
+
 .quran-reader-verse-highlight {
   animation: verse-highlight-fade 2000ms var(--ease-quiet);
-  border-radius: var(--radius-page);
 }
 
 @keyframes verse-highlight-fade {
@@ -868,6 +912,113 @@ button {
   100% {
     background: transparent;
   }
+}
+
+.quran-reader-verse-playing {
+  background: var(--accent-soft);
+}
+
+.quran-reader-verse-playing .quran-reader-play-button {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+/* ---------- Quran audio player ----------
+   A persistent, sticky-bottom recitation bar: transport controls +
+   reciter/repeat/speed. Built on EveryAyah.com per-verse audio, so the
+   currently-playing ayah is always exactly known — no timestamp syncing. */
+
+.quran-audio-player {
+  position: sticky;
+  bottom: 0;
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  box-shadow: 0 -4px 14px rgba(38, 34, 28, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quran-audio-player-transport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quran-audio-player-transport button {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface-sunken);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 120ms var(--ease-quiet),
+    border-color 120ms var(--ease-quiet),
+    transform 120ms var(--ease-quiet);
+}
+
+.quran-audio-player-transport button:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.quran-audio-player-transport button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.quran-audio-player-transport button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quran-audio-player-transport .quran-audio-player-play {
+  width: 44px;
+  height: 44px;
+  font-size: 1.1rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+.quran-audio-player-status {
+  margin-inline-start: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.quran-audio-player-settings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.quran-audio-player-settings label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.quran-audio-player-settings select {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 4px 8px;
+  font-size: 0.85rem;
 }
 
 /* ---------- Azkar list ----------

@@ -11,3 +11,10 @@ afterEach(() => {
 if (!Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
+
+// jsdom doesn't implement real media playback either (QuranAudioPlayer's
+// <audio> element) — HTMLMediaElement.play()/pause() log a jsdom
+// "not implemented" error and return undefined rather than a real promise,
+// which breaks a bare `.play()` call. Stub both with harmless no-ops.
+HTMLMediaElement.prototype.play = () => Promise.resolve();
+HTMLMediaElement.prototype.pause = () => {};

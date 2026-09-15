@@ -54,7 +54,7 @@ pnpm workspace monorepo, no Turborepo:
 | Quran text | Tanzil Uthmani corpus / AlQuran Cloud API, bundled as static JSON in `packages/data`; cross-checked against King Fahd Quran Complex's official Hafs Mushaf (qurancomplex.gov.sa) | ✅ done | All 114 surahs / 6236 verses, offline-guaranteed from first load |
 | Translations, tafsir, word-by-word | Quran.com / Quran Foundation API, AlQuran Cloud API | 🚧 One translation (Saheeh International, `en.sahih`) fetched from AlQuran Cloud and wired into the reader; tafsir and further translations not yet fetched | Free, CORS-enabled, no key for most endpoints |
 | Word-by-word grammar (root, morphology, syntax) | Quranic Arabic Corpus dataset | ⬜ Phase 3 | Purpose-built for a future word-tap grammar feature |
-| Verse & surah audio | EveryAyah.com (per-verse), MP3Quran.net (per-surah, multi-reciter, live streams) | ⬜ Phase 2 | Direct `<audio>`/HLS playback, no proxy |
+| Verse & surah audio | EveryAyah.com (per-verse) | ✅ per-verse playback done (10 curated reciters) | Direct `<audio>` playback, no proxy; MP3Quran.net per-surah/live-stream radio still unused — see the Radio module, Phase 2 |
 | Tafsir corpus | Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi | ⬜ Phase 2 | Standard Ahl al-Sunnah tafsir canon; via Quran.com's tafsir API where available, else altafsir.com |
 | Azkar corpus | Hisn al-Muslim (`wafaaelmaandy/Hisn-Muslim-Json`); Al-Adhkar (an-Nawawi) and Saheeh al-Kalim at-Tayyib (Al-Albani) as richer optional packs | ✅ Hisn al-Muslim (266 items) done · ⬜ optional packs Phase 2/3 | Hisn al-Muslim is the standard compact daily-azkar reference every competitor app also uses |
 | City search | GeoNames `cities15000.txt` (CC BY 4.0) | ✅ done | Latin-script alternate names extracted for searchability (e.g. "Mecca"/"Medina") |
@@ -80,7 +80,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 
 - [x] Prayer times: geolocation + manual city search, calculation-method presets (MWL, ISNA, Umm al-Qura, Egyptian, Karachi, ...), Shafi/Hanafi Asr toggle, countdown widget (with tomorrow's-Fajr rollover), `PrayerSettingsEditor`
 - [x] Azkar engine v1: full default Hisn al-Muslim categories with remap/mute/custom-time (`AzkarScheduleEditor`), tally counter with tap-bounce + one-time gold-bloom completion animation
-- [x] Quran: full Uthmani text, all 114 surahs, `QuranNavigator` (Surah/Ayah/Juz'/Page tabs with search), batched `QuranReader` (40 verses + "Load more", jump-to-ayah with scroll+highlight), `lastRead` (surah + ayah) tracking/resume to the exact verse, one bundled English translation (Saheeh International) shown per-verse with a show/hide toggle
+- [x] Quran: full Uthmani text, all 114 surahs, `QuranNavigator` (Surah/Ayah/Juz'/Page tabs with search), batched `QuranReader` (40 verses + "Load more", jump-to-ayah with scroll+highlight), `lastRead` (surah + ayah) tracking/resume to the exact verse, one bundled English translation (Saheeh International) shown per-verse with a show/hide toggle, `QuranAudioPlayer` recitation (10 reciters, repeat/speed, per-verse play button, EveryAyah.com audio)
 - [x] Qibla: pure bearing/distance geometry, two-tone needle compass UI, live device-orientation heading where available, "searching" state, one-time lock + ripple
 - [x] Extension: popup (today's prayers + Qibla + continue-reading shortcut to the web Quran reader), `chrome_url_overrides.newtab` (verse of the day + prayer countdown + static compass), background `chrome.alarms`, toolbar badge (minutes-to-next-prayer, teal → henna inside 15 min)
 - [x] Web: installable PWA (manual `virtual:pwa-register` + hourly update polling to avoid staleness), offline app shell + offline Quran text, `HashRouter`-based multi-page structure (Home/Prayer/Qibla/Quran/Azkar + persistent `Nav`)
@@ -90,7 +90,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 176 tests passing across all 4 packages (`core` 58, `storage` 17, `data` 28, `ui` 73), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 192 tests passing across all 4 packages (`core` 60, `storage` 17, `data` 29, `ui` 86), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Phase 2 — Growth — ⬜ not started
 
@@ -129,8 +129,8 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
 
 1. [x] **Translation display** — one bundled edition (Saheeh International), show/hide toggle in `QuranReader`. *(Multi-edition selection is still open — see Phase 2 list.)*
 2. [x] **Navigation overhaul** — `QuranNavigator`: tabbed Surah/Ayah/Juz'/Page picker with search, replacing the old surah-only list; per-verse `focusAyah` jump-and-highlight in `QuranReader`; juz'/page/manzil/ruku'/sajdah metadata (`packages/data/quran/metadata.json`, sourced free from the same AlQuran Cloud response as the translation).
-3. [ ] **Audio recitation player** — reciter selection, per-verse/surah playback, repeat count, speed, auto-scroll to the playing verse. Source: EveryAyah.com (per-verse) / MP3Quran.net (per-surah, multi-reciter), already the decided sourcing in the data table above. *Recommended next.*
-4. [ ] **Per-verse action toolbar + notes/bookmarks** — copy, share, bookmark/pin, personal notes per verse. Needs a notes/bookmarks table in `packages/storage` (same `Store` interface, new keys) — the audio player's per-verse "now playing" row is the natural place this toolbar attaches to, hence after it.
+3. [x] **Audio recitation player** — `QuranAudioPlayer`: 10 curated reciters, play/pause/prev/next, repeat count (1/2/3/5×), speed (0.75–2×), auto-scroll + persistent highlight for the playing verse (`QuranReader`'s new `playingAyah`), per-verse play button. Built entirely on EveryAyah.com per-verse files (no surah-wide file + timestamp sync needed) — every reciter folder name and the URL pattern verified live before use, not guessed.
+4. [ ] **Per-verse action toolbar + notes/bookmarks** — copy, share, bookmark/pin, personal notes per verse. Needs a notes/bookmarks table in `packages/storage` (same `Store` interface, new keys) — the audio player's per-verse "now playing" row (just shipped) is the natural place this toolbar attaches to, hence after it. *Recommended next.*
 5. [ ] **Tafsir panel** — Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi, via Quran.com's tafsir API where available, else altafsir.com (already the decided sourcing).
 6. [ ] **Word-by-word grammar** — tap a word for its own translation/root/morphology, from the Quranic Arabic Corpus dataset (corpus.quran.com). **License check needed before bundling**: the corpus site states its data is "available under the GNU public license" — confirm GPL terms are compatible with bundling into this project before fetching/committing any of it (unlike the Uthmani text/translations, which come from AlQuran Cloud under separate, already-verified terms).
 7. [ ] **Full-text search** — search Arabic text and translation, jump to a result (distinct from the Ayah/Juz'/Page *navigation* search added in step 2, which only searches numbers/surah names, not verse content).

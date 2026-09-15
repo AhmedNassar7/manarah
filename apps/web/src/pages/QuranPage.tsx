@@ -1,6 +1,7 @@
+import { useRef, useState } from "react";
 import type { Surah, Translation, Verse, VerseRef } from "@manarah/core";
-import { JUZ_COUNT, PAGE_COUNT, SURAHS } from "@manarah/data";
-import { QuranNavigator, QuranReader, useTranslation } from "@manarah/ui";
+import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS } from "@manarah/data";
+import { QuranAudioPlayer, QuranNavigator, QuranReader, useTranslation, type QuranAudioPlayerHandle } from "@manarah/ui";
 
 export interface QuranPageProps {
   selectedSurahNumber: number | null;
@@ -11,6 +12,8 @@ export interface QuranPageProps {
   onNavigate: (ref: VerseRef) => void;
   resolveJuzStart: (juz: number) => VerseRef | undefined | Promise<VerseRef | undefined>;
   resolvePageStart: (page: number) => VerseRef | undefined | Promise<VerseRef | undefined>;
+  reciterId: string;
+  onReciterChange: (id: string) => void;
 }
 
 export function QuranPage({
@@ -22,8 +25,12 @@ export function QuranPage({
   onNavigate,
   resolveJuzStart,
   resolvePageStart,
+  reciterId,
+  onReciterChange,
 }: QuranPageProps) {
   const { t } = useTranslation();
+  const [playingAyah, setPlayingAyah] = useState<number | null>(null);
+  const audioPlayerRef = useRef<QuranAudioPlayerHandle>(null);
 
   return (
     <>
@@ -39,12 +46,25 @@ export function QuranPage({
         pageCount={PAGE_COUNT}
       />
       {selectedSurah && selectedSurahVerses && (
-        <QuranReader
-          surah={selectedSurah}
-          verses={selectedSurahVerses}
-          translations={selectedSurahTranslation ?? undefined}
-          focusAyah={focusAyah}
-        />
+        <>
+          <QuranReader
+            surah={selectedSurah}
+            verses={selectedSurahVerses}
+            translations={selectedSurahTranslation ?? undefined}
+            focusAyah={focusAyah}
+            playingAyah={playingAyah}
+            onPlayAyah={(ayah) => audioPlayerRef.current?.playAyah(ayah)}
+          />
+          <QuranAudioPlayer
+            ref={audioPlayerRef}
+            reciters={RECITERS}
+            reciterId={reciterId}
+            onReciterChange={onReciterChange}
+            surah={selectedSurah}
+            verses={selectedSurahVerses}
+            onPlayingAyahChange={setPlayingAyah}
+          />
+        </>
       )}
     </>
   );

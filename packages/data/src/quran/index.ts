@@ -1,4 +1,4 @@
-import type { Surah, Translation, TranslationEdition, Verse, VerseLocation, VerseRef } from "@manarah/core";
+import type { Reciter, Surah, Translation, TranslationEdition, Verse, VerseLocation, VerseRef } from "@manarah/core";
 import { pickRandomVerse } from "@manarah/core";
 import surahsData from "./surahs.json";
 
@@ -108,3 +108,23 @@ export async function getPageStart(page: number): Promise<VerseRef | undefined> 
   const match = metadata.find((m) => m.page === page);
   return match ? { surah: match.surah, ayah: match.ayah } : undefined;
 }
+
+/**
+ * A curated set of well-known reciters, each verified against EveryAyah.com's
+ * own published reciter list (everyayah.com/data/recitations.js) — folder
+ * names there are exact and case-sensitive, so they're copied verbatim
+ * rather than guessed. Picked for name recognition and audio quality
+ * (128kbps+ where available) rather than listing all ~80 entries.
+ */
+export const RECITERS: Reciter[] = [
+  { id: "alafasy", everyAyahSubfolder: "Alafasy_128kbps" },
+  { id: "abdul-basit", everyAyahSubfolder: "Abdul_Basit_Murattal_192kbps" },
+  { id: "sudais", everyAyahSubfolder: "Abdurrahmaan_As-Sudais_192kbps" },
+  { id: "shuraym", everyAyahSubfolder: "Saood_ash-Shuraym_128kbps" },
+  { id: "husary", everyAyahSubfolder: "Husary_128kbps" },
+  { id: "minshawy", everyAyahSubfolder: "Minshawy_Murattal_128kbps" },
+  { id: "maher-almuaiqly", everyAyahSubfolder: "MaherAlMuaiqly128kbps" },
+  { id: "muhammad-ayyoub", everyAyahSubfolder: "Muhammad_Ayyoub_128kbps" },
+  { id: "abdullah-basfar", everyAyahSubfolder: "Abdullah_Basfar_192kbps" },
+  { id: "yasser-dussary", everyAyahSubfolder: "Yasser_Ad-Dussary_128kbps" },
+];
