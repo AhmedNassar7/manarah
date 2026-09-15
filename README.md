@@ -17,6 +17,25 @@
   <img src="https://img.shields.io/badge/pnpm-workspaces-b08d3e" alt="pnpm workspaces">
 </p>
 
+## Features
+
+<table>
+  <tr>
+    <td align="center" width="120">🕌<br><b>Prayer times</b></td>
+    <td align="center" width="120">📿<br><b>Azkar &amp; dua</b></td>
+    <td align="center" width="120">📖<br><b>Quran</b></td>
+    <td align="center" width="120">📻<br><b>Radio</b></td>
+    <td align="center" width="120">🧭<br><b>Qibla</b></td>
+  </tr>
+  <tr>
+    <td align="center">Calculation<br>methods, alerts</td>
+    <td align="center">Customizable<br>reminders</td>
+    <td align="center">Text, audio,<br>tafsir</td>
+    <td align="center">Live Quran<br>stations</td>
+    <td align="center">Live compass<br>bearing</td>
+  </tr>
+</table>
+
 ## Why
 
 - **Zero infrastructure** — static hosting, free public APIs, on-device storage. No server, no database.
@@ -97,7 +116,14 @@ Shared theme in [`packages/ui/src/styles.css`](packages/ui/src/styles.css) — o
   <img src="https://img.shields.io/badge/danger-7a3b2e-7a3b2e" alt="danger">
 </p>
 
-**Motion** — two easings (`--ease-spring` tactile, `--ease-quiet` calm), three durations (`--dur-tap` 180ms, `--dur-bloom` 550ms, `--dur-needle` 500ms), all collapsed under `prefers-reduced-motion`. Named animations: Qibla compass ripple, azkar completion bloom/tap, verse-of-the-day reveal. Plain CSS, no animation library.
+<table>
+  <tr>
+    <td width="72"><img src="assets/qibla-motion.svg" alt="Qibla compass motion preview" width="64" height="64"></td>
+    <td>
+      <b>Motion</b> — two easings (<code>--ease-spring</code> tactile, <code>--ease-quiet</code> calm), three durations (<code>--dur-tap</code> 180ms, <code>--dur-bloom</code> 550ms, <code>--dur-needle</code> 500ms), all collapsed under <code>prefers-reduced-motion</code>. Named animations: Qibla compass ripple (preview left), azkar completion bloom/tap, verse-of-the-day reveal. Plain CSS, no animation library.
+    </td>
+  </tr>
+</table>
 
 ## Deployment
 
