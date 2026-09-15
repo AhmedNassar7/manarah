@@ -5,3 +5,4 @@ export * from "./quran-data/index.js";
 export * from "./hijri/index.js";
 export * from "./settings/index.js";
 export * from "./notifications/index.js";
+export * from "./geocoding/index.js";

@@ -6,12 +6,20 @@ import {
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
   type AzkarSchedule,
+  type City,
   type DailyPrayerTimes,
   type UserSettings,
 } from "@manarah/core";
-import { AZKAR_CATEGORIES, getAzkarCategory, getSurah, getVersesForSurah } from "@manarah/data";
+import { AZKAR_CATEGORIES, findCities, getAzkarCategory, getSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { AzkarList, AzkarScheduleEditor, PrayerCountdown, QiblaCompass, QuranReader } from "@manarah/ui";
+import {
+  AzkarList,
+  AzkarScheduleEditor,
+  CitySearch,
+  PrayerCountdown,
+  QiblaCompass,
+  QuranReader,
+} from "@manarah/ui";
 
 const AL_FATIHA = getSurah(1)!;
 const AL_FATIHA_VERSES = getVersesForSurah(1);
@@ -93,10 +101,22 @@ export function App() {
     });
   }
 
+  function handleCitySelect(city: City) {
+    const coordinates = { latitude: city.latitude, longitude: city.longitude };
+    setSettings((prev) => {
+      const next = { ...prev, coordinates };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+    setError(null);
+    setTimes(computePrayerTimes(coordinates, new Date(), settings.prayerTimesSettings));
+  }
+
   return (
     <main>
       <h1>Manarah</h1>
       {error && <p role="alert">{error}</p>}
+      <CitySearch search={findCities} onSelect={handleCitySelect} placeholder="Set location manually…" />
       {times && <PrayerCountdown todaysTimes={times} />}
       {settings.coordinates && (
         <QiblaCompass
