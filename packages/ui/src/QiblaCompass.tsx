@@ -49,26 +49,37 @@ export function QiblaCompass({ bearing, distanceKm, heading }: QiblaCompassProps
   const rotation = normalizeDegrees(heading === undefined ? bearing : bearing - heading);
   const roundedBearing = Math.round(normalizeDegrees(bearing));
   const isLocked = heading !== undefined && angularDistanceFromZero(rotation) < LOCK_THRESHOLD_DEGREES;
+  const isSearching = heading !== undefined && !isLocked;
   const distance = formatDistance(distanceKm, t("qibla.distanceUnit"));
 
   return (
     <div className={`qibla-compass card${isLocked ? " qibla-compass-locked" : ""}`}>
-      <div
-        className="qibla-compass-dial"
-        role="img"
-        aria-label={
-          heading === undefined
-            ? t("qibla.ariaBearing", { deg: roundedBearing })
-            : isLocked
-              ? t("qibla.ariaLocked")
-              : t("qibla.ariaRelative")
-        }
-        style={{ transform: `rotate(${rotation}deg)` }}
-      >
-        {isLocked && <span className="qibla-compass-ripple" aria-hidden="true" />}
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <polygon points="12,2 18,20 12,15 6,20" fill="currentColor" />
-        </svg>
+      <div className="qibla-compass-frame">
+        {/* Fixed — doesn't rotate with the dial. Marks "straight ahead" so a
+            live heading has something to visibly line the needle up against;
+            meaningless in static north-up mode, so omitted there. */}
+        {heading !== undefined && <span className="qibla-compass-facing-tick" aria-hidden="true" />}
+        <div
+          className={`qibla-compass-dial${isSearching ? " qibla-compass-searching" : ""}`}
+          role="img"
+          aria-label={
+            heading === undefined
+              ? t("qibla.ariaBearing", { deg: roundedBearing })
+              : isLocked
+                ? t("qibla.ariaLocked")
+                : t("qibla.ariaRelative")
+          }
+          style={{ transform: `rotate(${rotation}deg)` }}
+        >
+          {isLocked && <span className="qibla-compass-ripple" aria-hidden="true" />}
+          {/* A two-tone needle — gold tip toward the Kaaba, muted tail behind
+              it — reads unambiguously as a compass needle, unlike a plain
+              arrow/pin glyph. */}
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="qibla-compass-needle">
+            <polygon className="qibla-compass-needle-tip" points="12,2 15.5,12 12,10 8.5,12" />
+            <polygon className="qibla-compass-needle-tail" points="12,22 15.5,12 12,14 8.5,12" />
+          </svg>
+        </div>
       </div>
       <p className="qibla-compass-bearing">{t("qibla.fromNorth", { deg: roundedBearing })}</p>
       <p className="qibla-compass-distance">{t("qibla.toKaaba", { distance })}</p>
