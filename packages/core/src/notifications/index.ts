@@ -23,6 +23,9 @@ const PRAYER_LABELS: Record<(typeof PRAYER_ORDER)[number], string> = {
   isha: "Isha",
 };
 
+/** Storage key for persisted NotificationState — shared across every platform's store so the fired-today bookkeeping is consistent wherever `runNotificationCheck` is wired up. */
+export const NOTIFICATION_STATE_KEY = "manarah:notification-state";
+
 export interface NotificationState {
   /** Local date this state applies to, as YYYY-MM-DD; state resets when the date changes. */
   date: string;

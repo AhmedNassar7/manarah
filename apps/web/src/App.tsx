@@ -18,6 +18,8 @@ import { getSurah, getVersesForSurah } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
 import { LanguageProvider, LanguageSwitcher, translate, useTranslation } from "@manarah/ui";
 import { Nav } from "./Nav.js";
+import { NotificationPrompt } from "./NotificationPrompt.js";
+import { startNotificationLoop } from "./notifications.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
 import { Home } from "./pages/Home.js";
 import { PrayerPage } from "./pages/PrayerPage.js";
@@ -115,6 +117,11 @@ export function App() {
       window.removeEventListener("deviceorientationabsolute", handleOrientation);
       window.removeEventListener("deviceorientation", handleOrientation);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof Notification === "undefined") return;
+    return startNotificationLoop(store);
   }, []);
 
   function handleSchedulesChange(azkarSchedules: AzkarSchedule[]) {
@@ -233,6 +240,7 @@ function AppShell({ children }: { children: ReactNode }) {
         <LanguageSwitcher />
       </header>
       <Nav />
+      <NotificationPrompt />
       {children}
     </main>
   );

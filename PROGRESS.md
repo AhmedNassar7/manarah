@@ -66,7 +66,7 @@ pnpm workspace monorepo, no Turborepo:
 | Surface | Mechanism | Status |
 |---|---|---|
 | Extension | `chrome.alarms` (background service worker, 1-minute tick) → `chrome.notifications` + toolbar badge | ✅ done |
-| Web/PWA | Service Worker + `Notification` API; next-trigger times recomputed each time the app opens | 🚧 PWA service worker + update polling done; on-schedule `Notification` firing not yet wired for web specifically (extension has it, web reuses the same core logic but hasn't wired the trigger) |
+| Web/PWA | Plain `setInterval` while the tab is open → `ServiceWorkerRegistration.showNotification()` (falls back to `new Notification()` if no SW), reusing the same `runNotificationCheck` core logic as the extension | ✅ done — no push server (zero-cost constraint), so it only fires while a tab is open, same caveat as the badge/countdown |
 | Desktop (Tauri) | Native OS notification API via Tauri, same locally-computed trigger times | ⬜ Phase 2 |
 | Mobile (Capacitor) | `@capacitor/local-notifications`, pre-scheduled daily windows | ⬜ Phase 2 |
 
@@ -149,7 +149,6 @@ No working browser exists in the primary dev environment used to build this — 
 ## Known gaps / smallest real next steps
 
 - **`packages/core/hijri`** — referenced in the architecture above but no logic exists yet. Smallest coherent Phase 3 starting point once Phase 2 is underway.
-- **Web push notifications** — the extension has working `chrome.alarms`-based notification firing; the web app has the PWA shell and service worker but hasn't wired a `Notification`-API trigger loop using the same `packages/core` decision logic. Worth closing before calling Phase 1 notifications fully cross-surface.
 - **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
 - **Translations/tafsir fetch** — only the bundled Uthmani Arabic text exists; no translation or tafsir text has been fetched or wired into the reader yet, despite the API sourcing being decided. First real Phase 2-adjacent content gap.
 

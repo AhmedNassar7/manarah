@@ -28,6 +28,9 @@ const EN: Dictionary = {
   "app.locationNeeded": "Set your location on the Home page to see this.",
   "app.goHome": "Go to Home",
 
+  "notifications.enablePrompt": "Enable notifications to get prayer and azkar reminders while this tab is open.",
+  "notifications.enableButton": "Enable notifications",
+
   "citySearch.placeholderDefault": "Search for a city…",
   "citySearch.placeholderManual": "Set location manually…",
   "citySearch.placeholderPopupFallback": "Set your city instead…",
@@ -105,6 +108,9 @@ const AR: Dictionary = {
   "app.viewAll": "عرض الكل ←",
   "app.locationNeeded": "حدد موقعك من الصفحة الرئيسية لعرض هذا القسم.",
   "app.goHome": "الذهاب إلى الرئيسية",
+
+  "notifications.enablePrompt": "فعّل الإشعارات لتصلك تذكيرات الصلاة والأذكار أثناء فتح هذا التبويب.",
+  "notifications.enableButton": "تفعيل الإشعارات",
 
   "citySearch.placeholderDefault": "ابحث عن مدينة…",
   "citySearch.placeholderManual": "تحديد الموقع يدويًا…",

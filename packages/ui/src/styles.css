@@ -229,6 +229,33 @@ button {
   text-decoration: underline;
 }
 
+.notice {
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-radius: var(--radius-page);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notice > p {
+  margin: 0;
+}
+
+.notice button {
+  align-self: flex-start;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: var(--radius-page);
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 /* ---------- Popup: continue-reading shortcut ----------
    Opens the web app's Quran reader in a new tab; the web app resumes to
    settings.lastRead itself, so this link carries no state of its own. */

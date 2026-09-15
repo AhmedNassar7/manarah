@@ -3,6 +3,7 @@ import {
   computePrayerTimes,
   runNotificationCheck,
   withDefaultSettings,
+  NOTIFICATION_STATE_KEY,
   SETTINGS_STORAGE_KEY,
   type NotificationState,
   type UserSettings,
@@ -11,7 +12,6 @@ import { AZKAR_CATEGORIES } from "@manarah/data";
 import { ChromeSyncStore } from "@manarah/storage";
 
 const PRAYER_CHECK_ALARM = "prayer-check";
-const NOTIFICATION_STATE_KEY = "manarah:notification-state";
 
 const store = new ChromeSyncStore();
 
