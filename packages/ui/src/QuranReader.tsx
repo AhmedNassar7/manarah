@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Surah, Verse } from "@manarah/core";
+import { formatVerseCount, useTranslation } from "./i18n/index.js";
 
 export interface QuranReaderProps {
   surah: Surah;
@@ -11,6 +12,7 @@ const BATCH_SIZE = 40;
 
 /** Renders one surah's Uthmani text, verse by verse, in a scrollable, batched view. Shared across web/extension/desktop/mobile. */
 export function QuranReader({ surah, verses }: QuranReaderProps) {
+  const { t, language } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, verses.length));
 
   // A new surah means a new verses array — restart pagination rather than
@@ -26,7 +28,8 @@ export function QuranReader({ surah, verses }: QuranReaderProps) {
     <section className="quran-reader" dir="rtl" lang="ar">
       <h2>{surah.nameArabic}</h2>
       <p>
-        {surah.nameTransliterated} · {surah.revelationType} · {surah.verseCount} verses
+        <span dir="ltr">{surah.nameTransliterated}</span> · {t(`quran.revelation.${surah.revelationType}`)} ·{" "}
+        {formatVerseCount(language, surah.verseCount)}
       </p>
       <div className="quran-reader-scroll">
         <ol>
@@ -37,9 +40,13 @@ export function QuranReader({ surah, verses }: QuranReaderProps) {
           ))}
         </ol>
         {hasMore && (
-          <button type="button" className="quran-reader-load-more" onClick={() => setVisibleCount((n) => Math.min(n + BATCH_SIZE, verses.length))}>
-            <span lang="en" dir="ltr">
-              Load more — {visibleCount} of {verses.length} verses
+          <button
+            type="button"
+            className="quran-reader-load-more"
+            onClick={() => setVisibleCount((n) => Math.min(n + BATCH_SIZE, verses.length))}
+          >
+            <span dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
+              {t("quranReader.loadMore", { shown: visibleCount, total: verses.length })}
             </span>
           </button>
         )}

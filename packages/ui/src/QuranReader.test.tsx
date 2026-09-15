@@ -20,7 +20,12 @@ describe("QuranReader", () => {
   it("renders the surah's Arabic name and metadata line", () => {
     render(<QuranReader surah={alFatiha} verses={verses} />);
     expect(screen.getByRole("heading", { name: "سُورَةُ ٱلْفَاتِحَةِ" })).toBeInTheDocument();
-    expect(screen.getByText(/Al-Faatiha.*Meccan.*2 verses/)).toBeInTheDocument();
+    // The transliterated name is wrapped in its own dir="ltr" span (bidi
+    // correctness inside the surrounding RTL section), so the metadata
+    // line's text is split across elements — match by combined textContent
+    // rather than a getByText regex, which only matches a single text node.
+    const metaLine = screen.getByText((_, element) => element?.tagName.toLowerCase() === "p");
+    expect(metaLine).toHaveTextContent(/Al-Faatiha.*Meccan.*2 verses/);
   });
 
   it("renders every verse as a numbered list item", () => {

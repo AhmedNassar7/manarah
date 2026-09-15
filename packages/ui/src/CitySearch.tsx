@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { City } from "@manarah/core";
+import { useTranslation } from "./i18n/index.js";
 
 export interface CitySearchProps {
   search: (query: string) => City[] | Promise<City[]>;
@@ -17,7 +18,8 @@ export interface CitySearchProps {
  * resolves after a newer one is discarded rather than clobbering the
  * up-to-date results.
  */
-export function CitySearch({ search, onSelect, placeholder = "Search for a cityâ€¦" }: CitySearchProps) {
+export function CitySearch({ search, onSelect, placeholder }: CitySearchProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<City[]>([]);
 
@@ -49,14 +51,14 @@ export function CitySearch({ search, onSelect, placeholder = "Search for a cityâ
       <input
         type="text"
         role="searchbox"
-        aria-label="City search"
-        placeholder={placeholder}
+        aria-label={t("citySearch.ariaLabel")}
+        placeholder={placeholder ?? t("citySearch.placeholderDefault")}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
       {query.trim() && (
         <ul>
-          {results.length === 0 && <li>No matching cities</li>}
+          {results.length === 0 && <li>{t("citySearch.noResults")}</li>}
           {results.map((city) => (
             <li key={`${city.asciiName}-${city.countryCode}-${city.latitude}`}>
               <button type="button" onClick={() => handleSelect(city)}>

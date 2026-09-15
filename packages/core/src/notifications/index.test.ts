@@ -279,7 +279,7 @@ describe("runNotificationCheck", () => {
 
   it("fires and persists state once a saved prayer time has passed", async () => {
     const store = fakeStore();
-    await store.setSettings({ coordinates: cairo, prayerTimesSettings, azkarSchedules: [] });
+    await store.setSettings({ coordinates: cairo, prayerTimesSettings, azkarSchedules: [], language: "en" });
     const notify = vi.fn();
 
     const times = computePrayerTimes(cairo, new Date("2026-09-15T12:00:00"), prayerTimesSettings);
@@ -300,7 +300,7 @@ describe("runNotificationCheck", () => {
 
   it("does not re-notify on a second check moments later", async () => {
     const store = fakeStore();
-    await store.setSettings({ coordinates: cairo, prayerTimesSettings, azkarSchedules: [] });
+    await store.setSettings({ coordinates: cairo, prayerTimesSettings, azkarSchedules: [], language: "en" });
     const times = computePrayerTimes(cairo, new Date("2026-09-15T12:00:00"), prayerTimesSettings);
 
     await runNotificationCheck({
@@ -332,6 +332,7 @@ describe("runNotificationCheck", () => {
       coordinates: cairo,
       prayerTimesSettings,
       azkarSchedules: [{ categoryId: "27", trigger: "morning", muted: true }],
+      language: "en",
     });
     const notify = vi.fn();
     const times = computePrayerTimes(cairo, new Date("2026-09-15T12:00:00"), prayerTimesSettings);
@@ -355,6 +356,7 @@ describe("runNotificationCheck", () => {
       coordinates: cairo,
       prayerTimesSettings,
       azkarSchedules: [{ categoryId: "96", trigger: "custom-time", customTime: "14:30", muted: false }],
+      language: "en",
     });
     const notify = vi.fn();
 

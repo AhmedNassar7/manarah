@@ -9,19 +9,35 @@ import {
   type City,
   type Coordinates,
   type DailyPrayerTimes,
+  type Language,
+  type PrayerTimesSettings,
+  type Surah,
   type UserSettings,
   type Verse,
 } from "@manarah/core";
-import { AZKAR_CATEGORIES, findCities, getAzkarCategory, getSurah, getVersesForSurah, SURAHS } from "@manarah/data";
+import {
+  AZKAR_CATEGORIES,
+  CALCULATION_METHODS,
+  findCities,
+  getAzkarCategory,
+  getSurah,
+  getVersesForSurah,
+  SURAHS,
+} from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
 import {
   AzkarList,
   AzkarScheduleEditor,
   CitySearch,
+  LanguageProvider,
+  LanguageSwitcher,
   PrayerCountdown,
+  PrayerSettingsEditor,
   QiblaCompass,
   QuranReader,
   SurahList,
+  translate,
+  useTranslation,
 } from "@manarah/ui";
 
 const MORNING_EVENING_AZKAR = getAzkarCategory("27")!;
@@ -59,7 +75,7 @@ export function App() {
       }
 
       if (!("geolocation" in navigator)) {
-        if (!stored.coordinates) setError("Geolocation is not available in this browser.");
+        if (!stored.coordinates) setError(translate(stored.language, "app.geolocationUnavailable"));
         return;
       }
       navigator.geolocation.getCurrentPosition(
@@ -127,6 +143,18 @@ export function App() {
     });
   }
 
+  function handlePrayerSettingsChange(prayerTimesSettings: PrayerTimesSettings) {
+    setSettings((prev) => {
+      const next = { ...prev, prayerTimesSettings };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      if (next.coordinates) {
+        setTimes(computePrayerTimes(next.coordinates, new Date(), prayerTimesSettings));
+        setTomorrowsFajr(tomorrowsFajrFor(next.coordinates, prayerTimesSettings));
+      }
+      return next;
+    });
+  }
+
   function handleCitySelect(city: City) {
     const coordinates = { latitude: city.latitude, longitude: city.longitude };
     setSettings((prev) => {
@@ -148,18 +176,79 @@ export function App() {
     });
   }
 
+  function handleLanguageChange(language: Language) {
+    setSettings((prev) => {
+      const next = { ...prev, language };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   const selectedSurah = selectedSurahNumber !== null ? getSurah(selectedSurahNumber) : undefined;
+
+  return (
+    <LanguageProvider language={settings.language} onLanguageChange={handleLanguageChange}>
+      <AppBody
+        settings={settings}
+        times={times}
+        tomorrowsFajr={tomorrowsFajr}
+        error={error}
+        heading={heading}
+        selectedSurahNumber={selectedSurahNumber}
+        selectedSurah={selectedSurah}
+        selectedSurahVerses={selectedSurahVerses}
+        onCitySelect={handleCitySelect}
+        onPrayerSettingsChange={handlePrayerSettingsChange}
+        onSurahSelect={handleSurahSelect}
+        onSchedulesChange={handleSchedulesChange}
+      />
+    </LanguageProvider>
+  );
+}
+
+interface AppBodyProps {
+  settings: UserSettings;
+  times: DailyPrayerTimes | null;
+  tomorrowsFajr: Date | null;
+  error: string | null;
+  heading: number | undefined;
+  selectedSurahNumber: number | null;
+  selectedSurah: Surah | undefined;
+  selectedSurahVerses: Verse[] | null;
+  onCitySelect: (city: City) => void;
+  onPrayerSettingsChange: (settings: PrayerTimesSettings) => void;
+  onSurahSelect: (surahNumber: number) => void;
+  onSchedulesChange: (schedules: AzkarSchedule[]) => void;
+}
+
+/** The presentational half of the app — split out so it (and everything it renders) sits *inside* LanguageProvider and can call useTranslation(). */
+function AppBody({
+  settings,
+  times,
+  tomorrowsFajr,
+  error,
+  heading,
+  selectedSurahNumber,
+  selectedSurah,
+  selectedSurahVerses,
+  onCitySelect,
+  onPrayerSettingsChange,
+  onSurahSelect,
+  onSchedulesChange,
+}: AppBodyProps) {
+  const { t } = useTranslation();
 
   return (
     <main className="app-shell">
       <header className="app-header">
         <h1>Manarah</h1>
-        <span className="tagline">منارة — prayer, azkar, Qur'an, and Qibla</span>
+        <span className="tagline">منارة — {t("app.tagline")}</span>
+        <LanguageSwitcher />
       </header>
 
       {error && <p className="alert">{error}</p>}
 
-      <CitySearch search={findCities} onSelect={handleCitySelect} placeholder="Set location manually…" />
+      <CitySearch search={findCities} onSelect={onCitySelect} placeholder={t("citySearch.placeholderManual")} />
 
       <div className="card-row">
         {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
@@ -173,19 +262,28 @@ export function App() {
       </div>
 
       <section>
-        <h2 className="section-title">Quran</h2>
-        <SurahList surahs={SURAHS} onSelect={handleSurahSelect} selectedSurah={selectedSurahNumber ?? undefined} />
+        <h2 className="section-title">{t("app.sectionPrayerSettings")}</h2>
+        <PrayerSettingsEditor
+          methods={CALCULATION_METHODS}
+          settings={settings.prayerTimesSettings}
+          onChange={onPrayerSettingsChange}
+        />
+      </section>
+
+      <section>
+        <h2 className="section-title">{t("app.sectionQuran")}</h2>
+        <SurahList surahs={SURAHS} onSelect={onSurahSelect} selectedSurah={selectedSurahNumber ?? undefined} />
         {selectedSurah && selectedSurahVerses && <QuranReader surah={selectedSurah} verses={selectedSurahVerses} />}
       </section>
 
       <AzkarList category={MORNING_EVENING_AZKAR} />
 
       <section>
-        <h2 className="section-title">Azkar settings</h2>
+        <h2 className="section-title">{t("app.sectionAzkarSettings")}</h2>
         <AzkarScheduleEditor
           categories={AZKAR_CATEGORIES}
           schedules={settings.azkarSchedules}
-          onChange={handleSchedulesChange}
+          onChange={onSchedulesChange}
         />
       </section>
     </main>

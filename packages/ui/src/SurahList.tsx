@@ -1,4 +1,5 @@
 import type { Surah } from "@manarah/core";
+import { formatVerseCount, useTranslation } from "./i18n/index.js";
 
 export interface SurahListProps {
   surahs: Surah[];
@@ -8,6 +9,8 @@ export interface SurahListProps {
 
 /** A browsable list of all 114 surahs — the entry point into reading anything besides whatever's hardcoded as a default. */
 export function SurahList({ surahs, onSelect, selectedSurah }: SurahListProps) {
+  const { language } = useTranslation();
+
   return (
     <ol className="surah-list">
       {surahs.map((surah) => (
@@ -21,7 +24,7 @@ export function SurahList({ surahs, onSelect, selectedSurah }: SurahListProps) {
               {surah.nameArabic}
             </span>{" "}
             <span>
-              {surah.nameTransliterated} · {surah.verseCount} verses
+              {surah.nameTransliterated} · {formatVerseCount(language, surah.verseCount)}
             </span>
           </button>
         </li>

@@ -1,3 +1,5 @@
+import { useTranslation } from "./i18n/index.js";
+
 export interface QiblaCompassProps {
   /** Degrees from true north to the Kaaba, 0-360 (from core's qiblaBearing). */
   bearing: number;
@@ -23,8 +25,9 @@ function angularDistanceFromZero(degrees: number): number {
   return Math.min(degrees, 360 - degrees);
 }
 
-function formatDistance(distanceKm: number): string {
-  return distanceKm < 10 ? `${distanceKm.toFixed(2)} km` : `${Math.round(distanceKm)} km`;
+function formatDistance(distanceKm: number, unit: string): string {
+  const value = distanceKm < 10 ? distanceKm.toFixed(2) : String(Math.round(distanceKm));
+  return `${value} ${unit}`;
 }
 
 /**
@@ -42,9 +45,11 @@ function formatDistance(distanceKm: number): string {
  * looping or staying on as a permanent badge.
  */
 export function QiblaCompass({ bearing, distanceKm, heading }: QiblaCompassProps) {
+  const { t } = useTranslation();
   const rotation = normalizeDegrees(heading === undefined ? bearing : bearing - heading);
   const roundedBearing = Math.round(normalizeDegrees(bearing));
   const isLocked = heading !== undefined && angularDistanceFromZero(rotation) < LOCK_THRESHOLD_DEGREES;
+  const distance = formatDistance(distanceKm, t("qibla.distanceUnit"));
 
   return (
     <div className={`qibla-compass card${isLocked ? " qibla-compass-locked" : ""}`}>
@@ -53,10 +58,10 @@ export function QiblaCompass({ bearing, distanceKm, heading }: QiblaCompassProps
         role="img"
         aria-label={
           heading === undefined
-            ? `Qibla direction: ${roundedBearing} degrees from north`
+            ? t("qibla.ariaBearing", { deg: roundedBearing })
             : isLocked
-              ? "Qibla direction: locked onto the Kaaba"
-              : "Qibla direction relative to your current heading"
+              ? t("qibla.ariaLocked")
+              : t("qibla.ariaRelative")
         }
         style={{ transform: `rotate(${rotation}deg)` }}
       >
@@ -65,8 +70,8 @@ export function QiblaCompass({ bearing, distanceKm, heading }: QiblaCompassProps
           <polygon points="12,2 18,20 12,15 6,20" fill="currentColor" />
         </svg>
       </div>
-      <p className="qibla-compass-bearing">{roundedBearing}° from North</p>
-      <p className="qibla-compass-distance">{formatDistance(distanceKm)} to the Kaaba</p>
+      <p className="qibla-compass-bearing">{t("qibla.fromNorth", { deg: roundedBearing })}</p>
+      <p className="qibla-compass-distance">{t("qibla.toKaaba", { distance })}</p>
     </div>
   );
 }

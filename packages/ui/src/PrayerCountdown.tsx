@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { nextPrayer, type DailyPrayerTimes } from "@manarah/core";
+import { useTranslation } from "./i18n/index.js";
 
 export interface PrayerCountdownProps {
   todaysTimes: DailyPrayerTimes;
@@ -23,6 +24,7 @@ function formatCountdown(msRemaining: number): string {
 
 /** Shared prayer-countdown widget: used in the extension popup, the web/PWA header, and the desktop tray. */
 export function PrayerCountdown({ todaysTimes, tomorrowsFajr }: PrayerCountdownProps) {
+  const { t } = useTranslation();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -35,16 +37,16 @@ export function PrayerCountdown({ todaysTimes, tomorrowsFajr }: PrayerCountdownP
   if (!upcoming) {
     return (
       <div className="prayer-countdown card">
-        <p className="prayer-countdown-label">Today's prayers</p>
-        <div className="prayer-countdown-name">No more prayers today</div>
+        <p className="prayer-countdown-label">{t("prayer.todaysPrayers")}</p>
+        <div className="prayer-countdown-name">{t("prayer.noMoreToday")}</div>
       </div>
     );
   }
 
   return (
     <div className="prayer-countdown card">
-      <div className="prayer-countdown-label">Next prayer</div>
-      <div className="prayer-countdown-name">{upcoming.name}</div>
+      <div className="prayer-countdown-label">{t("prayer.next")}</div>
+      <div className="prayer-countdown-name">{t(`prayer.name.${upcoming.name}`)}</div>
       <div className="prayer-countdown-time">{formatCountdown(upcoming.at.getTime() - now.getTime())}</div>
     </div>
   );

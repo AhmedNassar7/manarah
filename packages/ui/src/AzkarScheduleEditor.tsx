@@ -1,4 +1,5 @@
 import type { AzkarCategory, AzkarSchedule, AzkarTrigger } from "@manarah/core";
+import { useTranslation } from "./i18n/index.js";
 
 export interface AzkarScheduleEditorProps {
   categories: AzkarCategory[];
@@ -30,6 +31,8 @@ function scheduleFor(categoryId: string, schedules: AzkarSchedule[]): AzkarSched
  * real overrides.
  */
 export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarScheduleEditorProps) {
+  const { t } = useTranslation();
+
   function updateSchedule(category: AzkarCategory, patch: Partial<Omit<AzkarSchedule, "categoryId">>) {
     const current: AzkarSchedule = scheduleFor(category.id, schedules) ?? {
       categoryId: category.id,
@@ -48,10 +51,10 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
       <table>
         <thead>
           <tr>
-            <th>Category</th>
-            <th>Muted</th>
-            <th>Trigger</th>
-            <th>Custom time</th>
+            <th>{t("azkarSchedule.headerCategory")}</th>
+            <th>{t("azkarSchedule.headerMuted")}</th>
+            <th>{t("azkarSchedule.headerTrigger")}</th>
+            <th>{t("azkarSchedule.headerCustomTime")}</th>
           </tr>
         </thead>
         <tbody>
@@ -66,14 +69,14 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
                 <td>
                   <input
                     type="checkbox"
-                    aria-label={`Mute ${category.name}`}
+                    aria-label={t("azkarSchedule.muteLabel", { category: category.name })}
                     checked={muted}
                     onChange={(event) => updateSchedule(category, { muted: event.target.checked })}
                   />
                 </td>
                 <td>
                   <select
-                    aria-label={`Trigger for ${category.name}`}
+                    aria-label={t("azkarSchedule.triggerLabel", { category: category.name })}
                     value={trigger}
                     disabled={muted}
                     onChange={(event) =>
@@ -82,7 +85,7 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
                   >
                     {TRIGGER_OPTIONS.map((option) => (
                       <option key={option} value={option}>
-                        {option}
+                        {t(`azkarSchedule.trigger.${option}`)}
                       </option>
                     ))}
                   </select>
@@ -91,7 +94,7 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
                   {trigger === "custom-time" && !muted && (
                     <input
                       type="time"
-                      aria-label={`Custom time for ${category.name}`}
+                      aria-label={t("azkarSchedule.customTimeLabel", { category: category.name })}
                       value={schedule?.customTime ?? ""}
                       onChange={(event) => updateSchedule(category, { customTime: event.target.value })}
                     />

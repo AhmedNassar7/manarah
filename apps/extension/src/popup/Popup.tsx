@@ -8,11 +8,19 @@ import {
   type City,
   type Coordinates,
   type DailyPrayerTimes,
+  type Language,
   type UserSettings,
 } from "@manarah/core";
 import { findCities } from "@manarah/data";
 import { ChromeSyncStore } from "@manarah/storage";
-import { CitySearch, PrayerCountdown, QiblaCompass } from "@manarah/ui";
+import {
+  CitySearch,
+  LanguageProvider,
+  LanguageSwitcher,
+  PrayerCountdown,
+  QiblaCompass,
+  useTranslation,
+} from "@manarah/ui";
 
 const store = new ChromeSyncStore();
 
@@ -27,12 +35,14 @@ export function Popup() {
   const [tomorrowsFajr, setTomorrowsFajr] = useState<Date | null>(null);
   const [coordinates, setCoordinates] = useState<Coordinates | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<Language>(DEFAULT_SETTINGS.language);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+      setLanguage(settings.language);
 
       if (settings.coordinates) {
         setCoordinates(settings.coordinates);
@@ -73,13 +83,46 @@ export function Popup() {
     setTomorrowsFajr(tomorrowsFajrFor(nextCoordinates, nextSettings.prayerTimesSettings));
   }
 
+  async function handleLanguageChange(nextLanguage: Language) {
+    setLanguage(nextLanguage);
+    const settings = (await store.get<UserSettings>(SETTINGS_STORAGE_KEY)) ?? DEFAULT_SETTINGS;
+    await store.set(SETTINGS_STORAGE_KEY, { ...settings, language: nextLanguage });
+  }
+
+  return (
+    <LanguageProvider language={language} onLanguageChange={handleLanguageChange}>
+      <PopupBody
+        times={times}
+        tomorrowsFajr={tomorrowsFajr}
+        coordinates={coordinates}
+        error={error}
+        onCitySelect={handleCitySelect}
+      />
+    </LanguageProvider>
+  );
+}
+
+interface PopupBodyProps {
+  times: DailyPrayerTimes | null;
+  tomorrowsFajr: Date | null;
+  coordinates: Coordinates | null;
+  error: string | null;
+  onCitySelect: (city: City) => void;
+}
+
+function PopupBody({ times, tomorrowsFajr, coordinates, error, onCitySelect }: PopupBodyProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="popup-shell">
-      <h1>Manarah</h1>
+      <header className="app-header">
+        <h1>Manarah</h1>
+        <LanguageSwitcher />
+      </header>
       {error && (
         <div className="alert">
           <p>{error}</p>
-          <CitySearch search={findCities} onSelect={handleCitySelect} placeholder="Set your city instead…" />
+          <CitySearch search={findCities} onSelect={onCitySelect} placeholder={t("citySearch.placeholderPopupFallback")} />
         </div>
       )}
       {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
