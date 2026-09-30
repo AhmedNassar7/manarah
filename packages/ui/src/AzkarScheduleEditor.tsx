@@ -1,4 +1,5 @@
 import type { AzkarCategory, AzkarSchedule, AzkarTrigger } from "@manarah/core";
+import { azkarCategoryName } from "./AzkarList.js";
 import { useTranslation } from "./i18n/index.js";
 
 export interface AzkarScheduleEditorProps {
@@ -31,7 +32,7 @@ function scheduleFor(categoryId: string, schedules: AzkarSchedule[]): AzkarSched
  * real overrides.
  */
 export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarScheduleEditorProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   function updateSchedule(category: AzkarCategory, patch: Partial<Omit<AzkarSchedule, "categoryId">>) {
     const current: AzkarSchedule = scheduleFor(category.id, schedules) ?? {
@@ -65,18 +66,18 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
 
             return (
               <tr key={category.id}>
-                <td>{category.name}</td>
+                <td>{azkarCategoryName(category, language)}</td>
                 <td>
                   <input
                     type="checkbox"
-                    aria-label={t("azkarSchedule.muteLabel", { category: category.name })}
+                    aria-label={t("azkarSchedule.muteLabel", { category: azkarCategoryName(category, language) })}
                     checked={muted}
                     onChange={(event) => updateSchedule(category, { muted: event.target.checked })}
                   />
                 </td>
                 <td>
                   <select
-                    aria-label={t("azkarSchedule.triggerLabel", { category: category.name })}
+                    aria-label={t("azkarSchedule.triggerLabel", { category: azkarCategoryName(category, language) })}
                     value={trigger}
                     disabled={muted}
                     onChange={(event) =>
@@ -94,7 +95,9 @@ export function AzkarScheduleEditor({ categories, schedules, onChange }: AzkarSc
                   {trigger === "custom-time" && !muted && (
                     <input
                       type="time"
-                      aria-label={t("azkarSchedule.customTimeLabel", { category: category.name })}
+                      aria-label={t("azkarSchedule.customTimeLabel", {
+                        category: azkarCategoryName(category, language),
+                      })}
                       value={schedule?.customTime ?? ""}
                       onChange={(event) => updateSchedule(category, { customTime: event.target.value })}
                     />

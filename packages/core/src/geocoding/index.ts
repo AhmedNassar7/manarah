@@ -1,3 +1,6 @@
+import type { Coordinates } from "../prayer-times/index.js";
+import { greatCircleDistanceKm } from "../qibla/index.js";
+
 export interface City {
   name: string;
   asciiName: string;
@@ -28,4 +31,24 @@ export function searchCities(cities: City[], query: string, limit = 10): City[] 
     })
     .sort((a, b) => b.population - a.population)
     .slice(0, limit);
+}
+
+/**
+ * The closest city to `coordinates`, or undefined if none lies within
+ * `maxDistanceKm` — turns a GPS fix into a human-readable place name
+ * entirely on-device (no reverse-geocoding service), using the same bundled
+ * GeoNames list as city search. The cutoff keeps a fix in open country or
+ * at sea from being labelled with some far-off town.
+ */
+export function nearestCity(cities: City[], coordinates: Coordinates, maxDistanceKm = 50): City | undefined {
+  let best: City | undefined;
+  let bestDistance = maxDistanceKm;
+  for (const city of cities) {
+    const distance = greatCircleDistanceKm(coordinates, city);
+    if (distance <= bestDistance) {
+      best = city;
+      bestDistance = distance;
+    }
+  }
+  return best;
 }

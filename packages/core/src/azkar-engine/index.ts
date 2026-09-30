@@ -20,8 +20,18 @@ export interface AzkarItem {
 export interface AzkarCategory {
   id: string;
   name: string;
+  /** The category's title from Hisn al-Muslim's own Arabic edition; English `name` is the fallback. */
+  nameArabic?: string;
   trigger: AzkarTrigger;
   items: AzkarItem[];
+}
+
+/** A themed group of categories for browsing (e.g. "Travel", "Illness & death") — see @manarah/data's AZKAR_SECTIONS. */
+export interface AzkarSection {
+  id: string;
+  /** Decorative glyph shown beside the title. */
+  icon: string;
+  categoryIds: string[];
 }
 
 export interface AzkarSchedule {

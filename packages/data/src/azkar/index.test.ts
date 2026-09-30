@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AZKAR_CATEGORIES, getAzkarCategoriesByTrigger, getAzkarCategory } from "./index.js";
+import { AZKAR_CATEGORIES, AZKAR_SECTIONS, getAzkarCategoriesByTrigger, getAzkarCategory } from "./index.js";
 
 const VALID_TRIGGERS = new Set([
   "morning",
@@ -57,5 +57,26 @@ describe("Azkar data integrity", () => {
 
   it("getAzkarCategory returns undefined for an unknown id", () => {
     expect(getAzkarCategory("not-a-real-id")).toBeUndefined();
+  });
+});
+
+describe("Azkar sections", () => {
+  it("places every category that has items in exactly one section", () => {
+    const placed = AZKAR_SECTIONS.flatMap((section) => section.categoryIds);
+    expect(new Set(placed).size, "a category appears in more than one section").toBe(placed.length);
+    const withItems = AZKAR_CATEGORIES.filter((c) => c.items.length > 0).map((c) => c.id);
+    expect([...placed].sort()).toEqual([...withItems].sort());
+  });
+
+  it("has unique section ids and no empty sections", () => {
+    const ids = AZKAR_SECTIONS.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const section of AZKAR_SECTIONS) expect(section.categoryIds.length).toBeGreaterThan(0);
+  });
+
+  it("gives every category an Arabic title", () => {
+    for (const category of AZKAR_CATEGORIES) {
+      expect(category.nameArabic?.trim().length, `category ${category.id}`).toBeGreaterThan(0);
+    }
   });
 });

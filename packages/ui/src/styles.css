@@ -346,8 +346,299 @@ button {
 
 .qibla-page {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 24px;
+}
+
+.qibla-page > .location-summary {
+  align-self: stretch;
+}
+
+/* ---------- Qibla finder ----------
+   The full-page compass. One big instruction line on top (the only thing
+   a user needs to read), the rose below it. With a live heading the rose
+   turns under a fixed pointer; the gold line + 🕋 mark the Qibla on the
+   rim. Facing it earns the same gold bloom + single ripple as the small
+   compass's lock — a moment, not a permanent badge. */
+
+.qibla-finder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.qibla-finder-instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  min-height: 2.2em;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--ink);
+  transition: color var(--dur-bloom) var(--ease-quiet);
+}
+
+.qibla-finder-turn-icon {
+  font-size: 1.6rem;
+  color: var(--accent);
+}
+
+.qibla-finder-facing .qibla-finder-instruction {
+  color: var(--gold);
+}
+
+.qibla-finder-dial-wrap {
+  position: relative;
+  width: min(80vw, 320px);
+  aspect-ratio: 1;
+}
+
+.qibla-finder-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  translate: -50% 0;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 16px solid var(--danger);
+  z-index: 2;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+.qibla-finder-dial {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.qibla-finder-face {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1;
+  transition: fill var(--dur-bloom) var(--ease-quiet), stroke var(--dur-bloom) var(--ease-quiet);
+}
+
+.qibla-finder-facing .qibla-finder-face {
+  fill: var(--gold-soft);
+  stroke: var(--gold);
+  stroke-width: 3;
+}
+
+.qibla-finder-rose {
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+}
+
+/* Live sensor readings arrive many times a second — a short, quiet ease
+   smooths their jitter without lagging behind the device. */
+.qibla-finder-live .qibla-finder-rose {
+  transition: transform 250ms var(--ease-quiet);
+}
+
+.qibla-finder-tick {
+  stroke: var(--muted);
+  stroke-width: 0.8;
+  opacity: 0.6;
+}
+
+.qibla-finder-tick-major {
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+.qibla-finder-letter {
+  fill: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.qibla-finder-north {
+  fill: var(--danger);
+}
+
+.qibla-finder-line {
+  stroke: var(--gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.qibla-finder-marker-bg {
+  fill: var(--gold-soft);
+  stroke: var(--gold);
+  stroke-width: 1.5;
+}
+
+.qibla-finder-kaaba {
+  font-size: 16px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.qibla-finder-hub {
+  fill: var(--accent);
+}
+
+.qibla-finder-ripple {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2;
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+  animation: qibla-ripple 900ms var(--ease-quiet);
+}
+
+.qibla-finder-facts {
+  display: flex;
   justify-content: center;
-  padding: 24px 0;
+  gap: 28px;
+  margin: 0;
+}
+
+.qibla-finder-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qibla-finder-facts dt {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.qibla-finder-facts dd {
+  margin: 0;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.qibla-finder-help,
+.qibla-finder-hint {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.qibla-finder-enable {
+  margin-top: 10px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--radius-round);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 120ms var(--ease-quiet);
+}
+
+.qibla-finder-enable:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Location summary ----------
+   "📍 City, Country" + where it came from, with Change opening the GPS
+   button and city search in place. */
+
+.location-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.location-summary[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.location-summary-current {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.location-summary-pin {
+  font-size: 1.3rem;
+}
+
+.location-summary-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.location-summary-name {
+  font-size: 1rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-summary-source {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.location-summary-change {
+  padding: 5px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.location-summary-change:hover {
+  border-color: var(--accent);
+}
+
+.location-summary-needed {
+  margin: 0;
+}
+
+.location-summary-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: navigator-panel-in 220ms var(--ease-quiet) both;
+  transform-origin: top center;
+}
+
+.location-summary-gps {
+  align-self: flex-start;
+  padding: 7px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-round);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.location-summary-gps:disabled {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 /* ---------- Prayer countdown ---------- */
@@ -1599,6 +1890,167 @@ button {
 }
 
 /* ---------- Azkar schedule editor ---------- */
+
+/* ---------- Azkar browser ----------
+   Search on top, then a horizontally scrolling row of section tabs, then
+   either a section's categories as a list of cards or one open category's
+   AzkarList. Teal marks the selected tab — gold stays reserved for the
+   completion bloom inside AzkarList. */
+
+.azkar-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.azkar-browser[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.azkar-browser-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.azkar-browser-search:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.azkar-browser-sections {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.azkar-browser-section-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 120ms var(--ease-quiet),
+    border-color 120ms var(--ease-quiet),
+    transform 120ms var(--ease-quiet);
+}
+
+.azkar-browser-section-tab:hover {
+  border-color: var(--accent);
+}
+
+.azkar-browser-section-tab:active {
+  transform: scale(0.96);
+}
+
+.azkar-browser-section-tab[aria-selected="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.azkar-browser-categories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.azkar-browser-categories button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  animation: navigator-panel-in 220ms var(--ease-quiet) both;
+  transition:
+    border-color 120ms var(--ease-quiet),
+    background-color 120ms var(--ease-quiet);
+}
+
+.azkar-browser-categories button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.azkar-browser-category-name {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.azkar-browser-category-meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.azkar-browser-empty {
+  color: var(--muted);
+}
+
+.azkar-browser-back {
+  align-self: flex-start;
+  margin-bottom: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.azkar-browser-back:hover {
+  border-color: var(--accent);
+}
+
+.azkar-browser-category {
+  display: flex;
+  flex-direction: column;
+}
+
+.azkar-list h2[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.azkar-settings {
+  margin-top: 20px;
+}
+
+.azkar-settings > summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 6px 0;
+}
 
 .azkar-schedule-editor {
   width: 100%;

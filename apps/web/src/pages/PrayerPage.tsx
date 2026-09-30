@@ -1,9 +1,15 @@
 import type { Coordinates, DailyPrayerTimes, PrayerTimesSettings } from "@manarah/core";
 import { CALCULATION_METHODS } from "@manarah/data";
-import { PrayerCountdown, PrayerSettingsEditor, useTranslation } from "@manarah/ui";
-import { LocationPrompt } from "../LocationPrompt.js";
+import {
+  LocationSummary,
+  PrayerCountdown,
+  PrayerSettingsEditor,
+  useTranslation,
+  type LocationSummaryProps,
+} from "@manarah/ui";
 
 export interface PrayerPageProps {
+  locationSummary: LocationSummaryProps;
   coordinates: Coordinates | undefined;
   times: DailyPrayerTimes | null;
   tomorrowsFajr: Date | null;
@@ -11,20 +17,35 @@ export interface PrayerPageProps {
   onPrayerSettingsChange: (settings: PrayerTimesSettings) => void;
 }
 
-export function PrayerPage({ coordinates, times, tomorrowsFajr, prayerTimesSettings, onPrayerSettingsChange }: PrayerPageProps) {
+export function PrayerPage({
+  locationSummary,
+  coordinates,
+  times,
+  tomorrowsFajr,
+  prayerTimesSettings,
+  onPrayerSettingsChange,
+}: PrayerPageProps) {
   const { t } = useTranslation();
-
-  if (!coordinates) return <LocationPrompt />;
 
   return (
     <>
       <h2 className="section-title">{t("app.sectionPrayer")}</h2>
-      {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
+      {/* Always shown — the saved location is what every time below is computed for. */}
+      <LocationSummary {...locationSummary} />
+      {coordinates && (
+        <>
+          {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
 
-      <section>
-        <h2 className="section-title">{t("app.sectionPrayerSettings")}</h2>
-        <PrayerSettingsEditor methods={CALCULATION_METHODS} settings={prayerTimesSettings} onChange={onPrayerSettingsChange} />
-      </section>
+          <section>
+            <h2 className="section-title">{t("app.sectionPrayerSettings")}</h2>
+            <PrayerSettingsEditor
+              methods={CALCULATION_METHODS}
+              settings={prayerTimesSettings}
+              onChange={onPrayerSettingsChange}
+            />
+          </section>
+        </>
+      )}
     </>
   );
 }

@@ -1,6 +1,8 @@
 import type { AzkarCategory } from "@manarah/core";
 import categoriesData from "./categories.json";
 
+export * from "./sections.js";
+
 /**
  * Default Hisn al-Muslim azkar set (132 categories, 266 items), sourced from
  * wafaaelmaandy/Hisn-Muslim-Json on GitHub — itself built from hisnmuslim.com's
@@ -14,6 +16,10 @@ import categoriesData from "./categories.json";
  * (morning/evening, waking, before-sleep, post-salah, or "situational" for
  * everything else — contextual duas with no fixed daily time). Users can
  * remap any category's trigger via AzkarSchedule; this is only the default.
+ *
+ * `nameArabic` on each category comes from hisnmuslim.com's own Arabic
+ * index (hisnmuslim.com/api/ar/husn_ar.json), matched by category id —
+ * the two editions share the same 132 ids, verified one-to-one 2026-09-30.
  */
 export const AZKAR_CATEGORIES: AzkarCategory[] = categoriesData as AzkarCategory[];
 

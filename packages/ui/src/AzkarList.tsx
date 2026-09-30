@@ -1,12 +1,19 @@
 import { useState } from "react";
-import type { AzkarCategory } from "@manarah/core";
+import type { AzkarCategory, Language } from "@manarah/core";
+import { useTranslation } from "./i18n/index.js";
 
 export interface AzkarListProps {
   category: AzkarCategory;
 }
 
+/** The category title in the UI language — Hisn al-Muslim's own Arabic title when there is one, else the English name. */
+export function azkarCategoryName(category: AzkarCategory, language: Language): string {
+  return language === "ar" && category.nameArabic ? category.nameArabic : category.name;
+}
+
 /** Renders one azkar category with a per-item tally counter. Shared across web/extension/desktop/mobile. */
 export function AzkarList({ category }: AzkarListProps) {
+  const { language } = useTranslation();
   const [counts, setCounts] = useState<Record<string, number>>({});
   // Tracks which button is mid-bounce so only the just-tapped one animates,
   // not every button in the list. Cleared via onAnimationEnd, not a timer,
@@ -23,7 +30,7 @@ export function AzkarList({ category }: AzkarListProps) {
 
   return (
     <section className="azkar-list">
-      <h2>{category.name}</h2>
+      <h2 lang={language === "ar" && category.nameArabic ? "ar" : "en"}>{azkarCategoryName(category, language)}</h2>
       <ul>
         {category.items.map((item) => {
           const done = counts[item.id] ?? 0;
@@ -39,7 +46,11 @@ export function AzkarList({ category }: AzkarListProps) {
               <p dir="rtl" lang="ar">
                 {item.arabic}
               </p>
-              {item.translation && <p>{item.translation}</p>}
+              {item.translation && (
+                <p dir="ltr" lang="en">
+                  {item.translation}
+                </p>
+              )}
               <button
                 type="button"
                 className={tappedId === item.id ? "tapped" : undefined}

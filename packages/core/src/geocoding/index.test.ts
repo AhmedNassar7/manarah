@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { searchCities, type City } from "./index.js";
+import { nearestCity, searchCities, type City } from "./index.js";
 
 const cities: City[] = [
   {
@@ -70,5 +70,45 @@ describe("searchCities", () => {
   it("matches a partial substring, not just a prefix", () => {
     const results = searchCities(cities, "air");
     expect(results.map((c) => c.asciiName)).toContain("Cairo");
+  });
+});
+
+describe("nearestCity", () => {
+  const cairo: City = {
+    name: "Cairo",
+    asciiName: "Cairo",
+    countryCode: "EG",
+    latitude: 30.0444,
+    longitude: 31.2357,
+    population: 9_000_000,
+    timezone: "Africa/Cairo",
+  };
+  const giza: City = {
+    name: "Giza",
+    asciiName: "Giza",
+    countryCode: "EG",
+    latitude: 30.0131,
+    longitude: 31.2089,
+    population: 2_400_000,
+    timezone: "Africa/Cairo",
+  };
+  const alexandria: City = {
+    name: "Alexandria",
+    asciiName: "Alexandria",
+    countryCode: "EG",
+    latitude: 31.2001,
+    longitude: 29.9187,
+    population: 3_800_000,
+    timezone: "Africa/Cairo",
+  };
+
+  it("picks the closest city to a GPS fix", () => {
+    expect(nearestCity([alexandria, giza, cairo], { latitude: 30.05, longitude: 31.24 })).toBe(cairo);
+    expect(nearestCity([alexandria, giza, cairo], { latitude: 30.01, longitude: 31.2 })).toBe(giza);
+  });
+
+  it("returns undefined when no city is within the cutoff", () => {
+    expect(nearestCity([cairo], { latitude: 25, longitude: 25 })).toBeUndefined();
+    expect(nearestCity([], { latitude: 30, longitude: 31 })).toBeUndefined();
   });
 });

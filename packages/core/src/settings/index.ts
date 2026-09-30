@@ -6,11 +6,32 @@ export interface LastRead {
   ayah: number;
 }
 
+/** A human-readable label for the saved coordinates, and how they were set. */
+export interface SavedLocation {
+  /** "gps" = from the device's geolocation; "city" = picked by hand from city search. */
+  source: "gps" | "city";
+  /** City name — for a GPS fix, the nearest known city (absent if none is close). */
+  name?: string;
+  /** ISO 3166-1 alpha-2, e.g. "EG". */
+  countryCode?: string;
+}
+
+/**
+ * Whether a fresh GPS fix should replace the saved location. A city the
+ * user picked by hand is a deliberate choice and must stick — only a
+ * previous GPS fix (or no location at all) is refreshed automatically.
+ */
+export function shouldRefreshLocationFromGps(location: SavedLocation | undefined): boolean {
+  return location?.source !== "city";
+}
+
 /** UI display language — independent of the Quran text itself, which is always Arabic. */
 export type Language = "en" | "ar";
 
 export interface UserSettings {
   coordinates?: Coordinates;
+  /** Label/provenance for `coordinates`; absent in settings saved before it existed. */
+  location?: SavedLocation;
   prayerTimesSettings: PrayerTimesSettings;
   /** Overrides for individual azkar categories; categories with no entry use their default trigger. */
   azkarSchedules: AzkarSchedule[];

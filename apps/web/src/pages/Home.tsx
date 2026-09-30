@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
-import { qiblaBearing, qiblaDistanceKm, type City, type Coordinates, type DailyPrayerTimes } from "@manarah/core";
-import { findCities } from "@manarah/data";
-import { CitySearch, PrayerCountdown, QiblaCompass, useTranslation } from "@manarah/ui";
+import { qiblaBearing, qiblaDistanceKm, type Coordinates, type DailyPrayerTimes } from "@manarah/core";
+import { LocationSummary, PrayerCountdown, QiblaCompass, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 
 export interface HomeProps {
-  error: string | null;
-  onCitySelect: (city: City) => void;
+  locationSummary: LocationSummaryProps;
   coordinates: Coordinates | undefined;
   times: DailyPrayerTimes | null;
   tomorrowsFajr: Date | null;
@@ -20,19 +18,21 @@ const QUICK_LINKS = [
 ] as const;
 
 /** The landing page — a quick glance (today's next prayer, Qibla) plus a way into every other section. Everything else lives on its own route. */
-export function Home({ error, onCitySelect, coordinates, times, tomorrowsFajr, heading }: HomeProps) {
+export function Home({ locationSummary, coordinates, times, tomorrowsFajr, heading }: HomeProps) {
   const { t } = useTranslation();
 
   return (
     <>
-      {error && <p className="alert">{error}</p>}
-
-      <CitySearch search={findCities} onSelect={onCitySelect} placeholder={t("citySearch.placeholderManual")} />
+      <LocationSummary {...locationSummary} />
 
       <div className="card-row">
         {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
         {coordinates && (
-          <QiblaCompass bearing={qiblaBearing(coordinates)} distanceKm={qiblaDistanceKm(coordinates)} heading={heading} />
+          <QiblaCompass
+            bearing={qiblaBearing(coordinates)}
+            distanceKm={qiblaDistanceKm(coordinates)}
+            heading={heading}
+          />
         )}
       </div>
 

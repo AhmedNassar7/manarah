@@ -1,8 +1,6 @@
 import type { AzkarSchedule } from "@manarah/core";
-import { AZKAR_CATEGORIES, getAzkarCategory } from "@manarah/data";
-import { AzkarList, AzkarScheduleEditor, useTranslation } from "@manarah/ui";
-
-const MORNING_EVENING_AZKAR = getAzkarCategory("27")!;
+import { AZKAR_CATEGORIES, AZKAR_SECTIONS } from "@manarah/data";
+import { AzkarBrowser, AzkarScheduleEditor, useTranslation } from "@manarah/ui";
 
 export interface AzkarPageProps {
   azkarSchedules: AzkarSchedule[];
@@ -15,12 +13,13 @@ export function AzkarPage({ azkarSchedules, onSchedulesChange }: AzkarPageProps)
   return (
     <>
       <h2 className="section-title">{t("app.sectionAzkar")}</h2>
-      <AzkarList category={MORNING_EVENING_AZKAR} />
+      <AzkarBrowser sections={AZKAR_SECTIONS} categories={AZKAR_CATEGORIES} />
 
-      <section>
-        <h2 className="section-title">{t("app.sectionAzkarSettings")}</h2>
+      {/* 132 rows — collapsed by default so it doesn't bury the azkar themselves. */}
+      <details className="azkar-settings">
+        <summary>{t("app.sectionAzkarSettings")}</summary>
         <AzkarScheduleEditor categories={AZKAR_CATEGORIES} schedules={azkarSchedules} onChange={onSchedulesChange} />
-      </section>
+      </details>
     </>
   );
 }

@@ -2,7 +2,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import {
   computePrayerTimes,
+  nearestCity,
   setNote,
+  shouldRefreshLocationFromGps,
   toggleBookmark,
   withDefaultSettings,
   DEFAULT_SETTINGS,
@@ -14,15 +16,24 @@ import {
   type DailyPrayerTimes,
   type Language,
   type PrayerTimesSettings,
+  type SavedLocation,
   type Translation,
   type UserSettings,
   type Verse,
   type VerseAnnotations,
   type VerseRef,
 } from "@manarah/core";
-import { getJuzStart, getPageStart, getSurah, getTranslationForSurah, getVersesForSurah } from "@manarah/data";
+import {
+  findCities,
+  getAllCities,
+  getJuzStart,
+  getPageStart,
+  getSurah,
+  getTranslationForSurah,
+  getVersesForSurah,
+} from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { LanguageProvider, LanguageSwitcher, translate, useTranslation } from "@manarah/ui";
+import { LanguageProvider, LanguageSwitcher, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
@@ -37,6 +48,16 @@ const store = new IndexedDbStore();
 /** The one translation edition wired in so far — a per-user choice among TRANSLATION_EDITIONS is future work. */
 const DEFAULT_TRANSLATION_EDITION = "en.sahih";
 
+const geolocationAvailable = typeof navigator !== "undefined" && "geolocation" in navigator;
+
+/** iOS 13+ only delivers deviceorientation events after a permission request made from a user tap. */
+type OrientationEventWithPermission = typeof DeviceOrientationEvent & {
+  requestPermission?: () => Promise<"granted" | "denied">;
+};
+const orientationPermissionNeeded =
+  typeof DeviceOrientationEvent !== "undefined" &&
+  typeof (DeviceOrientationEvent as OrientationEventWithPermission).requestPermission === "function";
+
 /** Tomorrow's Fajr — lets PrayerCountdown roll over once tonight's Isha has passed, instead of going dead until midnight. */
 function tomorrowsFajrFor(coordinates: Coordinates, settings: UserSettings["prayerTimesSettings"]): Date {
   const tomorrow = new Date();
@@ -49,6 +70,7 @@ export function App() {
   const [times, setTimes] = useState<DailyPrayerTimes | null>(null);
   const [tomorrowsFajr, setTomorrowsFajr] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
   const [heading, setHeading] = useState<number | undefined>(undefined);
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number | null>(null);
   const [focusAyah, setFocusAyah] = useState<number | undefined>(undefined);
@@ -73,26 +95,15 @@ export function App() {
         setTomorrowsFajr(tomorrowsFajrFor(stored.coordinates, stored.prayerTimesSettings));
       }
 
-      if (!("geolocation" in navigator)) {
+      // A city the user picked by hand is kept as-is — GPS must not
+      // silently replace it on every visit. Only a previous GPS fix (or no
+      // location at all) is refreshed.
+      if (!shouldRefreshLocationFromGps(stored.location)) return;
+      if (!geolocationAvailable) {
         if (!stored.coordinates) setError(translate(stored.language, "app.geolocationUnavailable"));
         return;
       }
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          if (cancelled) return;
-          const coordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-          setSettings((prev) => {
-            const next = { ...prev, coordinates };
-            void store.set(SETTINGS_STORAGE_KEY, next);
-            return next;
-          });
-          setTimes(computePrayerTimes(coordinates, new Date(), stored.prayerTimesSettings));
-          setTomorrowsFajr(tomorrowsFajrFor(coordinates, stored.prayerTimesSettings));
-        },
-        (geoError) => {
-          if (!cancelled && !stored.coordinates) setError(geoError.message);
-        }
-      );
+      locateWithGps({ quietIfAlreadyLocated: stored.coordinates !== undefined, isCancelled: () => cancelled });
     }
 
     void load();
@@ -163,17 +174,76 @@ export function App() {
     });
   }
 
-  function handleCitySelect(city: City) {
-    const coordinates = { latitude: city.latitude, longitude: city.longitude };
+  /** Persists coordinates together with their label/provenance, and recomputes today's times for them. */
+  function saveLocation(coordinates: Coordinates, location: SavedLocation) {
     setSettings((prev) => {
-      const next = { ...prev, coordinates };
+      const next = { ...prev, coordinates, location };
       void store.set(SETTINGS_STORAGE_KEY, next);
+      setTimes(computePrayerTimes(coordinates, new Date(), next.prayerTimesSettings));
+      setTomorrowsFajr(tomorrowsFajrFor(coordinates, next.prayerTimesSettings));
       return next;
     });
-    setError(null);
-    setTimes(computePrayerTimes(coordinates, new Date(), settings.prayerTimesSettings));
-    setTomorrowsFajr(tomorrowsFajrFor(coordinates, settings.prayerTimesSettings));
   }
+
+  function locateWithGps({
+    quietIfAlreadyLocated = false,
+    isCancelled = () => false,
+  }: { quietIfAlreadyLocated?: boolean; isCancelled?: () => boolean } = {}) {
+    if (!geolocationAvailable) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false);
+        if (isCancelled()) return;
+        const coordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+        setError(null);
+        saveLocation(coordinates, { source: "gps" });
+        // Name the fix after the nearest bundled city — on-device, no reverse-geocoding service.
+        void getAllCities().then((cities) => {
+          const city = nearestCity(cities, coordinates);
+          if (!city || isCancelled()) return;
+          setSettings((prev) => {
+            // Only label the fix just taken; if a city was picked meanwhile, that choice wins.
+            if (prev.coordinates !== coordinates) return prev;
+            const next = {
+              ...prev,
+              location: { source: "gps" as const, name: city.name, countryCode: city.countryCode },
+            };
+            void store.set(SETTINGS_STORAGE_KEY, next);
+            return next;
+          });
+        });
+      },
+      (geoError) => {
+        setLocating(false);
+        if (!isCancelled() && !quietIfAlreadyLocated) setError(geoError.message);
+      }
+    );
+  }
+
+  function handleCitySelect(city: City) {
+    setError(null);
+    saveLocation(
+      { latitude: city.latitude, longitude: city.longitude },
+      { source: "city", name: city.name, countryCode: city.countryCode }
+    );
+  }
+
+  function handleEnableLiveCompass() {
+    // Listeners are already attached (see the orientation effect) — once
+    // permission is granted, events simply start arriving.
+    void (DeviceOrientationEvent as OrientationEventWithPermission).requestPermission?.().catch(() => {});
+  }
+
+  const locationSummary: LocationSummaryProps = {
+    coordinates: settings.coordinates,
+    location: settings.location,
+    search: findCities,
+    onCitySelect: handleCitySelect,
+    onUseCurrentLocation: geolocationAvailable ? () => locateWithGps() : undefined,
+    locating,
+    error,
+  };
 
   function handleQuranNavigate(ref: VerseRef) {
     setSelectedSurahNumber(ref.surah);
@@ -236,8 +306,7 @@ export function App() {
               path="/"
               element={
                 <Home
-                  error={error}
-                  onCitySelect={handleCitySelect}
+                  locationSummary={locationSummary}
                   coordinates={settings.coordinates}
                   times={times}
                   tomorrowsFajr={tomorrowsFajr}
@@ -249,6 +318,7 @@ export function App() {
               path="/prayer"
               element={
                 <PrayerPage
+                  locationSummary={locationSummary}
                   coordinates={settings.coordinates}
                   times={times}
                   tomorrowsFajr={tomorrowsFajr}
@@ -257,7 +327,17 @@ export function App() {
                 />
               }
             />
-            <Route path="/qibla" element={<QiblaPage coordinates={settings.coordinates} heading={heading} />} />
+            <Route
+              path="/qibla"
+              element={
+                <QiblaPage
+                  locationSummary={locationSummary}
+                  coordinates={settings.coordinates}
+                  heading={heading}
+                  onEnableLiveCompass={orientationPermissionNeeded ? handleEnableLiveCompass : undefined}
+                />
+              }
+            />
             <Route
               path="/quran"
               element={
