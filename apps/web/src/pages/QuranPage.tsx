@@ -16,7 +16,7 @@ import {
   useTranslation,
   type QuranAudioPlayerHandle,
 } from "@manarah/ui";
-import { loadTafsir } from "../tafsir.js";
+import { loadTafsir, loadWords } from "../quran-com.js";
 
 export interface QuranPageProps {
   selectedSurahNumber: number | null;
@@ -92,6 +92,7 @@ export function QuranPage({
                 load: loadTafsir,
               }
             }
+            loadWords={loadWords}
           />
           <QuranAudioPlayer
             ref={audioPlayerRef}

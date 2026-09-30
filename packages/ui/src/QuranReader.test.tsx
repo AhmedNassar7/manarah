@@ -212,4 +212,22 @@ describe("QuranReader", () => {
     fireEvent.click(screen.getByRole("button", { name: "Actions for verse 1" }));
     expect(screen.queryByRole("button", { name: "Tafsir" })).not.toBeInTheDocument();
   });
+
+  it("opens a verse's word-by-word panel from its toolbar, independently of tafsir", async () => {
+    const loadWords = vi
+      .fn()
+      .mockResolvedValue([
+        { position: 1, text: "ٱلْحَمْدُ", transliteration: "al-ḥamdu", translation: "All praises and thanks" },
+      ]);
+    render(<QuranReader surah={alFatiha} verses={verses} loadWords={loadWords} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Actions for verse 2" }));
+    expect(screen.queryByRole("button", { name: "Tafsir" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Word by word" }));
+    expect(await screen.findByText("All praises and thanks")).toBeInTheDocument();
+    expect(loadWords).toHaveBeenCalledWith(1, 2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide word by word" }));
+    expect(screen.queryByText("All praises and thanks")).not.toBeInTheDocument();
+  });
 });

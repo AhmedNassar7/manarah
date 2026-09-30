@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   formatVerseForSharing,
   getAnnotation,
+  type QuranWord,
   type Surah,
   type Translation,
   type Verse,
@@ -10,6 +11,7 @@ import {
 import { formatVerseCount, useTranslation } from "./i18n/index.js";
 import { TafsirPanel, type TafsirSource } from "./TafsirPanel.js";
 import { VerseActions } from "./VerseActions.js";
+import { WordByWordPanel } from "./WordByWordPanel.js";
 
 export interface QuranReaderProps {
   surah: Surah;
@@ -30,6 +32,8 @@ export interface QuranReaderProps {
   onSaveNote?: (ayah: number, note: string) => void;
   /** Enables the Tafsir button in each verse's action toolbar. */
   tafsir?: TafsirSource;
+  /** Enables the Word-by-word button in each verse's action toolbar. */
+  loadWords?: (surah: number, ayah: number) => Promise<QuranWord[]>;
 }
 
 /** Verses shown before a "Load more" is needed — keeps a 200+ ayah surah (e.g. Al-Baqara) from rendering its entire text, and the whole page, in one go. */
@@ -47,6 +51,7 @@ export function QuranReader({
   onToggleBookmark,
   onSaveNote,
   tafsir,
+  loadWords,
 }: QuranReaderProps) {
   const { t, language } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, verses.length));
@@ -56,6 +61,8 @@ export function QuranReader({
   const [actionsAyah, setActionsAyah] = useState<number | null>(null);
   /** Kept separate from actionsAyah so an open tafsir stays put when the toolbar is closed. */
   const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
+  /** Same, for the word-by-word panel — independent of tafsir, so both can be open on one verse. */
+  const [wordsAyah, setWordsAyah] = useState<number | null>(null);
   const verseRefs = useRef(new Map<number, HTMLLIElement>());
 
   // A new surah means a new verses array — restart pagination rather than
@@ -64,6 +71,7 @@ export function QuranReader({
     setVisibleCount(Math.min(BATCH_SIZE, verses.length));
     setActionsAyah(null);
     setTafsirAyah(null);
+    setWordsAyah(null);
   }, [surah.number, verses]);
 
   // A focusAyah past the current batch needs its batch revealed first — this
@@ -193,6 +201,18 @@ export function QuranReader({
                       onToggleTafsir={
                         tafsir && (() => setTafsirAyah((current) => (current === verse.ayah ? null : verse.ayah)))
                       }
+                      wordsOpen={wordsAyah === verse.ayah}
+                      onToggleWords={
+                        loadWords && (() => setWordsAyah((current) => (current === verse.ayah ? null : verse.ayah)))
+                      }
+                    />
+                  )}
+                  {loadWords && wordsAyah === verse.ayah && (
+                    <WordByWordPanel
+                      surah={surah.number}
+                      ayah={verse.ayah}
+                      load={loadWords}
+                      onClose={() => setWordsAyah(null)}
                     />
                   )}
                   {tafsir && tafsirAyah === verse.ayah && (

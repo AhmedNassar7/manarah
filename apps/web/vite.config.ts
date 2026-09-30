@@ -46,6 +46,16 @@ export default defineConfig({
               cacheableResponse: { statuses: [200] },
             },
           },
+          {
+            // Word-by-word meanings, per verse from Quran.com — same reasoning.
+            urlPattern: /^https:\/\/api\.quran\.com\/api\/v4\/verses\/by_key\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "word-by-word",
+              expiration: { maxEntries: 1000, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
         ],
       },
     }),

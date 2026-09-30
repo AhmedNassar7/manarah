@@ -1266,6 +1266,134 @@ button {
   font-size: 0.7rem;
 }
 
+/* ---------- Word-by-word panel ----------
+   Each word as a small stacked card — Arabic (Amiri, scripture face), then
+   transliteration, then meaning — flowing right-to-left in reading order,
+   the familiar interlinear layout from printed word-by-word mushafs. */
+
+.word-by-word-panel {
+  margin: 6px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface-sunken);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  animation: navigator-panel-in 220ms var(--ease-quiet) both;
+  transform-origin: top center;
+}
+
+.word-by-word-panel[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.word-by-word-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.word-by-word-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-round);
+  background: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-quiet), color 120ms var(--ease-quiet);
+}
+
+.word-by-word-close:hover {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.word-by-word-status,
+.word-by-word-source {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--muted);
+}
+
+.word-by-word-status button {
+  margin-top: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.quran-reader .word-by-word-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin: 0;
+  list-style: none;
+  /* Keep the reader's per-verse ayah counter out of this nested list. */
+  counter-reset: none;
+}
+
+/* The reader's own verse rules (ayah-number marker, flex row, reveal
+   animation) target every li inside it — undo them for word cards. */
+.quran-reader .word-by-word-list li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 64px;
+  max-width: 140px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  font-size: 1rem;
+  line-height: 1.4;
+  text-align: center;
+  animation: none;
+}
+
+.quran-reader .word-by-word-list li::after {
+  content: none;
+}
+
+.word-by-word-arabic {
+  font-family: var(--font-arabic-quran);
+  font-size: 1.5rem;
+  line-height: 1.9;
+  color: var(--ink);
+}
+
+.word-by-word-translit {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.word-by-word-meaning {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.word-by-word-source {
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
 /* ---------- Quran audio player ----------
    A persistent, sticky-bottom recitation bar: transport controls +
    reciter/repeat/speed. Built on EveryAyah.com per-verse audio, so the
