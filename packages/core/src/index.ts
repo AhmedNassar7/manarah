@@ -8,3 +8,4 @@ export * from "./notifications/index.js";
 export * from "./geocoding/index.js";
 export * from "./badge/index.js";
 export * from "./verse-annotations/index.js";
+export * from "./tafsir/index.js";

@@ -1141,6 +1141,131 @@ button {
   max-width: 100%;
 }
 
+/* ---------- Tafsir panel ----------
+   Opens inline under its verse from the verse toolbar. Commentary can run
+   to tens of thousands of characters (al-Tabari on 2:255 is ~57k), so the
+   text scrolls inside a bounded box instead of pushing the reader apart.
+   Arabic commentary is set in Amiri like the text it explains, a size
+   down; English in the body face. */
+
+.tafsir-panel {
+  margin: 6px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface-sunken);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  animation: navigator-panel-in 220ms var(--ease-quiet) both;
+  transform-origin: top center;
+}
+
+.tafsir-panel[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.tafsir-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tafsir-panel-header label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.tafsir-panel-header select {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.tafsir-panel-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-round);
+  background: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-quiet), color 120ms var(--ease-quiet);
+}
+
+.tafsir-panel-close:hover {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.tafsir-panel-status,
+.tafsir-panel-covers,
+.tafsir-panel-source {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--muted);
+}
+
+.tafsir-panel-status button {
+  margin-top: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.tafsir-panel-covers {
+  padding-bottom: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.tafsir-panel-text {
+  max-height: min(50vh, 420px);
+  overflow-y: auto;
+  padding: 10px 14px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.tafsir-panel-text[lang="ar"] {
+  font-family: var(--font-arabic-quran);
+  font-size: 1.15rem;
+  line-height: 2;
+}
+
+.tafsir-panel-text p {
+  margin: 0 0 0.8em;
+}
+
+.tafsir-panel-text h4 {
+  margin: 0.6em 0 0.3em;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.tafsir-panel-source {
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
 /* ---------- Quran audio player ----------
    A persistent, sticky-bottom recitation bar: transport controls +
    reciter/repeat/speed. Built on EveryAyah.com per-verse audio, so the

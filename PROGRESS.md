@@ -38,6 +38,7 @@ pnpm workspace monorepo, no Turborepo:
                  - settings: UserSettings model, defaulting/merge logic (withDefaultSettings)    ✅
                  - hijri: Gregorian↔Hijri conversion, fixed-date Islamic events, nextOccurrence     ✅
                  - verse-annotations: per-verse bookmarks/notes model, copy/share text formatting    ✅
+                 - tafsir: Quran.com tafsir URL/response parsing, HTML → plain-text blocks, edition choice ✅
   /ui          Shared React components + design system (styles.css) + i18n                       ✅
   /storage     Store interface — IndexedDbStore (Dexie) / ChromeSyncStore + JSON export/import    ✅
   /data        Static bundled assets: Quran text, surah metadata, azkar corpus, GeoNames cities   ✅
@@ -53,10 +54,10 @@ pnpm workspace monorepo, no Turborepo:
 |---|---|---|---|
 | Prayer times & Qibla | `adhan.js` (Batoul Apps), client-side from Geolocation coords | ✅ done | Pure math, zero network, works fully offline |
 | Quran text | Tanzil Uthmani corpus / AlQuran Cloud API, bundled as static JSON in `packages/data`; cross-checked against King Fahd Quran Complex's official Hafs Mushaf (qurancomplex.gov.sa) | ✅ done | All 114 surahs / 6236 verses, offline-guaranteed from first load |
-| Translations, tafsir, word-by-word | Quran.com / Quran Foundation API, AlQuran Cloud API | 🚧 One translation (Saheeh International, `en.sahih`) fetched from AlQuran Cloud and wired into the reader; tafsir and further translations not yet fetched | Free, CORS-enabled, no key for most endpoints |
+| Translations, tafsir, word-by-word | Quran.com / Quran Foundation API, AlQuran Cloud API | 🚧 One translation (Saheeh International, `en.sahih`) fetched from AlQuran Cloud and wired into the reader; tafsir fetched per verse at runtime (see Tafsir corpus row); further translations and word-by-word not yet fetched | Free, CORS-enabled, no key for most endpoints |
 | Word-by-word grammar (root, morphology, syntax) | Quranic Arabic Corpus dataset | ⬜ Phase 3 | Purpose-built for a future word-tap grammar feature |
 | Verse & surah audio | EveryAyah.com (per-verse) | ✅ per-verse playback done (10 curated reciters) | Direct `<audio>` playback, no proxy; MP3Quran.net per-surah/live-stream radio still unused — see the Radio module, Phase 2 |
-| Tafsir corpus | Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi | ⬜ Phase 2 | Standard Ahl al-Sunnah tafsir canon; via Quran.com's tafsir API where available, else altafsir.com |
+| Tafsir corpus | Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi (+ abridged English Ibn Kathir) | ✅ done | Standard Ahl al-Sunnah tafsir canon — all five are on Quran.com's API (`api.quran.com/api/v4/tafsirs/{id}/by_ayah/{s:a}`, resource ids 14/15/94/90/91, English 169), verified live 2026-09-30: CORS `*`, no key. Fetched per verse at runtime (tens of MB total, can't be precached), service-worker CacheFirst so anything read once works offline. altafsir.com fallback not needed |
 | Azkar corpus | Hisn al-Muslim (`wafaaelmaandy/Hisn-Muslim-Json`); Al-Adhkar (an-Nawawi) and Saheeh al-Kalim at-Tayyib (Al-Albani) as richer optional packs | ✅ Hisn al-Muslim (266 items) done · ⬜ optional packs Phase 2/3 | Hisn al-Muslim is the standard compact daily-azkar reference every competitor app also uses |
 | City search | GeoNames `cities15000.txt` (CC BY 4.0) | ✅ done | Latin-script alternate names extracted for searchability (e.g. "Mecca"/"Medina") |
 | Hadith | sunnah.com API, six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) | ⬜ Phase 3 | Free key via signup, fine for non-commercial use |
@@ -91,14 +92,14 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 215 tests passing across all 4 packages (`core` 72, `storage` 17, `data` 29, `ui` 97), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 236 tests passing across all 4 packages (`core` 84, `storage` 17, `data` 30, `ui` 105), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Phase 2 — Growth — ⬜ not started
 
 - [ ] Azkar engine v2: richer customization (per-category remap to any time/trigger, custom dua playlists, notification style choice, snooze)
 - [ ] Radio module: curated live Quran stations + MP3Quran.net catalog player, persists across tabs/screen-off
 - [ ] Memorization mode: mic-based recitation tracking via `MediaRecorder`/`SpeechRecognition` (free/on-device, no paid speech service), hide/reveal verses, hifz progress dashboard
-- [ ] Multi-translation/multi-tafsir library (Ibn Kathir, Tabari, Qurtubi, Saadi, Jalalayn), offline audio downloads cached in IndexedDB
+- [ ] Multi-translation library, offline audio downloads cached in IndexedDB *(multi-tafsir: ✅ done via reader roadmap step 5 — Jalalayn isn't on Quran.com's API, so not included)*
 - [ ] Desktop: Tauri build wired up, system tray + native azan notifications
 - [ ] Mobile: Capacitor build wired up, native notifications + home-screen install polish
 
@@ -132,8 +133,8 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
 2. [x] **Navigation overhaul** — `QuranNavigator`: tabbed Surah/Ayah/Juz'/Page picker with search, replacing the old surah-only list; per-verse `focusAyah` jump-and-highlight in `QuranReader`; juz'/page/manzil/ruku'/sajdah metadata (`packages/data/quran/metadata.json`, sourced free from the same AlQuran Cloud response as the translation).
 3. [x] **Audio recitation player** — `QuranAudioPlayer`: 10 curated reciters, play/pause/prev/next, repeat count (1/2/3/5×), speed (0.75–2×), auto-scroll + persistent highlight for the playing verse (`QuranReader`'s new `playingAyah`), per-verse play button. Built entirely on EveryAyah.com per-verse files (no surah-wide file + timestamp sync needed) — every reciter folder name and the URL pattern verified live before use, not guessed.
 4. [x] **Per-verse action toolbar + notes/bookmarks** — a ⋯ button under each verse's play button opens `VerseActions` (one verse at a time): Copy and Share (Web Share API, button hidden where unsupported) of the verse text + visible translation + a "(Surah s:a)" citation, Bookmark toggle, and an inline personal-note editor. Bookmarked verses get a teal inline-start edge; notes render under the verse. `QuranBookmarks` on the Quran page lists every bookmark/note in mushaf order and jumps to it. Pure model in `packages/core/verse-annotations` (`toggleBookmark`/`setNote`/`listAnnotations`/`formatVerseForSharing`, injected `now`, empty entries pruned), persisted through the existing `Store` interface under one key (`manarah:verse-annotations`) — no new table needed, and it's covered by JSON export/import automatically. Web only for now: the extension has no reader, and a single key would hit `chrome.storage.sync`'s 8KB per-item limit at a few hundred notes if it's ever synced there.
-5. [ ] **Tafsir panel** — Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi, via Quran.com's tafsir API where available, else altafsir.com (already the decided sourcing). *Recommended next* — the verse toolbar from step 4 is where a "Tafsir" action attaches.
-6. [ ] **Word-by-word grammar** — tap a word for its own translation/root/morphology, from the Quranic Arabic Corpus dataset (corpus.quran.com). **License check needed before bundling**: the corpus site states its data is "available under the GNU public license" — confirm GPL terms are compatible with bundling into this project before fetching/committing any of it (unlike the Uthmani text/translations, which come from AlQuran Cloud under separate, already-verified terms).
+5. [x] **Tafsir panel** — a "Tafsir" action in the verse toolbar opens `TafsirPanel` inline under that verse (stays open when the toolbar closes; one verse at a time): source picker across all six editions (choice persisted as `UserSettings.tafsirEditionId`; unset → first edition in the UI language, so English readers default to the abridged English Ibn Kathir), loading / error-with-retry / "no separate commentary" states, a "Commentary on verses a–b" note when the source treats a passage as one unit (real: English Ibn Kathir returns 114:1–6 as one entry), bounded scroll box (al-Tabari on 2:255 is ~57k chars). The API's HTML is flattened to plain heading/paragraph blocks in `packages/core/tafsir` and rendered as text — no `dangerouslySetInnerHTML`, so nothing from the API can inject markup. Fetching lives in `apps/web/src/tafsir.ts` (session cache that evicts failures so Retry really retries) and is injected into the UI, keeping `packages/ui` platform-agnostic. Known limitation: al-Qurtubi and as-Sa'di come from the API with no paragraph markup at all, so they render as one long block — same as on Quran.com; not heuristically split.
+6. [ ] **Word-by-word grammar** — *Recommended next, starting with the license check below.* Tap a word for its own translation/root/morphology, from the Quranic Arabic Corpus dataset (corpus.quran.com). **License check needed before bundling**: the corpus site states its data is "available under the GNU public license" — confirm GPL terms are compatible with bundling into this project before fetching/committing any of it (unlike the Uthmani text/translations, which come from AlQuran Cloud under separate, already-verified terms).
 7. [ ] **Full-text search** — search Arabic text and translation, jump to a result (distinct from the Ayah/Juz'/Page *navigation* search added in step 2, which only searches numbers/surah names, not verse content).
 8. [ ] **Reading settings panel** — script style (Uthmani/IndoPak), font size, default reciter, default/managed translation editions — consolidates choices steps 1, 3, and 6 each introduce into one place instead of scattering controls.
 9. [ ] **Hadith library** (sunnah.com API, the Nine Books + selections) — already Phase 3 below; cross-links from the tafsir panel (step 5) once both exist.
@@ -171,7 +172,8 @@ No working browser exists in the primary dev environment used to build this — 
 
 - **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
 - **Hijri calendar UI** — the `packages/core/hijri` conversion logic is done, but there's no calendar page/reminder UI consuming it yet (that's the Phase 3 feature item below).
-- **Further translations/tafsir** — one English translation (Saheeh International) is fetched and wired in; other languages/editions and any tafsir text are still unfetched. Multi-translation/multi-tafsir library remains a Phase 2 item.
+- **Further translations** — one English translation (Saheeh International) is fetched and wired in; other languages/editions are still unfetched (tafsir is done — roadmap step 5). Multi-translation remains a Phase 2 item.
+- **Tafsir offline** — only tafsir already read is available offline (service-worker cache); there's no "download this tafsir for offline" bulk option yet.
 
 ---
 

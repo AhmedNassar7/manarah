@@ -12,6 +12,7 @@ import {
   PAGE_COUNT,
   RECITERS,
   SURAHS,
+  TAFSIR_EDITIONS,
   TRANSLATION_EDITIONS,
 } from "./index.js";
 
@@ -133,5 +134,14 @@ describe("Quran data integrity", () => {
     for (const reciter of RECITERS) {
       expect(reciter.everyAyahSubfolder.trim().length).toBeGreaterThan(0);
     }
+  });
+
+  it("has unique tafsir editions (by id and Quran.com resource id), with at least one per UI language", () => {
+    const ids = TAFSIR_EDITIONS.map((e) => e.id);
+    const resourceIds = TAFSIR_EDITIONS.map((e) => e.quranComId);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(resourceIds).size).toBe(resourceIds.length);
+    expect(TAFSIR_EDITIONS.some((e) => e.language === "en")).toBe(true);
+    expect(TAFSIR_EDITIONS.some((e) => e.language === "ar")).toBe(true);
   });
 });

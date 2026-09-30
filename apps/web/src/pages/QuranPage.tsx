@@ -1,6 +1,13 @@
 import { useRef, useState } from "react";
-import type { Surah, Translation, Verse, VerseAnnotations, VerseRef } from "@manarah/core";
-import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS } from "@manarah/data";
+import {
+  resolveTafsirEdition,
+  type Surah,
+  type Translation,
+  type Verse,
+  type VerseAnnotations,
+  type VerseRef,
+} from "@manarah/core";
+import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS, TAFSIR_EDITIONS } from "@manarah/data";
 import {
   QuranAudioPlayer,
   QuranBookmarks,
@@ -9,6 +16,7 @@ import {
   useTranslation,
   type QuranAudioPlayerHandle,
 } from "@manarah/ui";
+import { loadTafsir } from "../tafsir.js";
 
 export interface QuranPageProps {
   selectedSurahNumber: number | null;
@@ -24,6 +32,8 @@ export interface QuranPageProps {
   verseAnnotations: VerseAnnotations;
   onToggleBookmark: (surah: number, ayah: number) => void;
   onSaveNote: (surah: number, ayah: number, note: string) => void;
+  tafsirEditionId: string | undefined;
+  onTafsirEditionChange: (id: string) => void;
 }
 
 export function QuranPage({
@@ -40,8 +50,11 @@ export function QuranPage({
   verseAnnotations,
   onToggleBookmark,
   onSaveNote,
+  tafsirEditionId,
+  onTafsirEditionChange,
 }: QuranPageProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const tafsirEdition = resolveTafsirEdition(TAFSIR_EDITIONS, tafsirEditionId, language);
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const audioPlayerRef = useRef<QuranAudioPlayerHandle>(null);
 
@@ -71,6 +84,14 @@ export function QuranPage({
             annotations={verseAnnotations}
             onToggleBookmark={(ayah) => onToggleBookmark(selectedSurah.number, ayah)}
             onSaveNote={(ayah, note) => onSaveNote(selectedSurah.number, ayah, note)}
+            tafsir={
+              tafsirEdition && {
+                editions: TAFSIR_EDITIONS,
+                editionId: tafsirEdition.id,
+                onEditionChange: onTafsirEditionChange,
+                load: loadTafsir,
+              }
+            }
           />
           <QuranAudioPlayer
             ref={audioPlayerRef}

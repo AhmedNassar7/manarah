@@ -33,6 +33,20 @@ export default defineConfig({
         // App shell + bundled assets are precached; Quran text/audio caching
         // strategies are added once the quran-data fetch layer exists.
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+        runtimeCaching: [
+          {
+            // Tafsir is fetched per verse from Quran.com at runtime (far too
+            // large to precache). A tafsir text never changes once published,
+            // so cache-first: anything read once is instant and works offline.
+            urlPattern: /^https:\/\/api\.quran\.com\/api\/v4\/tafsirs\//,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "tafsir",
+              expiration: { maxEntries: 1000, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
     }),
   ],

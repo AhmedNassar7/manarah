@@ -19,6 +19,8 @@ export interface UserSettings {
   language: Language;
   /** Reciter id (see @manarah/data's RECITERS) used for Quran audio playback. */
   reciterId: string;
+  /** Tafsir edition id (see @manarah/data's TAFSIR_EDITIONS); unset means "first edition in the UI language". */
+  tafsirEditionId?: string;
 }
 
 export const DEFAULT_SETTINGS: UserSettings = {

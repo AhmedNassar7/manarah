@@ -11,13 +11,26 @@ export interface VerseActionsProps {
   onToggleBookmark?: () => void;
   /** Omitted when there's nowhere to persist notes — hides the note button. */
   onSaveNote?: (note: string) => void;
+  /** Whether this verse's tafsir panel is currently open. */
+  tafsirOpen?: boolean;
+  /** Omitted when no tafsir source is wired up — hides the tafsir button. */
+  onToggleTafsir?: () => void;
 }
 
 /** How long the "Copied" confirmation stays on the Copy button. */
 const COPIED_FEEDBACK_MS = 1500;
 
-/** Per-verse toolbar: copy, share, bookmark, and a personal note. Opened from QuranReader's per-verse actions button. */
-export function VerseActions({ ayah, shareText, bookmarked, note, onToggleBookmark, onSaveNote }: VerseActionsProps) {
+/** Per-verse toolbar: copy, share, bookmark, tafsir, and a personal note. Opened from QuranReader's per-verse actions button. */
+export function VerseActions({
+  ayah,
+  shareText,
+  bookmarked,
+  note,
+  onToggleBookmark,
+  onSaveNote,
+  tafsirOpen = false,
+  onToggleTafsir,
+}: VerseActionsProps) {
   const { t, language } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [editingNote, setEditingNote] = useState(false);
@@ -71,6 +84,11 @@ export function VerseActions({ ayah, shareText, bookmarked, note, onToggleBookma
         {onToggleBookmark && (
           <button type="button" aria-pressed={bookmarked} onClick={onToggleBookmark}>
             {bookmarked ? t("verseActions.removeBookmark") : t("verseActions.bookmark")}
+          </button>
+        )}
+        {onToggleTafsir && (
+          <button type="button" aria-pressed={tafsirOpen} onClick={onToggleTafsir}>
+            {tafsirOpen ? t("verseActions.hideTafsir") : t("verseActions.tafsir")}
           </button>
         )}
         {onSaveNote && !editingNote && (

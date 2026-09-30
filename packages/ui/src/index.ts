@@ -10,5 +10,6 @@ export * from "./VerseOfTheDay.js";
 export * from "./QuranNavigator.js";
 export * from "./VerseActions.js";
 export * from "./QuranBookmarks.js";
+export * from "./TafsirPanel.js";
 export * from "./LanguageSwitcher.js";
 export * from "./i18n/index.js";

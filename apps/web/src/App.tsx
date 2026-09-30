@@ -209,6 +209,14 @@ export function App() {
     });
   }
 
+  function handleTafsirEditionChange(tafsirEditionId: string) {
+    setSettings((prev) => {
+      const next = { ...prev, tafsirEditionId };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -267,6 +275,8 @@ export function App() {
                   verseAnnotations={verseAnnotations}
                   onToggleBookmark={handleToggleBookmark}
                   onSaveNote={handleSaveNote}
+                  tafsirEditionId={settings.tafsirEditionId}
+                  onTafsirEditionChange={handleTafsirEditionChange}
                 />
               }
             />

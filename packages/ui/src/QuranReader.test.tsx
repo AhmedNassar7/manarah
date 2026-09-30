@@ -183,4 +183,33 @@ describe("QuranReader", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save note" }));
     expect(onSaveNote).toHaveBeenCalledWith(2, "Reflect");
   });
+
+  it("opens a verse's tafsir from its toolbar, and keeps it open after the toolbar closes", async () => {
+    const load = vi.fn().mockResolvedValue({ verseKeys: ["1:2"], blocks: [{ kind: "paragraph", text: "Praise" }] });
+    const tafsir = {
+      editions: [{ id: "saadi", quranComId: 91, language: "ar" as const }],
+      editionId: "saadi",
+      onEditionChange: vi.fn(),
+      load,
+    };
+    render(<QuranReader surah={alFatiha} verses={verses} tafsir={tafsir} />);
+
+    const actions = screen.getByRole("button", { name: "Actions for verse 2" });
+    fireEvent.click(actions);
+    fireEvent.click(screen.getByRole("button", { name: "Tafsir" }));
+    expect(await screen.findByText("Praise")).toBeInTheDocument();
+    expect(load).toHaveBeenCalledWith(tafsir.editions[0], 1, 2);
+
+    fireEvent.click(actions);
+    expect(screen.getByText("Praise")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Close tafsir" }));
+    expect(screen.queryByText("Praise")).not.toBeInTheDocument();
+  });
+
+  it("offers no Tafsir button when no tafsir source is supplied", () => {
+    render(<QuranReader surah={alFatiha} verses={verses} />);
+    fireEvent.click(screen.getByRole("button", { name: "Actions for verse 1" }));
+    expect(screen.queryByRole("button", { name: "Tafsir" })).not.toBeInTheDocument();
+  });
 });

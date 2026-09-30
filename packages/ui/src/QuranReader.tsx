@@ -8,6 +8,7 @@ import {
   type VerseAnnotations,
 } from "@manarah/core";
 import { formatVerseCount, useTranslation } from "./i18n/index.js";
+import { TafsirPanel, type TafsirSource } from "./TafsirPanel.js";
 import { VerseActions } from "./VerseActions.js";
 
 export interface QuranReaderProps {
@@ -27,6 +28,8 @@ export interface QuranReaderProps {
   onToggleBookmark?: (ayah: number) => void;
   /** Enables the note editor in each verse's action toolbar. */
   onSaveNote?: (ayah: number, note: string) => void;
+  /** Enables the Tafsir button in each verse's action toolbar. */
+  tafsir?: TafsirSource;
 }
 
 /** Verses shown before a "Load more" is needed — keeps a 200+ ayah surah (e.g. Al-Baqara) from rendering its entire text, and the whole page, in one go. */
@@ -43,6 +46,7 @@ export function QuranReader({
   annotations = {},
   onToggleBookmark,
   onSaveNote,
+  tafsir,
 }: QuranReaderProps) {
   const { t, language } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, verses.length));
@@ -50,6 +54,8 @@ export function QuranReader({
   const [highlightedAyah, setHighlightedAyah] = useState<number | null>(null);
   /** At most one verse's action toolbar is open at a time. */
   const [actionsAyah, setActionsAyah] = useState<number | null>(null);
+  /** Kept separate from actionsAyah so an open tafsir stays put when the toolbar is closed. */
+  const [tafsirAyah, setTafsirAyah] = useState<number | null>(null);
   const verseRefs = useRef(new Map<number, HTMLLIElement>());
 
   // A new surah means a new verses array — restart pagination rather than
@@ -57,6 +63,7 @@ export function QuranReader({
   useEffect(() => {
     setVisibleCount(Math.min(BATCH_SIZE, verses.length));
     setActionsAyah(null);
+    setTafsirAyah(null);
   }, [surah.number, verses]);
 
   // A focusAyah past the current batch needs its batch revealed first — this
@@ -182,6 +189,18 @@ export function QuranReader({
                       note={annotation?.note}
                       onToggleBookmark={onToggleBookmark && (() => onToggleBookmark(verse.ayah))}
                       onSaveNote={onSaveNote && ((note) => onSaveNote(verse.ayah, note))}
+                      tafsirOpen={tafsirAyah === verse.ayah}
+                      onToggleTafsir={
+                        tafsir && (() => setTafsirAyah((current) => (current === verse.ayah ? null : verse.ayah)))
+                      }
+                    />
+                  )}
+                  {tafsir && tafsirAyah === verse.ayah && (
+                    <TafsirPanel
+                      source={tafsir}
+                      surah={surah.number}
+                      ayah={verse.ayah}
+                      onClose={() => setTafsirAyah(null)}
                     />
                   )}
                 </span>
