@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { AzkarCategory, AzkarSection } from "@manarah/core";
-import { AzkarList, azkarCategoryName } from "./AzkarList.js";
-import { useTranslation } from "./i18n/index.js";
+import { AzkarList } from "./AzkarList.js";
+import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 
 export interface AzkarBrowserProps {
   sections: AzkarSection[];

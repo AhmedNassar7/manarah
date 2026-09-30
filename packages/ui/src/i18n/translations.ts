@@ -1,4 +1,4 @@
-import type { Language } from "@manarah/core";
+import type { AzkarCategory, Language } from "@manarah/core";
 
 export type { Language };
 
@@ -36,6 +36,13 @@ const EN: Dictionary = {
   "citySearch.ariaLabel": "City search",
 
   "prayer.next": "Next prayer",
+  "notification.prayerTitle": "{prayer} prayer time",
+  "notification.prayerBody": "It's time for {prayer}.",
+  "notification.postSalahTitle": "Azkar after {prayer}",
+  "notification.slot.fajr": "Morning azkar",
+  "notification.slot.asr": "Evening azkar",
+  "notification.slot.night": "Azkar before sleep",
+  "notification.customBody": "Your scheduled azkar for {time}",
   "prayer.todaysPrayers": "Today's prayers",
   "prayer.noMoreToday": "No more prayers today",
   "prayer.name.Fajr": "Fajr",
@@ -195,6 +202,7 @@ const EN: Dictionary = {
   "azkarSchedule.customTimeLabel": "Custom time for {category}",
   "azkarSchedule.trigger.morning": "Morning",
   "azkarSchedule.trigger.evening": "Evening",
+  "azkarSchedule.trigger.morning-evening": "Morning and evening",
   "azkarSchedule.trigger.post-salah": "After each prayer",
   "azkarSchedule.trigger.before-sleep": "Before sleep",
   "azkarSchedule.trigger.waking": "On waking",
@@ -242,6 +250,13 @@ const AR: Dictionary = {
   "citySearch.ariaLabel": "بحث عن مدينة",
 
   "prayer.next": "الصلاة القادمة",
+  "notification.prayerTitle": "حان وقت صلاة {prayer}",
+  "notification.prayerBody": "حان الآن وقت صلاة {prayer}.",
+  "notification.postSalahTitle": "أذكار بعد صلاة {prayer}",
+  "notification.slot.fajr": "أذكار الصباح",
+  "notification.slot.asr": "أذكار المساء",
+  "notification.slot.night": "أذكار النوم",
+  "notification.customBody": "أذكارك المجدولة في {time}",
   "prayer.todaysPrayers": "صلوات اليوم",
   "prayer.noMoreToday": "لا صلوات أخرى اليوم",
   "prayer.name.Fajr": "الفجر",
@@ -401,6 +416,7 @@ const AR: Dictionary = {
   "azkarSchedule.customTimeLabel": "وقت مخصص لـ {category}",
   "azkarSchedule.trigger.morning": "الصباح",
   "azkarSchedule.trigger.evening": "المساء",
+  "azkarSchedule.trigger.morning-evening": "الصباح والمساء",
   "azkarSchedule.trigger.post-salah": "بعد كل صلاة",
   "azkarSchedule.trigger.before-sleep": "قبل النوم",
   "azkarSchedule.trigger.waking": "عند الاستيقاظ",
@@ -458,6 +474,11 @@ export function arabicVerseCount(count: number): string {
 
 function englishVerseCount(count: number): string {
   return `${count} ${count === 1 ? "verse" : "verses"}`;
+}
+
+/** An azkar category's title in `language` — Hisn al-Muslim's own Arabic title when there is one, else the English name. */
+export function azkarCategoryName(category: AzkarCategory, language: Language): string {
+  return language === "ar" && category.nameArabic ? category.nameArabic : category.name;
 }
 
 /** Formats a verse count with correct singular/dual/plural agreement for the given language. */

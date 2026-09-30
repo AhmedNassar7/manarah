@@ -1,14 +1,9 @@
 import { useState } from "react";
-import type { AzkarCategory, Language } from "@manarah/core";
-import { useTranslation } from "./i18n/index.js";
+import type { AzkarCategory } from "@manarah/core";
+import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 
 export interface AzkarListProps {
   category: AzkarCategory;
-}
-
-/** The category title in the UI language — Hisn al-Muslim's own Arabic title when there is one, else the English name. */
-export function azkarCategoryName(category: AzkarCategory, language: Language): string {
-  return language === "ar" && category.nameArabic ? category.nameArabic : category.name;
 }
 
 /** Renders one azkar category with a per-item tally counter. Shared across web/extension/desktop/mobile. */

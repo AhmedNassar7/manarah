@@ -73,6 +73,19 @@ pnpm workspace monorepo, no Turborepo:
 | Desktop (Tauri) | Native OS notification API via Tauri, same locally-computed trigger times | ⬜ Phase 2 |
 | Mobile (Capacitor) | `@capacitor/local-notifications`, pre-scheduled daily windows | ⬜ Phase 2 |
 
+**What notifies, and when** (fixed 2026-09-30 — before this, only prayer / post-prayer / morning / custom-time fired, so the Evening, Before-sleep and Waking triggers offered in the azkar settings silently did nothing, Hisn al-Muslim's morning-*and-evening* chapter only ever reminded in the morning, and all text was hard-coded English):
+
+| Notification | When |
+|---|---|
+| Prayer time | At each of the 5 prayers |
+| Azkar after prayer | At each prayer, if any category is on the post-salah trigger |
+| Morning azkar (waking + morning + morning-evening categories, one combined notification) | Fajr |
+| Evening azkar (evening + morning-evening categories) | Asr — the start of the evening-azkar window |
+| Azkar before sleep | 1 hour after Isha, clamped to 23:59 (no bedtime is known; remap a category to a custom time for an exact one) |
+| Custom-time azkar | The time set per category in azkar settings |
+
+Each fires at most once a day, and anything whose time passed more than 30 minutes ago is marked handled silently rather than delivered — so opening the web app in the evening doesn't dump the whole day's reminders at once. Core's `computeDueNotifications` returns structured, language-neutral `DueNotification`s; `formatNotification` (`@manarah/ui/notifications`, React-free so the extension service worker can import it) renders them in the user's language, with Hisn al-Muslim's Arabic category titles in Arabic. New `"morning-evening"` azkar trigger is category 27's default. Still open (Azkar engine v2, Phase 2): per-prayer on/off, "N minutes before" reminders, snooze.
+
 Orchestration logic that glues a pure decision function to a platform API is refactored so the platform-specific calls are injected as parameters — `runNotificationCheck` / `computeBadgeState` in `packages/core` are the pattern: no direct `chrome.*` or `new Date()` calls inside the decision logic itself, so it's unit-testable with fakes even though the real `chrome.alarms`/`chrome.notifications` firing isn't.
 
 ---
@@ -93,7 +106,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 279 tests passing across all 4 packages (`core` 99, `storage` 17, `data` 33, `ui` 130), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 292 tests passing across all 4 packages (`core` 108, `storage` 17, `data` 33, `ui` 134), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 

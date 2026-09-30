@@ -13,8 +13,9 @@ export * from "./sections.js";
  * than shipped incomplete or filled in from memory.
  *
  * `trigger` on each category is a heuristic default based on its title
- * (morning/evening, waking, before-sleep, post-salah, or "situational" for
- * everything else — contextual duas with no fixed daily time). Users can
+ * (morning-evening for the combined chapter 27, waking, before-sleep,
+ * post-salah, or "situational" for everything else — contextual duas with
+ * no fixed daily time). Users can
  * remap any category's trigger via AzkarSchedule; this is only the default.
  *
  * `nameArabic` on each category comes from hisnmuslim.com's own Arabic

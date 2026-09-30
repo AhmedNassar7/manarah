@@ -4,6 +4,7 @@ import { AZKAR_CATEGORIES, AZKAR_SECTIONS, getAzkarCategoriesByTrigger, getAzkar
 const VALID_TRIGGERS = new Set([
   "morning",
   "evening",
+  "morning-evening",
   "post-salah",
   "before-sleep",
   "waking",
@@ -41,9 +42,9 @@ describe("Azkar data integrity", () => {
     }
   });
 
-  it("assigns the morning/evening azkar category (id 27) to the morning trigger", () => {
+  it("assigns the morning/evening azkar category (id 27) to the combined morning-evening trigger", () => {
     const category = getAzkarCategory("27");
-    expect(category?.trigger).toBe("morning");
+    expect(category?.trigger).toBe("morning-evening");
     expect(category?.items.length).toBeGreaterThan(0);
   });
 

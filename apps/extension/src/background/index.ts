@@ -10,6 +10,7 @@ import {
 } from "@manarah/core";
 import { AZKAR_CATEGORIES } from "@manarah/data";
 import { ChromeSyncStore } from "@manarah/storage";
+import { formatNotification } from "@manarah/ui/notifications";
 
 const PRAYER_CHECK_ALARM = "prayer-check";
 
@@ -55,12 +56,13 @@ async function checkNotifications(): Promise<void> {
     getSettings: () => store.get<UserSettings>(SETTINGS_STORAGE_KEY),
     getNotificationState: () => store.get<NotificationState>(NOTIFICATION_STATE_KEY),
     setNotificationState: (state) => store.set(NOTIFICATION_STATE_KEY, state),
-    notify: (notification) => {
+    notify: (notification, language) => {
+      const { title, body } = formatNotification(notification, language);
       chrome.notifications.create(`${notification.type}-${Date.now()}`, {
         type: "basic",
         iconUrl: chrome.runtime.getURL("icons/icon-128.png"),
-        title: notification.title,
-        message: notification.body,
+        title,
+        message: body,
       });
     },
     azkarCategories: AZKAR_CATEGORIES,

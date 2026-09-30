@@ -3,11 +3,13 @@ import {
   NOTIFICATION_STATE_KEY,
   SETTINGS_STORAGE_KEY,
   type DueNotification,
+  type Language,
   type NotificationState,
   type UserSettings,
 } from "@manarah/core";
 import { AZKAR_CATEGORIES } from "@manarah/data";
 import type { IndexedDbStore } from "@manarah/storage";
+import { formatNotification } from "@manarah/ui/notifications";
 
 const CHECK_INTERVAL_MS = 60 * 1000;
 
@@ -16,14 +18,16 @@ const CHECK_INTERVAL_MS = 60 * 1000;
  * available — required on Android/Chrome, which throws on `new Notification()`
  * directly from a page — falling back to the plain constructor otherwise.
  */
-async function notify(notification: DueNotification): Promise<void> {
+async function notify(notification: DueNotification, language: Language): Promise<void> {
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
 
+  const { title, body } = formatNotification(notification, language);
+  const options: NotificationOptions = { body, lang: language, dir: language === "ar" ? "rtl" : "ltr" };
   const registration = await navigator.serviceWorker?.getRegistration();
   if (registration) {
-    await registration.showNotification(notification.title, { body: notification.body });
+    await registration.showNotification(title, options);
   } else {
-    new Notification(notification.title, { body: notification.body });
+    new Notification(title, options);
   }
 }
 
@@ -41,7 +45,7 @@ export function startNotificationLoop(store: IndexedDbStore): () => void {
       getSettings: () => store.get<UserSettings>(SETTINGS_STORAGE_KEY),
       getNotificationState: () => store.get<NotificationState>(NOTIFICATION_STATE_KEY),
       setNotificationState: (state) => store.set(NOTIFICATION_STATE_KEY, state),
-      notify: (notification) => void notify(notification),
+      notify: (notification, language) => void notify(notification, language),
       azkarCategories: AZKAR_CATEGORIES,
     });
   }

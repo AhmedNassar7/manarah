@@ -1,6 +1,8 @@
 export type AzkarTrigger =
   | "morning"
   | "evening"
+  /** Both — Hisn al-Muslim's morning-and-evening chapter is one category meant for both times. */
+  | "morning-evening"
   | "post-salah"
   | "before-sleep"
   | "waking"

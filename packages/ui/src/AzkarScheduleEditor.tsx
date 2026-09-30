@@ -1,6 +1,5 @@
 import type { AzkarCategory, AzkarSchedule, AzkarTrigger } from "@manarah/core";
-import { azkarCategoryName } from "./AzkarList.js";
-import { useTranslation } from "./i18n/index.js";
+import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 
 export interface AzkarScheduleEditorProps {
   categories: AzkarCategory[];
@@ -11,6 +10,7 @@ export interface AzkarScheduleEditorProps {
 const TRIGGER_OPTIONS: AzkarTrigger[] = [
   "morning",
   "evening",
+  "morning-evening",
   "post-salah",
   "before-sleep",
   "waking",
