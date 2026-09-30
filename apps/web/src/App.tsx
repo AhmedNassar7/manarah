@@ -2,9 +2,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import {
   computePrayerTimes,
+  setNote,
+  toggleBookmark,
   withDefaultSettings,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
+  VERSE_ANNOTATIONS_STORAGE_KEY,
   type AzkarSchedule,
   type City,
   type Coordinates,
@@ -14,6 +17,7 @@ import {
   type Translation,
   type UserSettings,
   type Verse,
+  type VerseAnnotations,
   type VerseRef,
 } from "@manarah/core";
 import { getJuzStart, getPageStart, getSurah, getTranslationForSurah, getVersesForSurah } from "@manarah/data";
@@ -50,14 +54,17 @@ export function App() {
   const [focusAyah, setFocusAyah] = useState<number | undefined>(undefined);
   const [selectedSurahVerses, setSelectedSurahVerses] = useState<Verse[] | null>(null);
   const [selectedSurahTranslation, setSelectedSurahTranslation] = useState<Translation[] | null>(null);
+  const [verseAnnotations, setVerseAnnotations] = useState<VerseAnnotations>({});
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       const stored = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
+      const storedAnnotations = await store.get<VerseAnnotations>(VERSE_ANNOTATIONS_STORAGE_KEY);
       if (cancelled) return;
       setSettings(stored);
+      setVerseAnnotations(storedAnnotations ?? {});
       // Resume wherever the user last left off, rather than always starting at Al-Fatiha.
       setSelectedSurahNumber(stored.lastRead?.surah ?? 1);
       if (stored.lastRead && stored.lastRead.ayah > 1) setFocusAyah(stored.lastRead.ayah);
@@ -194,6 +201,22 @@ export function App() {
     });
   }
 
+  function updateVerseAnnotations(update: (prev: VerseAnnotations) => VerseAnnotations) {
+    setVerseAnnotations((prev) => {
+      const next = update(prev);
+      void store.set(VERSE_ANNOTATIONS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
+  function handleToggleBookmark(surah: number, ayah: number) {
+    updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
+  }
+
+  function handleSaveNote(surah: number, ayah: number, note: string) {
+    updateVerseAnnotations((prev) => setNote(prev, surah, ayah, note, new Date()));
+  }
+
   const selectedSurah = selectedSurahNumber !== null ? getSurah(selectedSurahNumber) : undefined;
 
   return (
@@ -241,6 +264,9 @@ export function App() {
                   resolvePageStart={getPageStart}
                   reciterId={settings.reciterId}
                   onReciterChange={handleReciterChange}
+                  verseAnnotations={verseAnnotations}
+                  onToggleBookmark={handleToggleBookmark}
+                  onSaveNote={handleSaveNote}
                 />
               }
             />

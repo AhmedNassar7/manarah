@@ -924,6 +924,223 @@ button {
   border-color: var(--accent);
 }
 
+/* ---------- Per-verse actions + bookmarks ----------
+   The ⋯ button sits under each verse's play button and opens a small
+   toolbar (copy/share/bookmark/note) for one verse at a time. A bookmark
+   is marked with a teal edge at the verse's inline start, not gold — gold
+   stays reserved for completion moments and the ayah markers. */
+
+.quran-reader-verse-controls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quran-reader-actions-button {
+  width: 32px;
+  height: 32px;
+  margin-top: 4px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-round);
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 120ms var(--ease-quiet),
+    border-color 120ms var(--ease-quiet),
+    color 120ms var(--ease-quiet);
+}
+
+.quran-reader-verse-controls .quran-reader-play-button + .quran-reader-actions-button {
+  margin-top: 0;
+}
+
+.quran-reader-actions-button:hover,
+.quran-reader-actions-button[aria-expanded="true"] {
+  border-color: var(--line);
+  background: var(--surface-sunken);
+  color: var(--accent);
+}
+
+.quran-reader-verse-bookmarked {
+  border-inline-start: 3px solid var(--accent);
+  padding-inline-start: 8px;
+}
+
+.quran-reader-note {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--surface-sunken);
+  border-inline-start: 2px solid var(--gold-soft);
+  border-radius: var(--radius-page);
+  padding: 6px 10px;
+  margin: 2px 0 10px;
+  white-space: pre-wrap;
+}
+
+.verse-actions {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  margin: 4px 0 10px;
+  animation: navigator-panel-in 220ms var(--ease-quiet) both;
+  transform-origin: top center;
+}
+
+.verse-actions[lang="ar"],
+.quran-bookmarks[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.verse-actions-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.verse-actions button {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 120ms var(--ease-quiet),
+    border-color 120ms var(--ease-quiet),
+    transform 120ms var(--ease-quiet);
+}
+
+.verse-actions button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.verse-actions button:active {
+  transform: scale(0.96);
+}
+
+.verse-actions button[aria-pressed="true"],
+.verse-actions .verse-actions-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.verse-actions-note-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.verse-actions-note-editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.verse-actions-note-editor textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.quran-bookmarks {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  padding: 10px 16px;
+  font-family: var(--font-body);
+}
+
+.quran-bookmarks summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.quran-bookmarks[lang="ar"] summary {
+  font-family: var(--font-arabic-ui);
+}
+
+.quran-bookmarks-empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 8px 0 2px;
+}
+
+.quran-bookmarks ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.quran-bookmarks li + li {
+  border-top: 1px solid var(--line);
+}
+
+.quran-bookmarks button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-quiet);
+}
+
+.quran-bookmarks button:hover {
+  background: var(--accent-soft);
+}
+
+.quran-bookmarks-ref {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.quran-bookmarks-ribbon {
+  width: 3px;
+  height: 1em;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.quran-bookmarks-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
 /* ---------- Quran audio player ----------
    A persistent, sticky-bottom recitation bar: transport controls +
    reciter/repeat/speed. Built on EveryAyah.com per-verse audio, so the

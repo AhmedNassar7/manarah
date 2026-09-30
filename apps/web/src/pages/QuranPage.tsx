@@ -1,7 +1,14 @@
 import { useRef, useState } from "react";
-import type { Surah, Translation, Verse, VerseRef } from "@manarah/core";
+import type { Surah, Translation, Verse, VerseAnnotations, VerseRef } from "@manarah/core";
 import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS } from "@manarah/data";
-import { QuranAudioPlayer, QuranNavigator, QuranReader, useTranslation, type QuranAudioPlayerHandle } from "@manarah/ui";
+import {
+  QuranAudioPlayer,
+  QuranBookmarks,
+  QuranNavigator,
+  QuranReader,
+  useTranslation,
+  type QuranAudioPlayerHandle,
+} from "@manarah/ui";
 
 export interface QuranPageProps {
   selectedSurahNumber: number | null;
@@ -14,6 +21,9 @@ export interface QuranPageProps {
   resolvePageStart: (page: number) => VerseRef | undefined | Promise<VerseRef | undefined>;
   reciterId: string;
   onReciterChange: (id: string) => void;
+  verseAnnotations: VerseAnnotations;
+  onToggleBookmark: (surah: number, ayah: number) => void;
+  onSaveNote: (surah: number, ayah: number, note: string) => void;
 }
 
 export function QuranPage({
@@ -27,6 +37,9 @@ export function QuranPage({
   resolvePageStart,
   reciterId,
   onReciterChange,
+  verseAnnotations,
+  onToggleBookmark,
+  onSaveNote,
 }: QuranPageProps) {
   const { t } = useTranslation();
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
@@ -45,6 +58,7 @@ export function QuranPage({
         juzCount={JUZ_COUNT}
         pageCount={PAGE_COUNT}
       />
+      <QuranBookmarks annotations={verseAnnotations} surahs={SURAHS} onSelect={onNavigate} />
       {selectedSurah && selectedSurahVerses && (
         <>
           <QuranReader
@@ -54,6 +68,9 @@ export function QuranPage({
             focusAyah={focusAyah}
             playingAyah={playingAyah}
             onPlayAyah={(ayah) => audioPlayerRef.current?.playAyah(ayah)}
+            annotations={verseAnnotations}
+            onToggleBookmark={(ayah) => onToggleBookmark(selectedSurah.number, ayah)}
+            onSaveNote={(ayah, note) => onSaveNote(selectedSurah.number, ayah, note)}
           />
           <QuranAudioPlayer
             ref={audioPlayerRef}

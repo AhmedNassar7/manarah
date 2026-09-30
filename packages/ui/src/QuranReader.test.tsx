@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { Surah, Translation, Verse } from "@manarah/core";
+import { setNote, toggleBookmark, type Surah, type Translation, type Verse } from "@manarah/core";
 import { QuranReader } from "./QuranReader.js";
 
 const alFatiha: Surah = {
@@ -136,5 +136,51 @@ describe("QuranReader", () => {
   it("renders no play buttons when onPlayAyah is not supplied", () => {
     render(<QuranReader surah={alFatiha} verses={verses} />);
     expect(screen.queryByRole("button", { name: /Play verse/ })).not.toBeInTheDocument();
+  });
+
+  it("opens one verse's action toolbar at a time from its ⋯ button", () => {
+    render(<QuranReader surah={alFatiha} verses={verses} />);
+    const [first, second] = screen.getAllByRole("button", { name: /Actions for verse/ });
+
+    fireEvent.click(first);
+    expect(first).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByRole("button", { name: "Copy" })).toHaveLength(1);
+
+    fireEvent.click(second);
+    expect(first).toHaveAttribute("aria-expanded", "false");
+    expect(second).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByRole("button", { name: "Copy" })).toHaveLength(1);
+
+    fireEvent.click(second);
+    expect(screen.queryByRole("button", { name: "Copy" })).not.toBeInTheDocument();
+  });
+
+  it("marks bookmarked verses and shows notes inline", () => {
+    const now = new Date("2026-09-30T12:00:00Z");
+    let annotations = toggleBookmark({}, 1, 1, now);
+    annotations = setNote(annotations, 1, 2, "Gratitude", now);
+    render(<QuranReader surah={alFatiha} verses={verses} annotations={annotations} />);
+
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveClass("quran-reader-verse-bookmarked");
+    expect(items[1]).not.toHaveClass("quran-reader-verse-bookmarked");
+    expect(items[1]).toHaveTextContent("Gratitude");
+  });
+
+  it("routes toolbar bookmark and note actions to the verse they were opened on", () => {
+    const onToggleBookmark = vi.fn();
+    const onSaveNote = vi.fn();
+    render(
+      <QuranReader surah={alFatiha} verses={verses} onToggleBookmark={onToggleBookmark} onSaveNote={onSaveNote} />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Actions for verse 2" }));
+    fireEvent.click(screen.getByRole("button", { name: "Bookmark" }));
+    expect(onToggleBookmark).toHaveBeenCalledWith(2);
+
+    fireEvent.click(screen.getByRole("button", { name: "Add note" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Note for verse 2" }), { target: { value: "Reflect" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save note" }));
+    expect(onSaveNote).toHaveBeenCalledWith(2, "Reflect");
   });
 });
