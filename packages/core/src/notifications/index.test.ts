@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AzkarCategory } from "../azkar-engine/index.js";
+import { hijriToGregorian, ISLAMIC_EVENTS } from "../hijri/index.js";
 import { computePrayerTimes, type DailyPrayerTimes } from "../prayer-times/index.js";
 import { DEFAULT_SETTINGS, type UserSettings } from "../settings/index.js";
 import {
   computeDueNotifications,
   initialNotificationState,
   localDateKey,
+  OBSERVANCE_REMINDER_POLICY,
   runNotificationCheck,
   type CustomTimeAzkar,
+  type DueNotification,
   type NotificationState,
   type ScheduledAzkar,
 } from "./index.js";
@@ -448,5 +451,190 @@ describe("runNotificationCheck", () => {
     });
     expect(after.some((d) => d.type === "custom-azkar")).toBe(true);
     expect(notify2).toHaveBeenCalledWith({ type: "custom-azkar", category: travelCategory, time: "14:30" }, "en");
+  });
+});
+
+/* ---------- Observance reminders ---------- */
+
+describe("observance reminders", () => {
+  /** Local YYYY-MM-DD of the civil day on which a Hijri date falls (tabular calendar, no adjustment). */
+  function civilStr(hijri: { year: number; month: number; day: number }, offsetDays = 0, adjustment = 0): string {
+    const d = new Date(hijriToGregorian(hijri).getTime() + (offsetDays - adjustment) * 86_400_000);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  }
+
+  /** Runs one check at `at` on civil day `dateStr`, returning only the observance notifications. */
+  function check(
+    dateStr: string,
+    at: (t: DailyPrayerTimes) => Date,
+    options: { adjustment?: number; state?: NotificationState | undefined; disabled?: boolean } = {}
+  ) {
+    const times = timesOn(dateStr);
+    const result = computeDueNotifications(
+      at(times),
+      times,
+      noAzkar,
+      options.state ?? initialNotificationState(dateStr),
+      options.disabled ? undefined : { adjustment: options.adjustment ?? 0 }
+    );
+    return {
+      ...result,
+      observances: result.due.filter((d) => d.type === "observance"),
+    };
+  }
+
+  const atMaghrib = (t: DailyPrayerTimes) => minutes(t.maghrib, 1);
+  const atFajr = (t: DailyPrayerTimes) => minutes(t.fajr, 1);
+
+  const ASHURA = { year: 1448, month: 1, day: 10 };
+  const EID_FITR = { year: 1448, month: 10, day: 1 };
+
+  it("reminds the evening before, at Maghrib — not earlier", () => {
+    const eve = civilStr(ASHURA, -1);
+    expect(check(eve, (t) => minutes(t.maghrib, -1)).observances).toEqual([]);
+    expect(check(eve, atMaghrib).observances).toEqual([{ type: "observance", observance: "ashura", when: "tomorrow" }]);
+  });
+
+  it("fires once, and not again on the next check", () => {
+    const eve = civilStr(ASHURA, -1);
+    const first = check(eve, atMaghrib);
+    expect(first.observances).toHaveLength(1);
+    const times = timesOn(eve);
+    const second = computeDueNotifications(minutes(times.maghrib, 6), times, noAzkar, first.nextState, { adjustment: 0 });
+    expect(second.due.filter((d) => d.type === "observance")).toEqual([]);
+  });
+
+  it("gives Ashura an evening-before reminder only — a fast needs the night before, not a morning nudge", () => {
+    expect(check(civilStr(ASHURA), atFajr).observances).toEqual([]);
+  });
+
+  it("gives Eid al-Fitr both: the evening before, and again at Fajr on the day", () => {
+    expect(check(civilStr(EID_FITR, -1), atMaghrib).observances).toEqual([
+      { type: "observance", observance: "eid-al-fitr", when: "tomorrow" },
+    ]);
+    expect(check(civilStr(EID_FITR), atFajr).observances).toEqual([
+      { type: "observance", observance: "eid-al-fitr", when: "today" },
+    ]);
+  });
+
+  it("does not remind on an ordinary day", () => {
+    const ordinary = { year: 1448, month: 6, day: 4 };
+    expect(check(civilStr(ordinary, -1), atMaghrib).observances).toEqual([]);
+    expect(check(civilStr(ordinary), atFajr).observances).toEqual([]);
+  });
+
+  it("reminds once for the White Days block — the evening before the 13th, not before the 14th or 15th", () => {
+    const base = { year: 1448, month: 6 };
+    expect(check(civilStr({ ...base, day: 13 }, -1), atMaghrib).observances).toEqual([
+      { type: "observance", observance: "white-days", when: "tomorrow" },
+    ]);
+    expect(check(civilStr({ ...base, day: 14 }, -1), atMaghrib).observances).toEqual([]);
+    expect(check(civilStr({ ...base, day: 15 }, -1), atMaghrib).observances).toEqual([]);
+    expect(check(civilStr({ ...base, day: 13 }), atFajr).observances).toEqual([]);
+  });
+
+  it("starts the White Days at the 14th in Dhu al-Hijjah, where the 13th is a day of Tashreeq", () => {
+    const base = { year: 1448, month: 12 };
+    expect(check(civilStr({ ...base, day: 13 }, -1), atMaghrib).observances).toEqual([]);
+    expect(check(civilStr({ ...base, day: 14 }, -1), atMaghrib).observances).toEqual([
+      { type: "observance", observance: "white-days", when: "tomorrow" },
+    ]);
+  });
+
+  it("marks a reminder missed by more than 30 minutes handled without notifying", () => {
+    const eve = civilStr(ASHURA, -1);
+    const late = check(eve, (t) => minutes(t.maghrib, 120));
+    expect(late.observances).toEqual([]);
+    expect(late.nextState.firedObservances).toContain("eve:ashura");
+  });
+
+  it("is off unless asked for", () => {
+    const eve = civilStr(ASHURA, -1);
+    const result = check(eve, atMaghrib, { disabled: true });
+    expect(result.observances).toEqual([]);
+    expect(result.nextState.firedObservances).toEqual([]);
+  });
+
+  it("follows the user's Hijri adjustment — a later Hijri date means the observance comes a civil day earlier", () => {
+    // With +1 the Hijri day 10 Muharram lands one civil day earlier, so the evening-before moves too.
+    const eveWithAdjustment = civilStr(ASHURA, -1, 1);
+    expect(check(eveWithAdjustment, atMaghrib, { adjustment: 1 }).observances).toEqual([
+      { type: "observance", observance: "ashura", when: "tomorrow" },
+    ]);
+    // Unadjusted, that same evening is the one before Tasu'a (9 Muharram) — not Ashura.
+    expect(check(eveWithAdjustment, atMaghrib, { adjustment: 0 }).observances).toEqual([
+      { type: "observance", observance: "tasua", when: "tomorrow" },
+    ]);
+  });
+
+  it("starts a new day's observance bookkeeping afresh", () => {
+    const eve = civilStr(ASHURA, -1);
+    const first = check(eve, atMaghrib);
+    const nextDay = civilStr(ASHURA);
+    const times = timesOn(nextDay);
+    const next = computeDueNotifications(minutes(times.fajr, 1), times, noAzkar, first.nextState, { adjustment: 0 });
+    expect(next.nextState.date).toBe(nextDay);
+    expect(next.nextState.firedObservances).not.toContain("eve:ashura");
+  });
+
+  it("upgrades state saved before observance reminders existed", () => {
+    const legacy = {
+      date: civilStr(ASHURA, -1),
+      firedPrayers: [],
+      firedPostSalahAzkar: [],
+      firedAzkarSlots: [],
+      firedCustomAzkar: [],
+    };
+    const result = check(civilStr(ASHURA, -1), atMaghrib, { state: legacy as unknown as NotificationState });
+    expect(result.observances).toHaveLength(1);
+    expect(result.nextState.firedObservances).toEqual(["eve:ashura"]);
+  });
+
+  it("has a reminder policy for every fixed event and the White Days, and no stray entries", () => {
+    const ids = [...ISLAMIC_EVENTS.map((e) => e.id), "white-days"].sort();
+    expect(Object.keys(OBSERVANCE_REMINDER_POLICY).sort()).toEqual(ids);
+    for (const policy of Object.values(OBSERVANCE_REMINDER_POLICY)) expect(policy.eve || policy.day).toBe(true);
+  });
+});
+
+describe("runNotificationCheck — observance reminders", () => {
+  const cairo = { latitude: 30.1317, longitude: 31.3382 };
+  const prayerTimesSettings = { method: "UmmAlQura" as const, asrSchool: "Standard" as const };
+
+  function run(settings: Partial<UserSettings>) {
+    const data: { state?: NotificationState } = {};
+    const notified: DueNotification[] = [];
+    // The evening before Ashura 1448 (tabular), five minutes after the real Cairo Maghrib.
+    const eveCivil = hijriToGregorian({ year: 1448, month: 1, day: 10 });
+    const eveDay = new Date(eveCivil.getUTCFullYear(), eveCivil.getUTCMonth(), eveCivil.getUTCDate() - 1, 12);
+    const maghrib = computePrayerTimes(cairo, eveDay, prayerTimesSettings).maghrib;
+    const now = new Date(maghrib.getTime() + 5 * 60_000);
+    return runNotificationCheck({
+      getSettings: async () => ({ ...DEFAULT_SETTINGS, coordinates: cairo, prayerTimesSettings, ...settings }),
+      getNotificationState: async () => data.state,
+      setNotificationState: async (s) => {
+        data.state = s;
+      },
+      notify: (n) => notified.push(n),
+      azkarCategories: [],
+      now,
+    }).then((due) => ({ due, notified }));
+  }
+
+  it("delivers the evening-before reminder from the real prayer times", async () => {
+    const { notified } = await run({});
+    expect(notified.filter((n) => n.type === "observance")).toEqual([
+      { type: "observance", observance: "ashura", when: "tomorrow" },
+    ]);
+  });
+
+  it("stays silent when the user has turned observance reminders off", async () => {
+    const { notified } = await run({ observanceReminders: false });
+    expect(notified.filter((n) => n.type === "observance")).toEqual([]);
+  });
+
+  it("passes the user's Hijri adjustment through", async () => {
+    const { notified } = await run({ hijriAdjustment: 1 });
+    expect(notified.filter((n) => n.type === "observance")).toEqual([]);
   });
 });

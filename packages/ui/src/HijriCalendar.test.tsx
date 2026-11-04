@@ -12,6 +12,8 @@ function setup(overrides: Partial<HijriCalendarProps> = {}, language: "en" | "ar
     todayCivil: hijriToGregorian(TODAY),
     adjustment: 0,
     onAdjustmentChange: vi.fn(),
+    remindersEnabled: true,
+    onRemindersChange: vi.fn(),
     ...overrides,
   };
   const ui = <HijriCalendar {...props} />;
@@ -184,6 +186,21 @@ describe("HijriCalendar — adjustment", () => {
   it("always carries the calculated-not-sighted warning", () => {
     setup();
     expect(screen.getByText(/not sighted/)).toBeInTheDocument();
+  });
+});
+
+describe("HijriCalendar — reminders", () => {
+  it("shows whether reminders are on and reports a change", () => {
+    const { props } = setup({ remindersEnabled: true });
+    const checkbox = screen.getByRole("checkbox", { name: /Remind me about these days/ });
+    expect(checkbox).toBeChecked();
+    fireEvent.click(checkbox);
+    expect(props.onRemindersChange).toHaveBeenCalledWith(false);
+  });
+
+  it("reflects the off state", () => {
+    setup({ remindersEnabled: false });
+    expect(screen.getByRole("checkbox", { name: /Remind me about these days/ })).not.toBeChecked();
   });
 });
 

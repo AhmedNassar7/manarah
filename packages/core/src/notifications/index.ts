@@ -4,6 +4,7 @@ import {
   type AzkarCategory,
   type AzkarTrigger,
 } from "../azkar-engine/index.js";
+import { hijriDateOfCivilDay, observancesOn, toCalendarDate, type HijriDate } from "../hijri/index.js";
 import type { DailyPrayerTimes } from "../prayer-times/index.js";
 import { computePrayerTimes } from "../prayer-times/index.js";
 import { withDefaultSettings, type Language, type UserSettings } from "../settings/index.js";
@@ -24,11 +25,14 @@ export interface NotificationState {
   firedAzkarSlots: string[];
   /** Category ids of custom-time azkar already fired today. */
   firedCustomAzkar: string[];
+  /** Observance reminders already handled today, as "eve:<id>" / "day:<id>". */
+  firedObservances: string[];
 }
 
 /** State persisted by builds before azkar reminder slots existed — only morning azkar was tracked. */
-type LegacyNotificationState = Omit<NotificationState, "firedAzkarSlots"> & {
+type LegacyNotificationState = Omit<NotificationState, "firedAzkarSlots" | "firedObservances"> & {
   firedAzkarSlots?: string[];
+  firedObservances?: string[];
   firedMorningAzkar?: boolean;
 };
 
@@ -43,7 +47,51 @@ export type DueNotification =
   | { type: "prayer"; prayer: PrayerName }
   | { type: "post-salah-azkar"; prayer: PrayerName; categories: AzkarCategory[] }
   | { type: "azkar-reminder"; slot: AzkarReminderSlotId; categories: AzkarCategory[] }
-  | { type: "custom-azkar"; category: AzkarCategory; time: string };
+  | { type: "custom-azkar"; category: AzkarCategory; time: string }
+  | { type: "observance"; observance: string; when: ObservanceWhen };
+
+/**
+ * When an observance reminder fires relative to the observance's day:
+ * "tomorrow" = the evening before, at Maghrib (the Islamic day has just
+ * begun, and the fast or celebration falls on the coming civil day);
+ * "today" = at Fajr on the day itself.
+ */
+export type ObservanceWhen = "tomorrow" | "today";
+
+/**
+ * Which reminders each observance gets. Fasting days (Tasu'a, Ashura, Arafah,
+ * the White Days) are reminded the evening before only — that's when you need
+ * to know, to intend the fast and eat suhoor. Dates worth a second nudge on
+ * the day itself (new year, start of Ramadan, the two Eids) get both.
+ */
+export const OBSERVANCE_REMINDER_POLICY: Record<string, { eve: boolean; day: boolean }> = {
+  "islamic-new-year": { eve: true, day: true },
+  tasua: { eve: true, day: false },
+  ashura: { eve: true, day: false },
+  "ramadan-start": { eve: true, day: true },
+  "eid-al-fitr": { eve: true, day: true },
+  "day-of-arafah": { eve: true, day: false },
+  "eid-al-adha": { eve: true, day: true },
+  "white-days": { eve: true, day: false },
+};
+
+/** Settings for observance reminders; leaving this out of computeDueNotifications turns them off. */
+export interface ObservanceReminderOptions {
+  /** The user's Hijri adjustment in days (see clampHijriAdjustment). */
+  adjustment: number;
+}
+
+/**
+ * Observances that *begin* on this Hijri date. The White Days are a three-day
+ * block, so only its first day counts (the 13th — or the 14th in Dhu al-Hijjah,
+ * where the 13th is a day of Tashreeq) — one reminder per block, not three.
+ */
+function observancesStartingOn(hijri: HijriDate): string[] {
+  return observancesOn(hijri.month, hijri.day).filter((id) => {
+    if (id !== "white-days") return true;
+    return observancesOn(hijri.month, hijri.day - 1).includes("white-days") === false;
+  });
+}
 
 export interface CustomTimeAzkar {
   category: AzkarCategory;
@@ -106,6 +154,7 @@ export function initialNotificationState(dateKey: string): NotificationState {
     firedPostSalahAzkar: [],
     firedAzkarSlots: [],
     firedCustomAzkar: [],
+    firedObservances: [],
   };
 }
 
@@ -119,6 +168,7 @@ function stateForToday(previous: NotificationState | LegacyNotificationState, to
     firedPostSalahAzkar: [...previous.firedPostSalahAzkar],
     firedAzkarSlots: legacy.firedAzkarSlots ? [...legacy.firedAzkarSlots] : legacy.firedMorningAzkar ? ["fajr"] : [],
     firedCustomAzkar: [...previous.firedCustomAzkar],
+    firedObservances: legacy.firedObservances ? [...legacy.firedObservances] : [],
   };
 }
 
@@ -148,7 +198,8 @@ export function computeDueNotifications(
   now: Date,
   times: DailyPrayerTimes,
   azkar: ScheduledAzkar,
-  previousState: NotificationState | LegacyNotificationState
+  previousState: NotificationState | LegacyNotificationState,
+  observances?: ObservanceReminderOptions
 ): { due: DueNotification[]; nextState: NotificationState } {
   const state = stateForToday(previousState, localDateKey(now));
   const due: DueNotification[] = [];
@@ -188,6 +239,30 @@ export function computeDueNotifications(
 
     if (isFresh(at)) due.push({ type: "custom-azkar", category, time });
     state.firedCustomAzkar.push(category.id);
+  }
+
+  if (observances) {
+    const civilToday = toCalendarDate(now);
+    // At Maghrib the Islamic day starts, so what begins "tonight" falls on tomorrow's civil date.
+    const tomorrowsHijri = hijriDateOfCivilDay(new Date(civilToday.getTime() + 86_400_000), observances.adjustment);
+    const todaysHijri = hijriDateOfCivilDay(civilToday, observances.adjustment);
+
+    const reminders: Array<{ when: ObservanceWhen; at: Date; ids: string[] }> = [
+      { when: "tomorrow", at: times.maghrib, ids: observancesStartingOn(tomorrowsHijri) },
+      { when: "today", at: times.fajr, ids: observancesStartingOn(todaysHijri) },
+    ];
+    for (const { when, at, ids } of reminders) {
+      if (now < at) continue;
+      for (const id of ids) {
+        const policy = OBSERVANCE_REMINDER_POLICY[id];
+        if (!policy || !(when === "tomorrow" ? policy.eve : policy.day)) continue;
+        const key = `${when === "tomorrow" ? "eve" : "day"}:${id}`;
+        if (state.firedObservances.includes(key)) continue;
+
+        if (isFresh(at)) due.push({ type: "observance", observance: id, when });
+        state.firedObservances.push(key);
+      }
+    }
   }
 
   return { due, nextState: state };
@@ -240,7 +315,13 @@ export async function runNotificationCheck(deps: NotificationCheckDeps): Promise
     .filter((a): a is typeof a & { customTime: string } => a.trigger === "custom-time" && !!a.customTime)
     .map((a) => ({ category: a.category, time: a.customTime }));
 
-  const { due, nextState } = computeDueNotifications(now, times, { byTrigger, customTime }, previousState);
+  const { due, nextState } = computeDueNotifications(
+    now,
+    times,
+    { byTrigger, customTime },
+    previousState,
+    settings.observanceReminders ? { adjustment: settings.hijriAdjustment } : undefined
+  );
 
   for (const notification of due) {
     deps.notify(notification, settings.language);

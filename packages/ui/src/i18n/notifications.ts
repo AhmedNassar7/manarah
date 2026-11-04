@@ -39,5 +39,15 @@ export function formatNotification(notification: DueNotification, language: Lang
         title: azkarCategoryName(notification.category, language),
         body: t("notification.customBody", { time: notification.time }),
       };
+    case "observance": {
+      const isEid = notification.observance === "eid-al-fitr" || notification.observance === "eid-al-adha";
+      return {
+        title: t(`hijri.event.${notification.observance}`),
+        body:
+          notification.when === "tomorrow"
+            ? t("notification.observanceTomorrow")
+            : t(isEid ? "notification.eidToday" : "notification.observanceToday"),
+      };
+    }
   }
 }

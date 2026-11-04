@@ -5,6 +5,8 @@ export interface CalendarPageProps {
   times: DailyPrayerTimes | null;
   hijriAdjustment: number;
   onHijriAdjustmentChange: (days: number) => void;
+  observanceReminders: boolean;
+  onObservanceRemindersChange: (enabled: boolean) => void;
 }
 
 /** Today's Maghrib, but only if `times` was computed for today — a tab left open past midnight would otherwise treat yesterday's Maghrib as already passed. */
@@ -16,7 +18,13 @@ export function todaysMaghrib(times: DailyPrayerTimes | null, now: Date): Date |
 }
 
 /** The Hijri calendar route. */
-export function CalendarPage({ times, hijriAdjustment, onHijriAdjustmentChange }: CalendarPageProps) {
+export function CalendarPage({
+  times,
+  hijriAdjustment,
+  onHijriAdjustmentChange,
+  observanceReminders,
+  onObservanceRemindersChange,
+}: CalendarPageProps) {
   const { t } = useTranslation();
   const now = new Date();
 
@@ -28,6 +36,8 @@ export function CalendarPage({ times, hijriAdjustment, onHijriAdjustmentChange }
         todayCivil={toCalendarDate(now)}
         adjustment={hijriAdjustment}
         onAdjustmentChange={onHijriAdjustmentChange}
+        remindersEnabled={observanceReminders}
+        onRemindersChange={onObservanceRemindersChange}
       />
     </>
   );

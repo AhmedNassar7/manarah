@@ -85,6 +85,7 @@ pnpm workspace monorepo, no Turborepo:
 | Evening azkar (evening + morning-evening categories) | Asr — the start of the evening-azkar window |
 | Azkar before sleep | 1 hour after Isha, clamped to 23:59 (no bedtime is known; remap a category to a custom time for an exact one) |
 | Custom-time azkar | The time set per category in azkar settings |
+| Islamic observances | The evening before, at Maghrib (when the Islamic day begins); and again at Fajr on the day for the new year, start of Ramadan and the two Eids — see "Hijri calendar" |
 
 Each fires at most once a day, and anything whose time passed more than 30 minutes ago is marked handled silently rather than delivered — so opening the web app in the evening doesn't dump the whole day's reminders at once. Core's `computeDueNotifications` returns structured, language-neutral `DueNotification`s; `formatNotification` (`@manarah/ui/notifications`, React-free so the extension service worker can import it) renders them in the user's language, with Hisn al-Muslim's Arabic category titles in Arabic. New `"morning-evening"` azkar trigger is category 27's default. Still open (Azkar engine v2, Phase 2): per-prayer on/off, "N minutes before" reminders, snooze.
 
@@ -109,7 +110,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 477 tests passing across all 4 packages (`core` 165, `storage` 17, `data` 53, `ui` 242), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 498 tests passing across all 4 packages (`core` 181, `storage` 17, `data` 53, `ui` 247), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -129,7 +130,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 ### Phase 3 — Depth — ⬜ not started
 
 - [x] Hadith library — browse the six collections book by book, Arabic-first with opt-in English and attributed gradings (see reader roadmap step 9). Still open: search, bookmarks/notes, cross-links from tafsir
-- [x] Hijri calendar page (month grid, observances, coming events, ±2-day adjustment) — see "Hijri calendar" below. Still open: holiday *reminders* (notifications for Ramadan/Eid/Ashura/White Days), Qada/fasting tracker, Zakat calculator
+- [x] Hijri calendar page (month grid, observances, coming events, ±2-day adjustment) — see "Hijri calendar" below. Holiday reminders are done too (see below). Still open: Qada/fasting tracker, Zakat calculator
 - [ ] Khatmah (completion) reading-plan generator
 - [ ] AR/camera-assisted Qibla on mobile
 
@@ -252,6 +253,13 @@ Correctness points that are easy to get wrong, all unit-tested in `packages/core
 - **Observances** — Islamic New Year, Tasu'a, Ashura, first of Ramadan, Eid al-Fitr, Day of Arafah, Eid al-Adha, plus the **White Days** (13th–15th of every month, recommended fast) — *excluding 13 Dhu al-Hijjah*, a day of Tashreeq on which fasting is forbidden. Fast-recommended entries say so in their name; Eid days get a filled tile.
 - Always labelled as calculated, not sighted, with a prompt to confirm Ramadan/Eid with the local authority.
 
+**Reminders (added 2026-11-05).** New `observance` notification type in `packages/core/notifications`, so it runs through the same `runNotificationCheck` on every platform (extension alarms, web tab loop) and is rendered by `formatNotification` in English and Arabic.
+- **When:** the *evening before*, at Maghrib — the Islamic day has just begun and the fast or celebration falls on the coming civil day, which is when you need to know to intend a fast and eat suhoor. Dates worth a second nudge (Islamic New Year, start of Ramadan, both Eids) also get one at Fajr on the day, with "Eid Mubarak" on the Eids. Everything else (Tasu'a, Ashura, Day of Arafah, White Days) is evening-before only. The table is `OBSERVANCE_REMINDER_POLICY`, and a test pins it to the event list so a new event can't be added without a decision.
+- **White Days: one reminder per block, not three** — only the evening before the 13th (or the 14th in Dhu al-Hijjah, where the 13th is Tashreeq).
+- Follows the user's Hijri adjustment; uses the same fire-once-a-day bookkeeping (`NotificationState.firedObservances`, upgraded from older saved state) and the same 30-minute staleness rule as every other notification, so opening the app late never dumps old reminders.
+- Wording says "by the calculated calendar — confirm with your local announcement", never asserting a sighted date.
+- One switch (`UserSettings.observanceReminders`, default on, effective only once notification permission is granted) on the Calendar page. Like every web notification here, it only fires while a tab (or the extension) is running — there is no push server.
+
 Known limits: no Laylat al-Qadr marking (its date is a matter of scholarly difference — deliberately not asserted); week starts Sunday in English and Saturday in Arabic with no separate setting; the layout has only been checked by tests and CSS inspection, not on screen.
 
 ## Testing strategy — ✅ framework in place, coverage ongoing
@@ -280,7 +288,7 @@ No working browser exists in the primary dev environment used to build this — 
 ## Known gaps / smallest real next steps
 
 - **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
-- **Hijri holiday reminders** — the calendar page exists, but nothing *notifies* about Ramadan/Eid/Ashura/White Days yet; that needs new `DueNotification` types in `computeDueNotifications` plus dictionary strings (the engine is already language-neutral, so it's an additive change).
+- **Observance reminders: no per-observance choice yet** — one on/off switch for all of them (Calendar page). Per-observance toggles, "N days before" and snooze belong with Azkar engine v2 (Phase 2).
 - **Further translations** — one English translation (Saheeh International) is fetched and wired in; other languages/editions are still unfetched (tafsir is done — roadmap step 5). Multi-translation remains a Phase 2 item.
 - **Tafsir offline** — only tafsir already read is available offline (service-worker cache); there's no "download this tafsir for offline" bulk option yet.
 

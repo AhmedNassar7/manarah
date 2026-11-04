@@ -48,6 +48,8 @@ export interface UserSettings {
   showTranslation: boolean;
   /** Days (−2…+2, see clampHijriAdjustment) added to the calculated Hijri date to match the user's local moon-sighting announcement. */
   hijriAdjustment: number;
+  /** Notify about Islamic observances (the evening before, and on the day for Eid, Ramadan and the new year). */
+  observanceReminders: boolean;
 }
 
 /** Quran reader text-size multipliers, smallest to largest; applied to both the Arabic and the translation. */
@@ -73,6 +75,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   /** Arabic-only by default; the translation is opt-in (reading settings or the reader's own toggle). */
   showTranslation: false,
   hijriAdjustment: 0,
+  observanceReminders: true,
 };
 
 export const SETTINGS_STORAGE_KEY = "manarah:settings";

@@ -122,6 +122,11 @@ export function currentHijriDate(now: Date, { maghrib, adjustment = 0 }: Current
   return gregorianToHijri(addDays(toCalendarDate(now), (afterMaghrib ? 1 : 0) + clampHijriAdjustment(adjustment)));
 }
 
+/** The Hijri date of a civil day (UTC midnight, from toCalendarDate), with the user's adjustment — no Maghrib shift; that belongs to "now", not to a calendar day. */
+export function hijriDateOfCivilDay(civil: Date, adjustment = 0): HijriDate {
+  return gregorianToHijri(addDays(civil, clampHijriAdjustment(adjustment)));
+}
+
 /** Length of a Hijri month in the tabular calendar: 29 or 30 days (30 for Dhu al-Hijjah in a leap year). */
 export function daysInHijriMonth(year: number, month: number): number {
   const nextYear = month === 12 ? year + 1 : year;

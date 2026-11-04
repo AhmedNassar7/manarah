@@ -313,6 +313,14 @@ export function App() {
     });
   }
 
+  function handleObservanceRemindersChange(observanceReminders: boolean) {
+    setSettings((prev) => {
+      const next = { ...prev, observanceReminders };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -398,6 +406,8 @@ export function App() {
                   times={times}
                   hijriAdjustment={settings.hijriAdjustment}
                   onHijriAdjustmentChange={handleHijriAdjustmentChange}
+                  observanceReminders={settings.observanceReminders}
+                  onObservanceRemindersChange={handleObservanceRemindersChange}
                 />
               }
             />

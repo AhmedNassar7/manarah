@@ -209,6 +209,11 @@ const EN: Dictionary = {
   "hijri.earlier": "One day earlier",
   "hijri.later": "One day later",
   "hijri.disclaimer": "Dates are calculated by a fixed rule, not sighted, so they can differ by a day or two from the real announcement. The Islamic day begins at sunset. Confirm Ramadan and Eid with your local authority.",
+  "notification.observanceTomorrow": "Tomorrow, by the calculated calendar. Confirm with your local announcement.",
+  "notification.observanceToday": "Today, by the calculated calendar.",
+  "notification.eidToday": "Eid Mubarak! Taqabbal Allahu minna wa minkum.",
+  "hijri.reminders": "Remind me about these days",
+  "hijri.remindersHelp": "A notification the evening before — and on the day itself for Eid, Ramadan and the new year. Shown while the app or extension is running.",
 
   "quranAudioPlayer.play": "Play",
   "quranAudioPlayer.pause": "Pause",
@@ -497,6 +502,11 @@ const AR: Dictionary = {
   "hijri.earlier": "يوم أبكر",
   "hijri.later": "يوم أحدث",
   "hijri.disclaimer": "التواريخ محسوبة بقاعدة ثابتة وليست بالرؤية، لذا قد تختلف يومًا أو يومين عن الإعلان الفعلي. يبدأ اليوم الإسلامي عند الغروب. تأكد من بداية رمضان والعيد من الجهة المختصة في بلدك.",
+  "notification.observanceTomorrow": "غدًا حسب التقويم المحسوب. تأكد من الإعلان المحلي.",
+  "notification.observanceToday": "اليوم حسب التقويم المحسوب.",
+  "notification.eidToday": "عيد مبارك! تقبّل الله منا ومنكم.",
+  "hijri.reminders": "ذكّرني بهذه الأيام",
+  "hijri.remindersHelp": "إشعار مساء اليوم السابق — وفي اليوم نفسه للعيدين ورمضان ورأس السنة. يظهر أثناء عمل التطبيق أو الإضافة.",
 
   "quranAudioPlayer.play": "تشغيل",
   "quranAudioPlayer.pause": "إيقاف مؤقت",

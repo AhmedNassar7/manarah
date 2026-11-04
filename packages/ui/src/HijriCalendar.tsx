@@ -45,6 +45,9 @@ export interface HijriCalendarProps {
   /** The user's adjustment in days, −2…+2. */
   adjustment: number;
   onAdjustmentChange: (days: number) => void;
+  /** Whether observance reminders (notifications) are on. */
+  remindersEnabled: boolean;
+  onRemindersChange: (enabled: boolean) => void;
 }
 
 /**
@@ -53,7 +56,14 @@ export interface HijriCalendarProps {
  * ±2-day adjustment for matching the local moon-sighting announcement.
  * Dates are calculated (tabular rule), never sighted — the page says so.
  */
-export function HijriCalendar({ today, todayCivil, adjustment, onAdjustmentChange }: HijriCalendarProps) {
+export function HijriCalendar({
+  today,
+  todayCivil,
+  adjustment,
+  onAdjustmentChange,
+  remindersEnabled,
+  onRemindersChange,
+}: HijriCalendarProps) {
   const { t, language } = useTranslation();
   const formats = useDateFormats();
   const [view, setView] = useState({ year: today.year, month: today.month });
@@ -247,6 +257,14 @@ export function HijriCalendar({ today, todayCivil, adjustment, onAdjustmentChang
           </button>
         </div>
       </div>
+
+      <label className="hijri-reminders">
+        <div>
+          <strong>{t("hijri.reminders")}</strong>
+          <p>{t("hijri.remindersHelp")}</p>
+        </div>
+        <input type="checkbox" checked={remindersEnabled} onChange={(event) => onRemindersChange(event.target.checked)} />
+      </label>
 
       <p className="hijri-disclaimer">{t("hijri.disclaimer")}</p>
     </section>

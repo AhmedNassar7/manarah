@@ -61,3 +61,35 @@ describe("formatNotification", () => {
     });
   });
 });
+
+describe("formatNotification — observances", () => {
+  it("says it is tomorrow, and by the calculated calendar, in English and Arabic", () => {
+    expect(formatNotification({ type: "observance", observance: "ashura", when: "tomorrow" }, "en")).toEqual({
+      title: "Ashura — recommended fast",
+      body: "Tomorrow, by the calculated calendar. Confirm with your local announcement.",
+    });
+    const ar = formatNotification({ type: "observance", observance: "ashura", when: "tomorrow" }, "ar");
+    expect(ar.title).toBe("عاشوراء — صيام مستحب");
+    expect(ar.body).toContain("غدًا");
+  });
+
+  it("wishes Eid Mubarak on the day itself, but only for the two Eids", () => {
+    expect(formatNotification({ type: "observance", observance: "eid-al-fitr", when: "today" }, "en")).toEqual({
+      title: "Eid al-Fitr",
+      body: "Eid Mubarak! Taqabbal Allahu minna wa minkum.",
+    });
+    expect(formatNotification({ type: "observance", observance: "eid-al-adha", when: "today" }, "ar").body).toContain("عيد مبارك");
+    expect(formatNotification({ type: "observance", observance: "ramadan-start", when: "today" }, "en").body).toBe(
+      "Today, by the calculated calendar."
+    );
+  });
+
+  it("has a title for every observance the engine can raise", () => {
+    for (const id of ["islamic-new-year", "tasua", "ashura", "ramadan-start", "eid-al-fitr", "day-of-arafah", "eid-al-adha", "white-days"]) {
+      for (const language of ["en", "ar"] as const) {
+        const { title } = formatNotification({ type: "observance", observance: id, when: "tomorrow" }, language);
+        expect(title, `${id}/${language}`).not.toMatch(/^hijri\.event\./);
+      }
+    }
+  });
+});
