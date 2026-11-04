@@ -46,6 +46,8 @@ export interface UserSettings {
   readerFontStep: number;
   /** Whether the reader shows the translation under each verse (default: no — the reader opens Arabic-only). */
   showTranslation: boolean;
+  /** Days (−2…+2, see clampHijriAdjustment) added to the calculated Hijri date to match the user's local moon-sighting announcement. */
+  hijriAdjustment: number;
 }
 
 /** Quran reader text-size multipliers, smallest to largest; applied to both the Arabic and the translation. */
@@ -70,6 +72,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   readerFontStep: DEFAULT_READER_FONT_STEP,
   /** Arabic-only by default; the translation is opt-in (reading settings or the reader's own toggle). */
   showTranslation: false,
+  hijriAdjustment: 0,
 };
 
 export const SETTINGS_STORAGE_KEY = "manarah:settings";

@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
-import { qiblaBearing, qiblaDistanceKm, type Coordinates, type DailyPrayerTimes } from "@manarah/core";
 import {
+  currentHijriDate,
+  qiblaBearing,
+  qiblaDistanceKm,
+  type Coordinates,
+  type DailyPrayerTimes,
+} from "@manarah/core";
+import { todaysMaghrib } from "./CalendarPage.js";
+import {
+  HijriToday,
   Icon,
   LocationSummary,
   PrayerCountdown,
@@ -15,6 +23,7 @@ export interface HomeProps {
   times: DailyPrayerTimes | null;
   tomorrowsFajr: Date | null;
   heading: number | undefined;
+  hijriAdjustment: number;
 }
 
 const QUICK_LINKS = [
@@ -22,16 +31,22 @@ const QUICK_LINKS = [
   { to: "/qibla", icon: "qibla", labelKey: "app.sectionQibla" },
   { to: "/quran", icon: "quran", labelKey: "app.sectionQuran" },
   { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith" },
+  { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar" },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar" },
 ] as const;
 
 /** The landing page — a quick glance (today's next prayer, Qibla) plus a way into every other section. Everything else lives on its own route. */
-export function Home({ locationSummary, coordinates, times, tomorrowsFajr, heading }: HomeProps) {
+export function Home({ locationSummary, coordinates, times, tomorrowsFajr, heading, hijriAdjustment }: HomeProps) {
   const { t } = useTranslation();
 
   return (
     <>
       <LocationSummary {...locationSummary} />
+
+      <p className="home-hijri">
+        <Icon name="calendar" size={16} />{" "}
+        <HijriToday hijri={currentHijriDate(new Date(), { maghrib: todaysMaghrib(times, new Date()), adjustment: hijriAdjustment })} />
+      </p>
 
       <div className="card-row">
         {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}

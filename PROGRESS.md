@@ -36,7 +36,7 @@ pnpm workspace monorepo, no Turborepo:
                  - qibla: great-circle bearing/distance math                                     ✅
                  - notifications, badge: pure decision logic for scheduling/toolbar state        ✅
                  - settings: UserSettings model, defaulting/merge logic (withDefaultSettings)    ✅
-                 - hijri: Gregorian↔Hijri conversion, fixed-date Islamic events, nextOccurrence     ✅
+                 - hijri: Gregorian↔Hijri conversion, events, month grids, Maghrib rule, adjustment   ✅
                  - verse-annotations: per-verse bookmarks/notes model, copy/share text formatting    ✅
                  - tafsir: Quran.com tafsir URL/response parsing, HTML → plain-text blocks, edition choice ✅
                  - word-by-word: Quran.com per-word meaning/transliteration URL + response parsing       ✅
@@ -64,7 +64,7 @@ pnpm workspace monorepo, no Turborepo:
 | Azkar corpus | Hisn al-Muslim (`wafaaelmaandy/Hisn-Muslim-Json`); Al-Adhkar (an-Nawawi) and Saheeh al-Kalim at-Tayyib (Al-Albani) as richer optional packs | ✅ Hisn al-Muslim (266 items) done · ⬜ optional packs Phase 2/3 | Hisn al-Muslim is the standard compact daily-azkar reference every competitor app also uses |
 | City search | GeoNames `cities15000.txt` (CC BY 4.0) | ✅ done | Latin-script alternate names extracted for searchability (e.g. "Mecca"/"Medina") |
 | Hadith | **hadith-api** (fawazahmed0, Unlicense) via jsDelivr with a GitHub-raw fallback — the six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah), Arabic + English editions, one book per request | ✅ done (reader roadmap step 9) | Chosen over sunnah.com's API (decided 2026-11-04): that one needs a per-developer key, which a static client-only app can't keep secret. Verified live: CORS `*`, no key, 335 books × 2 editions all present with identical hadith numbers, 0 mismatches. jsDelivr returns HTTP 403 ("package size exceeded") for some `.min.json` files (e.g. eng-bukhari book 6), so the loader falls back minified → full → GitHub raw. Service-worker CacheFirst, so a book read once works offline |
-| Hijri calendar | Self-contained tabular/arithmetic conversion in `packages/core/hijri` | ✅ conversion + fixed-date events done | Computed client-side, no network call; arithmetic estimate, ±1-2 days from real moon-sighting-based announcements — not authoritative for determining observances |
+| Hijri calendar | Self-contained tabular/arithmetic conversion in `packages/core/hijri` | ✅ conversion, events and calendar page done | Computed client-side, no network call; arithmetic estimate, ±1-2 days from real moon-sighting-based announcements — not authoritative for determining observances. Spot-checked 2026-11-04: Eid al-Fitr 1447 → 20 Mar 2026 and Eid al-Adha 1447 → 27 May 2026 match the real dates; Ramadan 1447 comes out 18 Feb vs the 19 Feb announced in many countries (hence the user adjustment below) |
 
 ## Notifications (all scheduled on-device, no push server anywhere)
 
@@ -109,7 +109,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 435 tests passing across all 4 packages (`core` 145, `storage` 17, `data` 53, `ui` 220), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 477 tests passing across all 4 packages (`core` 165, `storage` 17, `data` 53, `ui` 242), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -129,7 +129,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 ### Phase 3 — Depth — ⬜ not started
 
 - [x] Hadith library — browse the six collections book by book, Arabic-first with opt-in English and attributed gradings (see reader roadmap step 9). Still open: search, bookmarks/notes, cross-links from tafsir
-- [ ] Hijri calendar with holiday reminders (Ramadan, Eid, Ashura, White Days), Qada/fasting tracker, Zakat calculator
+- [x] Hijri calendar page (month grid, observances, coming events, ±2-day adjustment) — see "Hijri calendar" below. Still open: holiday *reminders* (notifications for Ramadan/Eid/Ashura/White Days), Qada/fasting tracker, Zakat calculator
 - [ ] Khatmah (completion) reading-plan generator
 - [ ] AR/camera-assisted Qibla on mobile
 
@@ -241,6 +241,19 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
 
 ---
 
+## Hijri calendar — ✅ done (2026-11-04)
+
+New `/calendar` route (nav + Home tile) and a "today" line on Home. `HijriCalendar` (`packages/ui`) is a month grid — Hijri day large, Gregorian date small — with month navigation (year rolls over), "back to today", this month's observances, the next four events with "in N days", and a ±2-day adjustment stepper. Persisted as `UserSettings.hijriAdjustment` (clamped on read).
+
+Correctness points that are easy to get wrong, all unit-tested in `packages/core/hijri`:
+- **Local date, not UTC date** — `toCalendarDate` reads the local year/month/day, so late evening doesn't show tomorrow's Hijri date in zones behind UTC.
+- **The Islamic day begins at sunset** — from today's Maghrib the Hijri date is already tomorrow's (`currentHijriDate`). The Maghrib passed in is ignored unless it belongs to today, so a tab left open past midnight can't treat yesterday's Maghrib as already passed.
+- **Adjustment** — shifts every date by up to ±2 days to match the local moon-sighting announcement; a later Hijri date means an earlier civil one, and the month grid and "today" agree under any adjustment.
+- **Observances** — Islamic New Year, Tasu'a, Ashura, first of Ramadan, Eid al-Fitr, Day of Arafah, Eid al-Adha, plus the **White Days** (13th–15th of every month, recommended fast) — *excluding 13 Dhu al-Hijjah*, a day of Tashreeq on which fasting is forbidden. Fast-recommended entries say so in their name; Eid days get a filled tile.
+- Always labelled as calculated, not sighted, with a prompt to confirm Ramadan/Eid with the local authority.
+
+Known limits: no Laylat al-Qadr marking (its date is a matter of scholarly difference — deliberately not asserted); week starts Sunday in English and Saturday in Arabic with no separate setting; the layout has only been checked by tests and CSS inspection, not on screen.
+
 ## Testing strategy — ✅ framework in place, coverage ongoing
 
 One framework everywhere: **Vitest**, with `@testing-library/react` + `jsdom` for component tests. Four layers, in priority order:
@@ -267,7 +280,7 @@ No working browser exists in the primary dev environment used to build this — 
 ## Known gaps / smallest real next steps
 
 - **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
-- **Hijri calendar UI** — the `packages/core/hijri` conversion logic is done, but there's no calendar page/reminder UI consuming it yet (that's the Phase 3 feature item below).
+- **Hijri holiday reminders** — the calendar page exists, but nothing *notifies* about Ramadan/Eid/Ashura/White Days yet; that needs new `DueNotification` types in `computeDueNotifications` plus dictionary strings (the engine is already language-neutral, so it's an additive change).
 - **Further translations** — one English translation (Saheeh International) is fetched and wired in; other languages/editions are still unfetched (tafsir is done — roadmap step 5). Multi-translation remains a Phase 2 item.
 - **Tafsir offline** — only tafsir already read is available offline (service-worker cache); there's no "download this tafsir for offline" bulk option yet.
 

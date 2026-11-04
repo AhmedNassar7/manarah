@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import {
+  clampHijriAdjustment,
   clampReaderFontStep,
   computePrayerTimes,
   nearestCity,
@@ -43,6 +44,7 @@ import { AzkarPage } from "./pages/AzkarPage.js";
 import { Home } from "./pages/Home.js";
 import { PrayerPage } from "./pages/PrayerPage.js";
 import { QiblaPage } from "./pages/QiblaPage.js";
+import { CalendarPage } from "./pages/CalendarPage.js";
 import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 
@@ -303,6 +305,14 @@ export function App() {
     });
   }
 
+  function handleHijriAdjustmentChange(days: number) {
+    setSettings((prev) => {
+      const next = { ...prev, hijriAdjustment: clampHijriAdjustment(days) };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -327,6 +337,7 @@ export function App() {
                   times={times}
                   tomorrowsFajr={tomorrowsFajr}
                   heading={heading}
+                  hijriAdjustment={settings.hijriAdjustment}
                 />
               }
             />
@@ -377,6 +388,16 @@ export function App() {
                   onReaderFontStepChange={handleReaderFontStepChange}
                   showTranslation={settings.showTranslation}
                   onShowTranslationChange={handleShowTranslationChange}
+                />
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <CalendarPage
+                  times={times}
+                  hijriAdjustment={settings.hijriAdjustment}
+                  onHijriAdjustmentChange={handleHijriAdjustmentChange}
                 />
               }
             />

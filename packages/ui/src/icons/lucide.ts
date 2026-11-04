@@ -45,4 +45,9 @@ export const LUCIDE_ICONS = {
   "cloud-rain": [["path", {"d":"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}], ["path", {"d":"M16 14v6"}], ["path", {"d":"M8 14v6"}], ["path", {"d":"M12 16v6"}]], // lucide: cloud-rain
   "handshake": [["path", {"d":"m11 17 2 2a1 1 0 1 0 3-3"}], ["path", {"d":"m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"}], ["path", {"d":"m21 3 1 11h-2"}], ["path", {"d":"M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"}], ["path", {"d":"M3 4h8"}]], // lucide: handshake
   "hadith": [["path", {"d":"M15 12h-5"}], ["path", {"d":"M15 8h-5"}], ["path", {"d":"M19 17V5a2 2 0 0 0-2-2H4"}], ["path", {"d":"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"}]], // lucide: scroll-text
+  "calendar": [["path", {"d":"M8 2v4"}], ["path", {"d":"M16 2v4"}], ["rect", {"width":"18","height":"18","x":"3","y":"4","rx":"2"}], ["path", {"d":"M3 10h18"}], ["path", {"d":"M8 14h.01"}], ["path", {"d":"M12 14h.01"}], ["path", {"d":"M16 14h.01"}], ["path", {"d":"M8 18h.01"}], ["path", {"d":"M12 18h.01"}], ["path", {"d":"M16 18h.01"}]], // lucide: calendar-days
+  "minus": [["path", {"d":"M5 12h14"}]], // lucide: minus
+  "plus": [["path", {"d":"M5 12h14"}], ["path", {"d":"M12 5v14"}]], // lucide: plus
+  "chevron-left": [["path", {"d":"m15 18-6-6 6-6"}]], // lucide: chevron-left
+  "chevron-right": [["path", {"d":"m9 18 6-6-6-6"}]], // lucide: chevron-right
 } satisfies Record<string, IconNode>;

@@ -2022,6 +2022,290 @@ button {
   margin: 12px auto 0;
 }
 
+/* ---------- Hijri calendar ----------
+   A month grid in the manuscript palette: the Hijri day is the large
+   numeral, the Gregorian date a small one beneath. Today is ringed in teal,
+   observances get a dot (Eid a filled tile, White Days a quiet underline).
+   Gold stays reserved for completion moments, so none here. */
+.hijri-calendar {
+  font-family: var(--font-body);
+}
+
+.hijri-calendar[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.hijri-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  color: var(--accent);
+}
+
+.hijri-hero p {
+  margin: 0;
+}
+
+.hijri-hero-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.hijri-hero-date {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--ink);
+}
+
+.hijri-hero-gregorian {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.hijri-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+
+.hijri-nav-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hijri-nav-title span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.hijri-nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 120ms var(--ease-quiet);
+}
+
+.hijri-nav button:hover {
+  border-color: var(--accent);
+}
+
+.hijri-grid {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 4px;
+}
+
+.hijri-grid th {
+  padding: 4px 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.hijri-cell {
+  position: relative;
+  height: 54px;
+  padding: 4px;
+  text-align: center;
+  vertical-align: middle;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+}
+
+.hijri-cell-empty {
+  background: none;
+  border-color: transparent;
+}
+
+.hijri-day {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hijri-greg {
+  display: block;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.hijri-cell-today {
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.hijri-cell-event::after,
+.hijri-cell-eid::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  inset-inline-end: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.hijri-cell-eid {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.hijri-cell-eid .hijri-greg {
+  color: var(--accent-ink);
+  opacity: 0.8;
+}
+
+.hijri-cell-eid::after {
+  background: var(--accent-ink);
+}
+
+.hijri-cell-white {
+  box-shadow: inset 0 -3px 0 var(--accent);
+}
+
+.hijri-heading {
+  margin: 20px 0 6px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.hijri-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.hijri-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+}
+
+.hijri-events li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 14px;
+}
+
+.hijri-events li + li {
+  border-top: 1px solid var(--line);
+}
+
+.hijri-event-name {
+  font-size: 0.92rem;
+}
+
+.hijri-event-when {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+
+.hijri-adjust {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  font-size: 0.88rem;
+}
+
+.hijri-adjust p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.hijri-adjust-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hijri-adjust-stepper output {
+  min-width: 4.5em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.hijri-adjust-stepper button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface-sunken);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.hijri-adjust-stepper button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.hijri-adjust-stepper button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.hijri-disclaimer {
+  margin: 12px 2px 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.hijri-today {
+  white-space: nowrap;
+}
+
+.home-hijri {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
 /* ---------- Tafsir panel ----------
    Opens inline under its verse from the verse toolbar. Commentary can run
    to tens of thousands of characters (al-Tabari on 2:255 is ~57k), so the

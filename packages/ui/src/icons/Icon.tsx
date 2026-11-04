@@ -12,7 +12,7 @@ export function isIconName(name: string): name is IconName {
 }
 
 /** Icons that point somewhere: they flip in right-to-left layouts, so "forward" always points the reading direction. Media controls deliberately don't — play/skip keep their orientation in every language. */
-const DIRECTIONAL: ReadonlySet<IconName> = new Set<IconName>(["arrow-right", "arrow-left"]);
+const DIRECTIONAL: ReadonlySet<IconName> = new Set<IconName>(["arrow-right", "arrow-left", "chevron-left", "chevron-right"]);
 
 /** The three sizes the design uses: 16 beside text, 20 in buttons, 24 in navigation. */
 export type IconSize = 16 | 20 | 24;
