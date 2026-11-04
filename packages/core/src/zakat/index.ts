@@ -30,7 +30,7 @@ export type NisabBasis = "silver" | "gold";
 
 /** What the user typed, as strings, so half-typed numbers survive re-rendering and persisting. */
 export interface ZakatForm {
-  /** ISO 4217 code, used only to format amounts. */
+  /** ISO 4217 code, used to format amounts and to price gold and silver. Empty means "not chosen yet" — the app then uses the saved location's currency. */
   currency: string;
   cash: string;
   goldGrams: string;
@@ -46,10 +46,12 @@ export interface ZakatForm {
   /** Market price of 1 g of silver. */
   silverPrice: string;
   nisabBasis: NisabBasis;
+  /** "auto": gold and silver are priced from the fetched international price; "manual": the user's own prices above are used. */
+  priceMode: "auto" | "manual";
 }
 
 export const DEFAULT_ZAKAT_FORM: ZakatForm = {
-  currency: "USD",
+  currency: "",
   cash: "",
   goldGrams: "",
   goldKarat: "24",
@@ -63,6 +65,7 @@ export const DEFAULT_ZAKAT_FORM: ZakatForm = {
   silverPrice: "",
   // Silver is the lower threshold, so fewer people fall below it unintentionally; the user can switch.
   nisabBasis: "silver",
+  priceMode: "auto",
 };
 
 /** Backfills fields missing from a saved form (older builds, hand-edited imports) and drops anything that isn't a string. */
@@ -72,6 +75,7 @@ export function withDefaultZakatForm(stored: Partial<ZakatForm> | undefined | nu
     if (key in DEFAULT_ZAKAT_FORM && typeof value === "string") merged[key] = value;
   }
   if (merged.nisabBasis !== "silver" && merged.nisabBasis !== "gold") merged.nisabBasis = DEFAULT_ZAKAT_FORM.nisabBasis;
+  if (merged.priceMode !== "auto" && merged.priceMode !== "manual") merged.priceMode = DEFAULT_ZAKAT_FORM.priceMode;
   return merged as unknown as ZakatForm;
 }
 
@@ -203,9 +207,25 @@ export type ZakatResult =
       pureGoldGrams: number;
       /** 2.5% of net wealth if due, else 0 — rounded to the cent. */
       zakat: number;
+      /** How much of `zakat` comes from each kind of wealth (in proportion to its value), so people can see what they are paying zakat on. Sums to `zakat` within a cent. */
+      shares: ZakatBreakdown;
     };
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** Splits the zakat across the kinds of wealth in proportion to their value (debts reduce the whole, not one kind). */
+function allocateZakat(zakat: number, breakdown: ZakatBreakdown, assets: number): ZakatBreakdown {
+  const share = (value: number) => (assets > 0 ? round2((zakat * value) / assets) : 0);
+  return {
+    cash: share(breakdown.cash),
+    gold: share(breakdown.gold),
+    silver: share(breakdown.silver),
+    investments: share(breakdown.investments),
+    business: share(breakdown.business),
+    receivables: share(breakdown.receivables),
+    other: share(breakdown.other),
+  };
+}
 
 /** The nisab in currency for each metal whose price is known. */
 export function nisabValues(goldPrice: number, silverPrice: number): { gold?: number; silver?: number } {
@@ -263,5 +283,6 @@ export function calculateZakat(input: ZakatInput): ZakatResult {
     nisabValue,
     pureGoldGrams: Math.round(pureGoldGrams * 1000) / 1000,
     zakat: due ? round2(net * ZAKAT_RATE) : 0,
+    shares: allocateZakat(due ? round2(net * ZAKAT_RATE) : 0, breakdown, assets),
   };
 }

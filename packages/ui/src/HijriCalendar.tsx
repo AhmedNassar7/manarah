@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   MAX_HIJRI_ADJUSTMENT,
   clampHijriAdjustment,
@@ -48,6 +48,8 @@ export interface HijriCalendarProps {
   /** Whether observance reminders (notifications) are on. */
   remindersEnabled: boolean;
   onRemindersChange: (enabled: boolean) => void;
+  /** Extra content at the top of the side column, e.g. "on this day". */
+  aside?: ReactNode;
 }
 
 /**
@@ -63,6 +65,7 @@ export function HijriCalendar({
   onAdjustmentChange,
   remindersEnabled,
   onRemindersChange,
+  aside,
 }: HijriCalendarProps) {
   const { t, language } = useTranslation();
   const formats = useDateFormats();
@@ -206,7 +209,8 @@ export function HijriCalendar({
       </div>
 
       <div>
-      <h3 className="hijri-heading hijri-heading-first">{t("hijri.thisMonth")}</h3>
+      {aside}
+      <h3 className={aside ? "hijri-heading" : "hijri-heading hijri-heading-first"}>{t("hijri.thisMonth")}</h3>
       {monthEvents.length === 0 ? (
         <p className="hijri-empty">{t("hijri.noEventsThisMonth")}</p>
       ) : (

@@ -14,3 +14,7 @@ export * from "./quran-search/index.js";
 export * from "./hadith/index.js";
 export * from "./zakat/index.js";
 export * from "./azkar-text/index.js";
+export * from "./feedback/index.js";
+export * from "./metal-prices/index.js";
+export * from "./history/index.js";
+export * from "./progress/index.js";

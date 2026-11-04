@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  THEME_IDS,
+  resolveTheme,
+  themeAttributes,
   clampReaderFontStep,
   readerFontScale,
   READER_FONT_SCALES,
@@ -54,3 +57,32 @@ describe("reader text size", () => {
     }
   });
 });
+
+describe("themes", () => {
+  it("defaults to following the device", () => {
+    expect(DEFAULT_SETTINGS.theme).toBe("auto");
+    expect(withDefaultSettings({ language: "ar" }).theme).toBe("auto");
+  });
+
+  it("maps each theme to the attributes the stylesheet uses", () => {
+    expect(themeAttributes("auto")).toEqual({});
+    expect(themeAttributes("parchment")).toEqual({ mode: "light" });
+    expect(themeAttributes("emerald")).toEqual({ mode: "light", palette: "emerald" });
+    expect(themeAttributes("ocean")).toEqual({ mode: "light", palette: "ocean" });
+    expect(themeAttributes("rose")).toEqual({ mode: "light", palette: "rose" });
+    expect(themeAttributes("midnight")).toEqual({ mode: "dark" });
+    expect(themeAttributes("amoled")).toEqual({ mode: "dark", palette: "amoled" });
+  });
+
+  it("covers every theme id", () => {
+    for (const id of THEME_IDS) expect(() => themeAttributes(id)).not.toThrow();
+  });
+
+  it("falls back to auto for an unknown stored theme", () => {
+    expect(resolveTheme("emerald")).toBe("emerald");
+    expect(resolveTheme("neon")).toBe("auto");
+    expect(resolveTheme(undefined)).toBe("auto");
+    expect(resolveTheme(5)).toBe("auto");
+  });
+});
+

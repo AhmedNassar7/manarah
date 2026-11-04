@@ -1,5 +1,6 @@
 import { currentHijriDate, toCalendarDate, type DailyPrayerTimes } from "@manarah/core";
-import { HijriCalendar, useTranslation } from "@manarah/ui";
+import { HISTORICAL_EVENTS } from "@manarah/data";
+import { HijriCalendar, OnThisDay, useTranslation } from "@manarah/ui";
 
 export interface CalendarPageProps {
   times: DailyPrayerTimes | null;
@@ -38,6 +39,7 @@ export function CalendarPage({
         onAdjustmentChange={onHijriAdjustmentChange}
         remindersEnabled={observanceReminders}
         onRemindersChange={onObservanceRemindersChange}
+        aside={<OnThisDay events={HISTORICAL_EVENTS} todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />}
       />
     </>
   );

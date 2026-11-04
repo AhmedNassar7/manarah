@@ -236,3 +236,42 @@ describe("withDefaultZakatForm", () => {
     expect(withDefaultZakatForm({ nisabBasis: "gold" }).nisabBasis).toBe("gold");
   });
 });
+
+describe("shares of the zakat by kind of wealth", () => {
+  it("splits the zakat in proportion to each kind's value", () => {
+    const r = calculateZakat({ ...base, cash: 6000, investments: 4000 });
+    expect(r).toMatchObject({ zakat: 250 });
+    expect(r.status === "calculated" && r.shares).toMatchObject({ cash: 150, investments: 100, gold: 0, silver: 0, business: 0 });
+  });
+
+  it("adds up to the zakat, within a cent", () => {
+    const r = calculateZakat({ ...base, cash: 1234.56, goldGrams: 7.3, goldKarat: 21, investments: 999.99, business: 4321.1 });
+    if (r.status !== "calculated") throw new Error("expected calculated");
+    const sum = Object.values(r.shares).reduce((a, b) => a + b, 0);
+    expect(Math.abs(sum - r.zakat)).toBeLessThanOrEqual(0.03);
+  });
+
+  it("is all zero when no zakat is due", () => {
+    const r = calculateZakat({ ...base, cash: 100 });
+    expect(r.status === "calculated" && Object.values(r.shares).every((v) => v === 0)).toBe(true);
+  });
+
+  it("is proportional even with debts, which reduce the whole rather than one kind", () => {
+    const r = calculateZakat({ ...base, cash: 8000, business: 2000, liabilities: 2000 });
+    // net 8000 -> zakat 200; cash is 80% of assets, business 20%.
+    expect(r.status === "calculated" && r.shares).toMatchObject({ cash: 160, business: 40 });
+  });
+});
+
+describe("price mode", () => {
+  it("defaults to automatic prices, and keeps the currency unset until chosen", () => {
+    expect(DEFAULT_ZAKAT_FORM.priceMode).toBe("auto");
+    expect(DEFAULT_ZAKAT_FORM.currency).toBe("");
+  });
+
+  it("keeps a saved manual choice, and repairs an invalid one", () => {
+    expect(withDefaultZakatForm({ priceMode: "manual" }).priceMode).toBe("manual");
+    expect(withDefaultZakatForm({ priceMode: "weird" as never }).priceMode).toBe("auto");
+  });
+});
+

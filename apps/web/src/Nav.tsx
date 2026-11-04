@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar", end: false, hue: "calendar" },
   { to: "/zakat", icon: "zakat", labelKey: "app.sectionZakat", end: false, hue: "zakat" },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", end: false, hue: "azkar" },
+  { to: "/settings", icon: "gear", labelKey: "app.sectionSettings", end: false, hue: "home" },
 ] as const;
 
 /** Persistent section navigation — each feature gets its own page/route instead of one long scroll. */

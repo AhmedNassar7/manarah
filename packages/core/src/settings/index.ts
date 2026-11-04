@@ -29,6 +29,37 @@ export function shouldRefreshLocationFromGps(location: SavedLocation | undefined
 /** UI display language — independent of the Quran text itself, which is always Arabic. */
 export type Language = "en" | "ar";
 
+/**
+ * The colour themes. "auto" follows the device's light/dark setting (parchment
+ * by day, midnight by night); the rest are fixed. Each maps to the attributes
+ * the stylesheet keys on (see themeAttributes).
+ */
+export const THEME_IDS = ["auto", "parchment", "emerald", "ocean", "rose", "midnight", "amoled"] as const;
+export type ThemeId = (typeof THEME_IDS)[number];
+
+/** What to set on <html>: `data-theme` forces light or dark (absent = follow the device), `data-palette` picks the colour set. */
+export function themeAttributes(theme: ThemeId): { mode?: "light" | "dark"; palette?: string } {
+  switch (theme) {
+    case "parchment":
+      return { mode: "light" };
+    case "emerald":
+    case "ocean":
+    case "rose":
+      return { mode: "light", palette: theme };
+    case "midnight":
+      return { mode: "dark" };
+    case "amoled":
+      return { mode: "dark", palette: "amoled" };
+    default:
+      return {};
+  }
+}
+
+/** Accepts only a known theme id (from a hand-edited import or an older build), else "auto". */
+export function resolveTheme(value: unknown): ThemeId {
+  return (THEME_IDS as readonly unknown[]).includes(value) ? (value as ThemeId) : "auto";
+}
+
 export interface UserSettings {
   coordinates?: Coordinates;
   /** Label/provenance for `coordinates`; absent in settings saved before it existed. */
@@ -53,6 +84,10 @@ export interface UserSettings {
   showTranslation: boolean;
   /** Days (−2…+2, see clampHijriAdjustment) added to the calculated Hijri date to match the user's local moon-sighting announcement. */
   hijriAdjustment: number;
+  /** Colour theme (see THEME_IDS). */
+  theme: ThemeId;
+  /** The user's own 1-5 rating of the app, if they've given one — kept on this device. */
+  appRating?: number;
   /** Notify about Islamic observances (the evening before, and on the day for Eid, Ramadan and the new year). */
   observanceReminders: boolean;
 }
@@ -82,6 +117,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   /** Arabic-only by default; the translation is opt-in (reading settings or the reader's own toggle). */
   showTranslation: false,
   hijriAdjustment: 0,
+  theme: "auto",
   observanceReminders: true,
 };
 

@@ -22,6 +22,8 @@ export interface ReadingSettingsProps {
   /** The style (murattal / mujawwad / muallim) — the control appears only when the chosen sheikh has more than one. */
   reciterStyle?: ReciterStyle;
   onReciterStyleChange?: (style: ReciterStyle) => void;
+  /** Start expanded (the Settings page); by default the panel is collapsed. */
+  defaultOpen?: boolean;
 }
 
 /**
@@ -41,6 +43,7 @@ export function ReadingSettings({
   onReciterChange,
   reciterStyle,
   onReciterStyleChange,
+  defaultOpen = false,
 }: ReadingSettingsProps) {
   const { t, language } = useTranslation();
   const step = clampReaderFontStep(fontStep);
@@ -49,7 +52,7 @@ export function ReadingSettings({
   const styles = reciter ? reciterStyles(reciter) : [];
 
   return (
-    <details className="reading-settings" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
+    <details className="reading-settings" open={defaultOpen || undefined} dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
       <summary>{t("readingSettings.title")}</summary>
 
       <div className="reading-settings-row">

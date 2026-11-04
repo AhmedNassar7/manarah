@@ -7,11 +7,13 @@ import {
   type Coordinates,
   type DailyPrayerTimes,
 } from "@manarah/core";
+import { HISTORICAL_EVENTS } from "@manarah/data";
 import { todaysMaghrib } from "./CalendarPage.js";
 import {
   HijriToday,
   Icon,
   LocationSummary,
+  OnThisDay,
   PrayerHero,
   PrayerTimesList,
   QiblaCompass,
@@ -65,6 +67,7 @@ export function Home({ locationSummary, coordinates, times, tomorrowsFajr, headi
         {times && <PrayerTimesList todaysTimes={times} />}
         <div className="home-side">
           <RamadanCountdown todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />
+          <OnThisDay events={HISTORICAL_EVENTS} todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />
           {coordinates && (
             <QiblaCompass
               bearing={qiblaBearing(coordinates)}

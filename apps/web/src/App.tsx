@@ -8,6 +8,8 @@ import {
   setNote,
   shouldRefreshLocationFromGps,
   toggleBookmark,
+  resolveTheme,
+  themeAttributes,
   withDefaultSettings,
   withDefaultZakatForm,
   DEFAULT_SETTINGS,
@@ -51,6 +53,7 @@ import { QiblaPage } from "./pages/QiblaPage.js";
 import { CalendarPage } from "./pages/CalendarPage.js";
 import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
+import { SettingsPage } from "./pages/SettingsPage.js";
 import { ZakatPage } from "./pages/ZakatPage.js";
 
 const store = new IndexedDbStore();
@@ -158,6 +161,16 @@ export function App() {
       window.removeEventListener("deviceorientation", handleOrientation);
     };
   }, []);
+
+  // Apply the chosen theme to <html>: the stylesheet keys on data-theme (light/dark) and data-palette.
+  useEffect(() => {
+    const { mode, palette } = themeAttributes(resolveTheme(settings.theme));
+    const root = document.documentElement;
+    if (mode) root.dataset.theme = mode;
+    else delete root.dataset.theme;
+    if (palette) root.dataset.palette = palette;
+    else delete root.dataset.palette;
+  }, [settings.theme]);
 
   useEffect(() => {
     if (typeof Notification === "undefined") return;
@@ -350,6 +363,15 @@ export function App() {
     void store.set(ZAKAT_STORAGE_KEY, next);
   }
 
+  /** Merges a change into the saved settings — for the Settings page, whose controls need no side effects beyond saving. */
+  function handleSettingsPatch(patch: Partial<UserSettings>) {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -445,7 +467,22 @@ export function App() {
                 />
               }
             />
-            <Route path="/zakat" element={<ZakatPage form={zakatForm} onChange={handleZakatFormChange} />} />
+            <Route
+              path="/settings"
+              element={
+                <SettingsPage
+                  settings={settings}
+                  onSettingsChange={handleSettingsPatch}
+                  onPrayerSettingsChange={handlePrayerSettingsChange}
+                  locationSummary={locationSummary}
+                  store={store}
+                />
+              }
+            />
+            <Route
+              path="/zakat"
+              element={<ZakatPage form={zakatForm} onChange={handleZakatFormChange} countryCode={settings.location?.countryCode} store={store} />}
+            />
             <Route
               path="/hadith"
               element={
