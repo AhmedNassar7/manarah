@@ -139,6 +139,8 @@ export function HijriCalendar({
         </div>
       </div>
 
+      <div className="page-split hijri-split">
+      <div>
       <div className="hijri-nav">
         <button type="button" aria-label={t("hijri.previousMonth")} onClick={() => setView((v) => shiftHijriMonth(v, -1))}>
           <Icon name="chevron-left" size={20} />
@@ -201,8 +203,10 @@ export function HijriCalendar({
           ))}
         </tbody>
       </table>
+      </div>
 
-      <h3 className="hijri-heading">{t("hijri.thisMonth")}</h3>
+      <div>
+      <h3 className="hijri-heading hijri-heading-first">{t("hijri.thisMonth")}</h3>
       {monthEvents.length === 0 ? (
         <p className="hijri-empty">{t("hijri.noEventsThisMonth")}</p>
       ) : (
@@ -267,6 +271,8 @@ export function HijriCalendar({
       </label>
 
       <p className="hijri-disclaimer">{t("hijri.disclaimer")}</p>
+      </div>
+      </div>
     </section>
   );
 }

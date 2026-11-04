@@ -107,11 +107,12 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] i18n: English + Arabic throughout (~130+ keys), `LanguageProvider`/`useTranslation()`/`LanguageSwitcher`, `<html lang/dir>` kept in sync for RTL
 - [x] Manuscript design system: parchment/indigo-night palette, gold-leaf reserved for completion moments, teal-tile accent, henna for time-critical states, Amiri (Quran-script Arabic) vs. Cairo (UI Arabic), Fraunces + Inter (Latin), CSS-only motion (hover/press feedback, panel open transitions, verse jump-to highlight fade — expanded from the original 3-moment scope on explicit request for a more interactive feel), global `prefers-reduced-motion` kill-switch still the hard ceiling on all of it
 - [x] Storage: `Store` interface, `IndexedDbStore` (Dexie, web) / `ChromeSyncStore` (extension), JSON export/import, `withDefaultSettings()` safe-merge helper
+- [x] Azkar are Arabic-only by default: `AzkarList` hides the English translation until asked (a Show/Hide translation toggle appears only when the category has one), driven by the same persisted `UserSettings.showTranslation` as the Quran reader and hadith — one choice for all three (fixed 2026-11-05 from a screenshot).
 - [x] Navigator surah cards: fixed-height grid cells with a two-line name block (Arabic over transliteration, ellipsized not wrapped) so long names no longer make uneven cards (fixed 2026-11-04 from a screenshot).
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 540 tests passing across all 4 packages (`core` 209, `storage` 17, `data` 53, `ui` 261), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 565 tests passing across all 4 packages (`core` 209, `storage` 17, `data` 53, `ui` 269), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -277,6 +278,19 @@ Decisions worth knowing:
 
 Known limits: one gold entry (single karat) and one silver entry — someone holding several karats must convert to one; no per-category breakdown of which assets are exempt; zakat on agricultural produce, livestock and mining is out of scope; no reminder for the user's own zakat date (a natural pairing with the Hijri calendar and observance reminders).
 
+## Responsive layout — ✅ done (2026-11-05, from a user screenshot)
+
+The web app was a single 720px column, so on a wide screen both sides sat empty, and with eight sections the nav had started wrapping into two rows. Now (all CSS in `styles.css` under "Responsive layout", verified by screenshots):
+- **900px and up — sidebar layout.** The nav becomes a sticky vertical sidebar beside a wide content area (shell up to 1360px). It's a CSS grid, so in Arabic the sidebar moves to the right on its own — no RTL special-casing. Home's quick-link tiles are hidden here (the sidebar already links every section) and show on phones only.
+- **1200px and up — two-column pages** (`.page-split`): Prayer (countdown + timetable | settings), Calendar (month grid | this month / coming up / adjustment / reminders), Zakat (inputs | sticky result and notes), Quran (`.quran-layout`: a sticky tools column — navigator, search, reading settings, bookmarks — beside the reader and audio player). Below 1200px these stack as before.
+- **Reading text keeps a comfortable measure** (`.hadith-reader`, `.azkar-list` capped at 880px) instead of spanning the whole content area; the Hadith book list, being a grid, simply gains columns.
+- **Phones (under 900px)** keep one column; the nav is a single horizontally scrollable strip (no wrapping rows). 640–899px gets a wider (860px) shell.
+- **Azkar section tabs** wrap on desktop instead of scrolling sideways; **the Quran search placeholder** was shortened to fit the narrower tools column.
+- New **`PrayerTimesList`** — today's full timetable (Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha) with the next prayer highlighted, on Home (stacked under the countdown, beside the compass) and on the Prayer page. The dictionary already had every name and "Today's prayers"; the component was simply never built, which left the Prayer page showing only a countdown.
+- Only `.app-shell` is restyled; the extension, which reuses `.app-header` only, is untouched.
+
+Recommended next for phones (not done): a bottom tab bar with the four or five most-used sections plus a "More" sheet is the standard mobile pattern and beats a scrolling strip for reach — the strip is the cheap fix; the tab bar is the better one.
+
 ## Testing strategy — ✅ framework in place, coverage ongoing
 
 One framework everywhere: **Vitest**, with `@testing-library/react` + `jsdom` for component tests. Four layers, in priority order:
@@ -296,13 +310,13 @@ One framework everywhere: **Vitest**, with `@testing-library/react` + `jsdom` fo
 - **Storage layer**: unit tests in `packages/storage` for the IndexedDB adapter and export/import round-trip (export → clear store → import → data matches).
 - **Desktop/mobile** (Phase 2+): `tauri dev` / Capacitor emulator run; confirm native notifications fire and system tray/menu bar icon behaves correctly.
 
-No working browser exists in the primary dev environment used to build this — all styling/motion work is verified by inspecting built CSS/JS output (grepping for expected class names, hex colors, strings), not rendered pixels. The user's own screenshots remain the real verification step for anything visual. This has not changed and won't until a real browser becomes available in-session.
+**Visual verification (updated 2026-11-05).** Playwright's bundled Chromium still can't launch here, but the *installed* Chrome can: `vite preview` on the built web app, then `puppeteer-core` (installed in a scratch folder, nothing added to the project) driving `C:\Program Files\Google\Chrome\Application\chrome.exe` headless, with a granted geolocation, takes real screenshots of every route at desktop and phone sizes in English and Arabic. The layout work below was verified that way — and it caught problems unit tests can't (cards touching, rows misaligned by wrapping labels, a nav wrapping into two rows). Everything built *before* 2026-11-05 was verified only by inspecting built CSS/JS and by the user's own screenshots; treat those screens as due for the same pass.
 
 ---
 
 ## Known gaps / smallest real next steps
 
-- **E2E/browser testing** — blocked locally (see above), not yet in CI either. Real gap, deferred not abandoned.
+- **E2E/browser testing** — Playwright's Chromium is blocked locally, but the installed Chrome works (see "Visual verification"), so a Playwright run with `channel: "chrome"` is likely to work here too — untried. Not yet in CI. Real gap, deferred not abandoned.
 - **Observance reminders: no per-observance choice yet** — one on/off switch for all of them (Calendar page). Per-observance toggles, "N days before" and snooze belong with Azkar engine v2 (Phase 2).
 - **Further translations** — one English translation (Saheeh International) is fetched and wired in; other languages/editions are still unfetched (tafsir is done — roadmap step 5). Multi-translation remains a Phase 2 item.
 - **Tafsir offline** — only tafsir already read is available offline (service-worker cache); there's no "download this tafsir for offline" bulk option yet.

@@ -77,6 +77,8 @@ export function QuranPage({
   return (
     <>
       <h2 className="section-title">{t("app.sectionQuran")}</h2>
+      <div className="quran-layout">
+      <aside className="quran-tools">
       <QuranNavigator
         surahs={SURAHS}
         currentSurahNumber={selectedSurahNumber ?? 1}
@@ -98,6 +100,8 @@ export function QuranPage({
         onReciterChange={onReciterChange}
       />
       <QuranBookmarks annotations={verseAnnotations} surahs={SURAHS} onSelect={onNavigate} />
+      </aside>
+      <div className="quran-main">
       {selectedSurah && selectedSurahVerses && (
         <>
           <QuranReader
@@ -134,6 +138,8 @@ export function QuranPage({
           />
         </>
       )}
+      </div>
+      </div>
     </>
   );
 }

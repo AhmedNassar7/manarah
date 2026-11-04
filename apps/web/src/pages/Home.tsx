@@ -12,6 +12,7 @@ import {
   Icon,
   LocationSummary,
   PrayerCountdown,
+  PrayerTimesList,
   QiblaCompass,
   useTranslation,
   type LocationSummaryProps,
@@ -50,7 +51,12 @@ export function Home({ locationSummary, coordinates, times, tomorrowsFajr, headi
       </p>
 
       <div className="card-row">
-        {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
+        {times && (
+          <div className="card-stack">
+            <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />
+            <PrayerTimesList todaysTimes={times} />
+          </div>
+        )}
         {coordinates && (
           <QiblaCompass
             bearing={qiblaBearing(coordinates)}

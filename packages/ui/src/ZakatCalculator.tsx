@@ -82,6 +82,8 @@ export function ZakatCalculator({ form, onChange }: ZakatCalculatorProps) {
     <section className="zakat" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
       <p className="zakat-intro">{t("zakat.intro")}</p>
 
+      <div className="page-split zakat-split">
+      <div>
       <div className="zakat-card">
         <h3>{t("zakat.settings")}</h3>
         <label className="zakat-field">
@@ -153,6 +155,9 @@ export function ZakatCalculator({ form, onChange }: ZakatCalculatorProps) {
         {field("liabilities", t("zakat.field.liabilities"), t("zakat.debtsHelp"))}
       </div>
 
+      </div>
+
+      <div className="zakat-aside">
       <div className="zakat-result" aria-live="polite">
         {result.status === "missing-prices" ? (
           <p>
@@ -232,6 +237,8 @@ export function ZakatCalculator({ form, onChange }: ZakatCalculatorProps) {
       >
         {t("zakat.clear")}
       </button>
+      </div>
+      </div>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import {
   LocationSummary,
   PrayerCountdown,
   PrayerSettingsEditor,
+  PrayerTimesList,
   useTranslation,
   type LocationSummaryProps,
 } from "@manarah/ui";
@@ -33,8 +34,13 @@ export function PrayerPage({
       {/* Always shown — the saved location is what every time below is computed for. */}
       <LocationSummary {...locationSummary} />
       {coordinates && (
-        <>
-          {times && <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />}
+        <div className="page-split">
+          {times && (
+            <div className="card-stack">
+              <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />
+              <PrayerTimesList todaysTimes={times} />
+            </div>
+          )}
 
           <section>
             <h2 className="section-title">{t("app.sectionPrayerSettings")}</h2>
@@ -44,7 +50,7 @@ export function PrayerPage({
               onChange={onPrayerSettingsChange}
             />
           </section>
-        </>
+        </div>
       )}
     </>
   );

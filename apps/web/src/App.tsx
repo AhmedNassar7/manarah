@@ -463,8 +463,10 @@ function AppShell({ children }: { children: ReactNode }) {
         <LanguageSwitcher />
       </header>
       <Nav />
-      <NotificationPrompt />
-      {children}
+      <div className="app-content">
+        <NotificationPrompt />
+        {children}
+      </div>
     </main>
   );
 }
