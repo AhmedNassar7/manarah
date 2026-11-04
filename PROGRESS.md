@@ -40,6 +40,7 @@ pnpm workspace monorepo, no Turborepo:
                  - verse-annotations: per-verse bookmarks/notes model, copy/share text formatting    ✅
                  - tafsir: Quran.com tafsir URL/response parsing, HTML → plain-text blocks, edition choice ✅
                  - word-by-word: Quran.com per-word meaning/transliteration URL + response parsing       ✅
+                 - hadith: hadith-api URL fallback chain, response parsing, Arabic/English pairing        ✅
                  - quran-search: Arabic-skeleton/translation full-text matching, "2:255" references      ✅
   /ui          Shared React components + design system (styles.css) + i18n                       ✅
   /storage     Store interface — IndexedDbStore (Dexie) / ChromeSyncStore + JSON export/import    ✅
@@ -62,7 +63,7 @@ pnpm workspace monorepo, no Turborepo:
 | Tafsir corpus | Ibn Kathir, Al-Tabari, Al-Baghawi, Al-Qurtubi, As-Saadi (+ abridged English Ibn Kathir) | ✅ done | Standard Ahl al-Sunnah tafsir canon — all five are on Quran.com's API (`api.quran.com/api/v4/tafsirs/{id}/by_ayah/{s:a}`, resource ids 14/15/94/90/91, English 169), verified live 2026-09-30: CORS `*`, no key. Fetched per verse at runtime (tens of MB total, can't be precached), service-worker CacheFirst so anything read once works offline. altafsir.com fallback not needed |
 | Azkar corpus | Hisn al-Muslim (`wafaaelmaandy/Hisn-Muslim-Json`); Al-Adhkar (an-Nawawi) and Saheeh al-Kalim at-Tayyib (Al-Albani) as richer optional packs | ✅ Hisn al-Muslim (266 items) done · ⬜ optional packs Phase 2/3 | Hisn al-Muslim is the standard compact daily-azkar reference every competitor app also uses |
 | City search | GeoNames `cities15000.txt` (CC BY 4.0) | ✅ done | Latin-script alternate names extracted for searchability (e.g. "Mecca"/"Medina") |
-| Hadith | sunnah.com API, six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah) | ⬜ Phase 3 | Free key via signup, fine for non-commercial use |
+| Hadith | **hadith-api** (fawazahmed0, Unlicense) via jsDelivr with a GitHub-raw fallback — the six canonical collections (Bukhari, Muslim, Abu Dawud, Tirmidhi, Nasa'i, Ibn Majah), Arabic + English editions, one book per request | ✅ done (reader roadmap step 9) | Chosen over sunnah.com's API (decided 2026-11-04): that one needs a per-developer key, which a static client-only app can't keep secret. Verified live: CORS `*`, no key, 335 books × 2 editions all present with identical hadith numbers, 0 mismatches. jsDelivr returns HTTP 403 ("package size exceeded") for some `.min.json` files (e.g. eng-bukhari book 6), so the loader falls back minified → full → GitHub raw. Service-worker CacheFirst, so a book read once works offline |
 | Hijri calendar | Self-contained tabular/arithmetic conversion in `packages/core/hijri` | ✅ conversion + fixed-date events done | Computed client-side, no network call; arithmetic estimate, ±1-2 days from real moon-sighting-based announcements — not authoritative for determining observances |
 
 ## Notifications (all scheduled on-device, no push server anywhere)
@@ -108,7 +109,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 391 tests passing across all 4 packages (`core` 129, `storage` 17, `data` 39, `ui` 206), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 435 tests passing across all 4 packages (`core` 145, `storage` 17, `data` 53, `ui` 220), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -127,7 +128,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 
 ### Phase 3 — Depth — ⬜ not started
 
-- [ ] Hadith/books library (sunnah.com), cross-linked from tafsir
+- [x] Hadith library — browse the six collections book by book, Arabic-first with opt-in English and attributed gradings (see reader roadmap step 9). Still open: search, bookmarks/notes, cross-links from tafsir
 - [ ] Hijri calendar with holiday reminders (Ramadan, Eid, Ashura, White Days), Qada/fasting tracker, Zakat calculator
 - [ ] Khatmah (completion) reading-plan generator
 - [ ] AR/camera-assisted Qibla on mobile
@@ -170,7 +171,10 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
    - [x] **Default reciter** — the same `UserSettings.reciterId` the audio player uses; both pickers stay in sync.
    - [ ] **Translation edition choice** — nothing to choose between yet (one bundled edition); belongs with Phase 2 multi-translation.
    - [ ] **Script style (Uthmani / IndoPak)** — ⛔ needs a verified IndoPak text source *and* a licensed IndoPak web font; neither has been found, and per the working conventions neither is to be guessed. Revisit only if real sources turn up. Web only for now, like the rest of the reader.
-9. [ ] **Hadith library** — *Recommended next.* (sunnah.com API, the Nine Books + selections) — already Phase 3 below; cross-links from the tafsir panel (step 5) once both exist.
+9. [x] **Hadith library** — new `/hadith` route (and nav/Home entry): `HadithBrowser` with a tab per collection, a filterable list of books (English title + verified hadith count), then the hadith cards of one book — Arabic in Amiri, English translation opt-in (it reuses the same `UserSettings.showTranslation`, Arabic-only by default, as the Quran reader), copy/share with a citation, and each scholar's grading shown *attributed* ("Al-Albani: Hasan Sahih") only where the source publishes one — the app never states a verdict of its own. Long books reveal in batches of 25; load errors offer a real retry; a slow response for a book you already left is ignored. Pure parsing/pairing/URLs in `packages/core/hadith`; collections + the bundled book index (`sections.json`, ~26 KB, counts taken from the real files because the source's own range metadata is wrong — Muslim's ranges sum to more than the whole collection) in `packages/data/hadith`; the fetch loader in `apps/web/src/hadith-api.ts`.
+   - Known limits: **no hadith search yet** (the plan's natural next increment — needs either a per-collection search index or fetching books on demand); no bookmarks/notes for hadith and no cross-link from the tafsir panel; book titles are English-only (the dataset has no Arabic titles — the Arabic UI says so); the app doesn't remember which book you were reading across navigation; hadith numbering follows the source edition (Muslim's printed numbers such as "8.01" are shown as given) and can differ from printed editions — the page says so.
+   - **Open licensing question:** the dataset is Unlicense, but the English translations (Muhsin Khan for Bukhari, Abdul Hamid Siddiqui for Muslim, others unattributed in the source) are the translators' works; the page credits the dataset, not each translator. Worth a decision before any public release, alongside the project's own licence (see step 6).
+   - Web only for now, like the rest of the reader.
 
 **Reviewed but not queued — conflicts with this project's own constraints, flagged rather than silently dropped:**
 - **QuranReflect.com-style reflections/notes sharing** — a social/community feed, which the "Explicitly deferred" list below already rules out to stay lean.

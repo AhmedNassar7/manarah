@@ -43,6 +43,7 @@ import { AzkarPage } from "./pages/AzkarPage.js";
 import { Home } from "./pages/Home.js";
 import { PrayerPage } from "./pages/PrayerPage.js";
 import { QiblaPage } from "./pages/QiblaPage.js";
+import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 
 const store = new IndexedDbStore();
@@ -374,6 +375,15 @@ export function App() {
                   onTafsirEditionChange={handleTafsirEditionChange}
                   readerFontStep={settings.readerFontStep}
                   onReaderFontStepChange={handleReaderFontStepChange}
+                  showTranslation={settings.showTranslation}
+                  onShowTranslationChange={handleShowTranslationChange}
+                />
+              }
+            />
+            <Route
+              path="/hadith"
+              element={
+                <HadithPage
                   showTranslation={settings.showTranslation}
                   onShowTranslationChange={handleShowTranslationChange}
                 />

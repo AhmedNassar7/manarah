@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: "/prayer", icon: "mosque", labelKey: "app.sectionPrayer", end: false },
   { to: "/qibla", icon: "qibla", labelKey: "app.sectionQibla", end: false },
   { to: "/quran", icon: "quran", labelKey: "app.sectionQuran", end: false },
+  { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith", end: false },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", end: false },
 ] as const;
 

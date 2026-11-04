@@ -21,6 +21,7 @@ const QUICK_LINKS = [
   { to: "/prayer", icon: "mosque", labelKey: "app.sectionPrayer" },
   { to: "/qibla", icon: "qibla", labelKey: "app.sectionQibla" },
   { to: "/quran", icon: "quran", labelKey: "app.sectionQuran" },
+  { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith" },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar" },
 ] as const;
 

@@ -47,6 +47,18 @@ export default defineConfig({
             },
           },
           {
+            // Hadith books (one ~20–340 KB JSON per book and language) from the
+            // hadith-api CDN/GitHub mirror. Published texts don't change, so
+            // cache-first: a book read once opens instantly and works offline.
+            urlPattern: /^https:\/\/(cdn\.jsdelivr\.net\/gh|raw\.githubusercontent\.com)\/fawazahmed0\/hadith-api/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "hadith",
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 90 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
             // Word-by-word meanings, per verse from Quran.com — same reasoning.
             urlPattern: /^https:\/\/api\.quran\.com\/api\/v4\/verses\/by_key\//,
             handler: "CacheFirst",

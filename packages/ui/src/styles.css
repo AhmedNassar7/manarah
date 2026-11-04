@@ -1752,6 +1752,276 @@ button {
   transform: scaleX(-1);
 }
 
+/* ---------- Hadith library ----------
+   Collection tabs, a book list, then hadith cards: Arabic in Amiri (the
+   same scripture-grade face as the Quran reader), translation in the body
+   face, gradings as quiet attributed lines (never a badge that reads as the
+   app's own verdict). */
+.hadith-browser {
+  font-family: var(--font-body);
+}
+
+.hadith-browser[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.hadith-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.hadith-tabs button {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    border-color 120ms var(--ease-quiet),
+    background-color 120ms var(--ease-quiet),
+    color 120ms var(--ease-quiet);
+}
+
+.hadith-tabs button:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.hadith-tabs button.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.hadith-books-filter {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.hadith-books-filter:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-sunken);
+}
+
+.hadith-note,
+.hadith-status {
+  margin: 10px 2px 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.hadith-status button,
+.hadith-more {
+  margin-top: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-page);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.hadith-book-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 6px;
+}
+
+.hadith-book-list button {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "number title"
+    "number count";
+  column-gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-page);
+  background: var(--surface-sunken);
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    border-color 120ms var(--ease-quiet),
+    transform 120ms var(--ease-quiet);
+}
+
+.hadith-book-list button:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.hadith-book-number {
+  grid-area: number;
+  min-width: 1.8em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.hadith-book-title {
+  grid-area: title;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  text-align: start;
+}
+
+.hadith-book-count {
+  grid-area: count;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.hadith-reader-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hadith-back,
+.hadith-translation-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.hadith-back:hover,
+.hadith-translation-toggle:hover {
+  border-color: var(--accent);
+}
+
+.hadith-book-heading {
+  margin: 14px 0 4px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.hadith-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hadith-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  padding: 14px 18px;
+}
+
+.hadith-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+}
+
+.hadith-card-number {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hadith-card-ref {
+  color: var(--muted);
+}
+
+.hadith-arabic {
+  margin: 10px 0 0;
+  font-family: var(--font-arabic-quran);
+  font-size: 1.45rem;
+  line-height: 2.2;
+}
+
+.hadith-english {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.hadith-grades {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.hadith-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.hadith-card-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.hadith-card-actions button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.hadith-more {
+  display: block;
+  margin: 12px auto 0;
+}
+
 /* ---------- Tafsir panel ----------
    Opens inline under its verse from the verse toolbar. Commentary can run
    to tens of thousands of characters (al-Tabari on 2:255 is ~57k), so the
