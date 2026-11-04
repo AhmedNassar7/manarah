@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import {
+  clampReaderFontStep,
   computePrayerTimes,
   nearestCity,
   setNote,
@@ -285,6 +286,22 @@ export function App() {
     });
   }
 
+  function handleReaderFontStepChange(readerFontStep: number) {
+    setSettings((prev) => {
+      const next = { ...prev, readerFontStep: clampReaderFontStep(readerFontStep) };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
+  function handleShowTranslationChange(showTranslation: boolean) {
+    setSettings((prev) => {
+      const next = { ...prev, showTranslation };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -355,6 +372,10 @@ export function App() {
                   onSaveNote={handleSaveNote}
                   tafsirEditionId={settings.tafsirEditionId}
                   onTafsirEditionChange={handleTafsirEditionChange}
+                  readerFontStep={settings.readerFontStep}
+                  onReaderFontStepChange={handleReaderFontStepChange}
+                  showTranslation={settings.showTranslation}
+                  onShowTranslationChange={handleShowTranslationChange}
                 />
               }
             />

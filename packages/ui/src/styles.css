@@ -1107,7 +1107,8 @@ button {
   align-items: flex-start;
   gap: 10px;
   font-family: var(--font-arabic-quran);
-  font-size: 1.7rem;
+  /* --reader-scale is set per reader from the user's text-size setting. */
+  font-size: calc(1.7rem * var(--reader-scale, 1));
   line-height: 2.1;
   padding: 4px 0;
   animation: verse-reveal var(--dur-bloom) var(--ease-quiet) both;
@@ -1179,7 +1180,7 @@ button {
 
 .quran-reader-translation {
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: calc(0.95rem * var(--reader-scale, 1));
   line-height: 1.5;
   color: var(--muted);
   margin: 2px 0 10px;
@@ -1565,6 +1566,90 @@ button {
 
 .quran-search-more:hover {
   border-color: var(--accent);
+}
+
+/* ---------- Reading settings ----------
+   A collapsed panel above the reader: text size, translation on/off, default
+   reciter. Same quiet card treatment as the bookmarks list. */
+.reading-settings {
+  margin-top: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  padding: 10px 16px;
+  font-family: var(--font-body);
+}
+
+.reading-settings[lang="ar"],
+.reading-settings[lang="ar"] summary {
+  font-family: var(--font-arabic-ui);
+}
+
+.reading-settings summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+}
+
+.reading-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.reading-settings-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reading-settings-stepper output {
+  min-width: 3.5em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.reading-settings button {
+  min-width: 40px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface-sunken);
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 120ms var(--ease-quiet),
+    transform 120ms var(--ease-quiet);
+}
+
+.reading-settings button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.reading-settings button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.reading-settings button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.reading-settings select {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
 }
 
 /* ---------- Tafsir panel ----------

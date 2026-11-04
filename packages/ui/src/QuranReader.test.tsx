@@ -85,6 +85,45 @@ describe("QuranReader", () => {
     expect(screen.getByText(translations[0].text)).toBeInTheDocument();
   });
 
+  it("follows a controlled showTranslation and reports toggles instead of owning the state", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <QuranReader
+        surah={alFatiha}
+        verses={verses}
+        translations={translations}
+        showTranslation={false}
+        onShowTranslationChange={onChange}
+      />
+    );
+    expect(screen.queryByText(translations[0].text)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show translation" }));
+    expect(onChange).toHaveBeenCalledWith(true);
+    // Controlled: nothing changes until the parent says so.
+    expect(screen.queryByText(translations[0].text)).not.toBeInTheDocument();
+
+    rerender(
+      <QuranReader
+        surah={alFatiha}
+        verses={verses}
+        translations={translations}
+        showTranslation
+        onShowTranslationChange={onChange}
+      />
+    );
+    expect(screen.getByText(translations[0].text)).toBeInTheDocument();
+  });
+
+  it("scales text through the --reader-scale variable, and leaves it unset at 1x", () => {
+    const { container, rerender } = render(<QuranReader surah={alFatiha} verses={verses} />);
+    const section = container.querySelector("section")!;
+    expect(section.style.getPropertyValue("--reader-scale")).toBe("");
+
+    rerender(<QuranReader surah={alFatiha} verses={verses} fontScale={1.5} />);
+    expect(section.style.getPropertyValue("--reader-scale")).toBe("1.5");
+  });
+
   it("renders no translation toggle or text when no translations are provided", () => {
     render(<QuranReader surah={alFatiha} verses={verses} />);
     expect(screen.queryByRole("button", { name: /translation/i })).not.toBeInTheDocument();

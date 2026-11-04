@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  readerFontScale,
   resolveTafsirEdition,
   type Surah,
   type Translation,
@@ -14,6 +15,7 @@ import {
   QuranNavigator,
   QuranReader,
   QuranSearch,
+  ReadingSettings,
   useTranslation,
   type QuranAudioPlayerHandle,
 } from "@manarah/ui";
@@ -40,6 +42,10 @@ export interface QuranPageProps {
   onSaveNote: (surah: number, ayah: number, note: string) => void;
   tafsirEditionId: string | undefined;
   onTafsirEditionChange: (id: string) => void;
+  readerFontStep: number;
+  onReaderFontStepChange: (step: number) => void;
+  showTranslation: boolean;
+  onShowTranslationChange: (show: boolean) => void;
 }
 
 export function QuranPage({
@@ -58,6 +64,10 @@ export function QuranPage({
   onSaveNote,
   tafsirEditionId,
   onTafsirEditionChange,
+  readerFontStep,
+  onReaderFontStepChange,
+  showTranslation,
+  onShowTranslationChange,
 }: QuranPageProps) {
   const { t, language } = useTranslation();
   const tafsirEdition = resolveTafsirEdition(TAFSIR_EDITIONS, tafsirEditionId, language);
@@ -78,6 +88,15 @@ export function QuranPage({
         pageCount={PAGE_COUNT}
       />
       <QuranSearch surahs={SURAHS} search={runSearch} onSelect={onNavigate} />
+      <ReadingSettings
+        fontStep={readerFontStep}
+        onFontStepChange={onReaderFontStepChange}
+        showTranslation={showTranslation}
+        onShowTranslationChange={onShowTranslationChange}
+        reciters={RECITERS}
+        reciterId={reciterId}
+        onReciterChange={onReciterChange}
+      />
       <QuranBookmarks annotations={verseAnnotations} surahs={SURAHS} onSelect={onNavigate} />
       {selectedSurah && selectedSurahVerses && (
         <>
@@ -100,6 +119,9 @@ export function QuranPage({
               }
             }
             loadWords={loadWords}
+            fontScale={readerFontScale(readerFontStep)}
+            showTranslation={showTranslation}
+            onShowTranslationChange={onShowTranslationChange}
           />
           <QuranAudioPlayer
             ref={audioPlayerRef}

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AzkarCategory } from "../azkar-engine/index.js";
 import { computePrayerTimes, type DailyPrayerTimes } from "../prayer-times/index.js";
-import type { UserSettings } from "../settings/index.js";
+import { DEFAULT_SETTINGS, type UserSettings } from "../settings/index.js";
 import {
   computeDueNotifications,
   initialNotificationState,
@@ -287,6 +287,7 @@ describe("runNotificationCheck", () => {
   }
 
   const baseSettings: UserSettings = {
+    ...DEFAULT_SETTINGS,
     coordinates: cairo,
     prayerTimesSettings,
     azkarSchedules: [],

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   formatVerseForSharing,
   getAnnotation,
@@ -34,6 +34,11 @@ export interface QuranReaderProps {
   tafsir?: TafsirSource;
   /** Enables the Word-by-word button in each verse's action toolbar. */
   loadWords?: (surah: number, ayah: number) => Promise<QuranWord[]>;
+  /** Text-size multiplier for the verses and translation (1 = default); omitted = 1. */
+  fontScale?: number;
+  /** Whether translations are shown. When omitted the reader keeps this itself (shown by default); when given, the reader's own toggle reports changes through `onShowTranslationChange`. */
+  showTranslation?: boolean;
+  onShowTranslationChange?: (show: boolean) => void;
 }
 
 /** Verses shown before a "Load more" is needed — keeps a 200+ ayah surah (e.g. Al-Baqara) from rendering its entire text, and the whole page, in one go. */
@@ -52,10 +57,18 @@ export function QuranReader({
   onSaveNote,
   tafsir,
   loadWords,
+  fontScale = 1,
+  showTranslation: showTranslationProp,
+  onShowTranslationChange,
 }: QuranReaderProps) {
   const { t, language } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(Math.min(BATCH_SIZE, verses.length));
-  const [showTranslation, setShowTranslation] = useState(true);
+  const [localShowTranslation, setLocalShowTranslation] = useState(true);
+  const showTranslation = showTranslationProp ?? localShowTranslation;
+  function setShowTranslation(show: boolean) {
+    setLocalShowTranslation(show);
+    onShowTranslationChange?.(show);
+  }
   const [highlightedAyah, setHighlightedAyah] = useState<number | null>(null);
   /** At most one verse's action toolbar is open at a time. */
   const [actionsAyah, setActionsAyah] = useState<number | null>(null);
@@ -110,7 +123,12 @@ export function QuranReader({
   const surahName = language === "ar" ? surah.nameArabic : surah.nameTransliterated;
 
   return (
-    <section className="quran-reader" dir="rtl" lang="ar">
+    <section
+      className="quran-reader"
+      dir="rtl"
+      lang="ar"
+      style={fontScale !== 1 ? ({ "--reader-scale": fontScale } as CSSProperties) : undefined}
+    >
       <h2>{surah.nameArabic}</h2>
       <p>
         <span dir="ltr">{surah.nameTransliterated}</span> · {t(`quran.revelation.${surah.revelationType}`)} ·{" "}
@@ -122,7 +140,7 @@ export function QuranReader({
           className="quran-reader-translation-toggle"
           dir={language === "ar" ? "rtl" : "ltr"}
           lang={language}
-          onClick={() => setShowTranslation((v) => !v)}
+          onClick={() => setShowTranslation(!showTranslation)}
         >
           {showTranslation ? t("quranReader.hideTranslation") : t("quranReader.showTranslation")}
         </button>

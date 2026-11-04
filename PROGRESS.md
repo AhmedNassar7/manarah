@@ -107,7 +107,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 326 tests passing across all 4 packages (`core` 126, `storage` 17, `data` 39, `ui` 144), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 336 tests passing across all 4 packages (`core` 129, `storage` 17, `data` 39, `ui` 151), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -163,8 +163,13 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
    - **Everything else** searches the English translation (case/accent/punctuation-insensitive; apostrophes dropped so "Abraham's" finds "Abraham"). Multi-word queries need every word, in any order, as substrings ("رحم" finds "الرحمن"); queries under 2 letters return nothing. Hits are in mushaf order, not relevance order.
    - **`2:255`-style queries** are a jump, not a search (validated against real verse counts; out-of-range falls through to a normal search).
    - Known limits: no root/lemma search (needs the blocked morphology data from step 6 — "الله" won't find "لِلَّهِ"); no phrase-adjacency or relevance ranking; translation search covers the one bundled edition only; web only (the extension has no reader).
-8. [ ] **Reading settings panel** — *Recommended next.* — script style (Uthmani/IndoPak), font size, default reciter, default/managed translation editions — consolidates choices steps 1, 3, and 6 each introduce into one place instead of scattering controls.
-9. [ ] **Hadith library** (sunnah.com API, the Nine Books + selections) — already Phase 3 below; cross-links from the tafsir panel (step 5) once both exist.
+8. 🚧 **Reading settings panel** — scoped down on 2026-11-04 to what the app can support today. `ReadingSettings` (collapsed panel above the reader on the Quran page) consolidates:
+   - [x] **Text size** — five steps (85%–185%, `READER_FONT_SCALES` in `packages/core/settings`) applied to both the Arabic and the translation via a `--reader-scale` CSS variable on the reader; `UserSettings.readerFontStep`, clamped on read (`clampReaderFontStep`) so a hand-edited import can't break the reader.
+   - [x] **Show/hide translation** — now persisted (`UserSettings.showTranslation`) instead of resetting every session; the reader's own toggle and the panel's checkbox drive the same state (`QuranReader`'s `showTranslation`/`onShowTranslationChange` are optional controlled props, so it still works standalone).
+   - [x] **Default reciter** — the same `UserSettings.reciterId` the audio player uses; both pickers stay in sync.
+   - [ ] **Translation edition choice** — nothing to choose between yet (one bundled edition); belongs with Phase 2 multi-translation.
+   - [ ] **Script style (Uthmani / IndoPak)** — ⛔ needs a verified IndoPak text source *and* a licensed IndoPak web font; neither has been found, and per the working conventions neither is to be guessed. Revisit only if real sources turn up. Web only for now, like the rest of the reader.
+9. [ ] **Hadith library** — *Recommended next.* (sunnah.com API, the Nine Books + selections) — already Phase 3 below; cross-links from the tafsir panel (step 5) once both exist.
 
 **Reviewed but not queued — conflicts with this project's own constraints, flagged rather than silently dropped:**
 - **QuranReflect.com-style reflections/notes sharing** — a social/community feed, which the "Explicitly deferred" list below already rules out to stay lean.
