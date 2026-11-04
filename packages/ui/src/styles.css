@@ -197,6 +197,10 @@ button {
   color: var(--ink);
 }
 
+.app-nav a .icon {
+  vertical-align: 0;
+}
+
 .app-nav a.active {
   color: var(--accent);
   font-weight: 700;
@@ -333,8 +337,11 @@ button {
   transition: border-color 120ms var(--ease-quiet), background-color 120ms var(--ease-quiet);
 }
 
-.home-link-card span:first-child {
-  font-size: 1.8rem;
+.home-link-card .icon {
+  width: 32px;
+  height: 32px;
+  stroke-width: 1.4; /* keeps the same visual weight as the 24px icons it scales up from */
+  color: var(--accent);
 }
 
 .home-link-card:hover {
@@ -387,7 +394,7 @@ button {
 }
 
 .qibla-finder-turn-icon {
-  font-size: 1.6rem;
+  display: inline-flex;
   color: var(--accent);
 }
 
@@ -482,9 +489,12 @@ button {
 }
 
 .qibla-finder-kaaba {
-  font-size: 16px;
-  text-anchor: middle;
-  dominant-baseline: central;
+  color: var(--ink);
+  transform-box: view-box;
+}
+
+.qibla-finder-live .qibla-finder-kaaba {
+  transition: transform 250ms var(--ease-quiet);
 }
 
 .qibla-finder-hub {
@@ -574,7 +584,8 @@ button {
 }
 
 .location-summary-pin {
-  font-size: 1.3rem;
+  display: flex;
+  color: var(--accent);
 }
 
 .location-summary-text {
@@ -1346,6 +1357,9 @@ button {
 }
 
 .verse-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 5px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-round);
@@ -1496,10 +1510,24 @@ button {
   font-family: var(--font-arabic-ui);
 }
 
+.quran-search-field {
+  position: relative;
+}
+
+.quran-search-icon {
+  position: absolute;
+  inset-inline-start: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
 .quran-search-input {
   display: block;
   width: 100%;
   padding: 10px 14px;
+  padding-inline-start: 38px;
   border: 1px solid var(--line);
   border-radius: var(--radius-page);
   background: var(--surface);
@@ -1566,6 +1594,10 @@ button {
 
 .quran-search-results button:hover {
   background: var(--accent-soft);
+}
+
+.quran-search-ref .icon {
+  vertical-align: -0.25em;
 }
 
 .quran-search-ref {
@@ -1666,6 +1698,9 @@ button {
 }
 
 .reading-settings button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 40px;
   padding: 4px 10px;
   border: 1px solid var(--line);
@@ -1699,6 +1734,22 @@ button {
   background: var(--surface);
   color: var(--ink);
   font: inherit;
+}
+
+/* ---------- Icons ----------
+   One inline-SVG icon set (see icons/). Colour is whatever the surrounding
+   text colour is — buttons set it, so hover/pressed tinting is just a colour
+   change on the parent. Directional icons mirror in right-to-left layouts;
+   :dir() matches the nearest dir attribute, so a dir="ltr" island inside an
+   Arabic page is respected. */
+.icon {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: -0.2em;
+}
+
+.icon-directional:dir(rtl) {
+  transform: scaleX(-1);
 }
 
 /* ---------- Tafsir panel ----------
@@ -2500,4 +2551,26 @@ button {
     width: 100%;
     left: 0%;
   }
+}
+
+/* ---------- Icon alignment ----------
+   Buttons that hold an icon (alone or beside a label) centre it with flex
+   rather than relying on text baselines. Kept last so it wins over each
+   button's own base rule. */
+.quran-reader-actions-button,
+.tafsir-panel-close,
+.word-by-word-close,
+.quran-navigator-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.notice button,
+.location-summary-gps,
+.azkar-browser-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }

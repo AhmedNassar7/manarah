@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { compassPoint, qiblaTurn } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon, IconInSvg } from "./icons/Icon.js";
 
 export interface QiblaFinderProps {
   /** Degrees from true north to the Kaaba (core's qiblaBearing). */
@@ -78,10 +79,10 @@ export function QiblaFinder({ bearing, distanceKm, heading, onEnableLiveCompass 
       <p className="qibla-finder-instruction" aria-live="polite">
         {live && !facing && (
           <span className="qibla-finder-turn-icon" aria-hidden="true">
-            {turn!.direction === "right" ? "↻" : "↺"}
+            <Icon name={turn!.direction === "right" ? "rotate-cw" : "rotate-ccw"} size={24} />
           </span>
         )}
-        {instruction}
+        {facing && <Icon name="check" size={20} />} {instruction}
       </p>
 
       <div className="qibla-finder-dial-wrap">
@@ -126,9 +127,13 @@ export function QiblaFinder({ bearing, distanceKm, heading, onEnableLiveCompass 
             })}
             <line className="qibla-finder-line" x1={CENTER} y1={CENTER} x2={marker.x} y2={marker.y} />
             <circle className="qibla-finder-marker-bg" cx={marker.x} cy={marker.y} r={15} />
-            <text className="qibla-finder-kaaba" x={marker.x} y={marker.y}>
-              🕋
-            </text>
+            {/* Counter-rotated against the rose so the Kaaba stays upright whatever the heading. */}
+            <g
+              className="qibla-finder-kaaba"
+              style={{ transform: `rotate(${-roseRotation}deg)`, transformOrigin: `${marker.x}px ${marker.y}px` }}
+            >
+              <IconInSvg name="kaaba" cx={marker.x} cy={marker.y} size={20} />
+            </g>
           </g>
           <circle className="qibla-finder-hub" cx={CENTER} cy={CENTER} r={5} />
           {facing && <circle className="qibla-finder-ripple" cx={CENTER} cy={CENTER} r={RIM_RADIUS} />}

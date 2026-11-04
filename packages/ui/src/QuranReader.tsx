@@ -9,6 +9,7 @@ import {
   type VerseAnnotations,
 } from "@manarah/core";
 import { formatVerseCount, useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 import { TafsirPanel, type TafsirSource } from "./TafsirPanel.js";
 import { VerseActions } from "./VerseActions.js";
 import { WordByWordPanel } from "./WordByWordPanel.js";
@@ -179,7 +180,7 @@ export function QuranReader({
                       })}
                       onClick={() => onPlayAyah(verse.ayah)}
                     >
-                      ▶
+                      <Icon name="play" size={16} filled />
                     </button>
                   )}
                   <button
@@ -191,7 +192,7 @@ export function QuranReader({
                     aria-expanded={actionsAyah === verse.ayah}
                     onClick={() => setActionsAyah((current) => (current === verse.ayah ? null : verse.ayah))}
                   >
-                    ⋯
+                    <Icon name="more" size={20} />
                   </button>
                 </div>
                 <span className="quran-reader-verse-text">

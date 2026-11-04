@@ -16,15 +16,15 @@ const categories: AzkarCategory[] = [
 ];
 
 const sections: AzkarSection[] = [
-  { id: "morning-evening", icon: "🌅", categoryIds: ["27"] },
-  { id: "travel", icon: "🧳", categoryIds: ["95", "96", "132"] },
+  { id: "morning-evening", icon: "sunrise", categoryIds: ["27"] },
+  { id: "travel", icon: "luggage", categoryIds: ["95", "96", "132"] },
 ];
 
 describe("AzkarBrowser", () => {
   it("shows one tab per section and opens the first", () => {
     render(<AzkarBrowser sections={sections} categories={categories} />);
     const tabs = screen.getAllByRole("tab");
-    expect(tabs.map((t) => t.textContent)).toEqual(["🌅Morning & evening", "🧳Travel"]);
+    expect(tabs.map((t) => t.textContent)).toEqual(["Morning & evening", "Travel"]);
     expect(tabs[0]).toHaveAttribute("aria-selected", "true");
   });
 
@@ -57,7 +57,7 @@ describe("AzkarBrowser", () => {
     const search = screen.getByRole("searchbox", { name: "Search azkar…" });
 
     fireEvent.change(search, { target: { value: "travel" } });
-    expect(screen.getByRole("button", { name: /Invocation for traveling/ })).toHaveTextContent("🧳 Travel");
+    expect(screen.getByRole("button", { name: /Invocation for traveling/ })).toHaveTextContent("Travel");
     expect(screen.queryByRole("button", { name: /riding/ })).not.toBeInTheDocument();
 
     fireEvent.change(search, { target: { value: "السَّفَر" } });

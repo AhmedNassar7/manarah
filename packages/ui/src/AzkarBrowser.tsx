@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { AzkarCategory, AzkarSection } from "@manarah/core";
 import { AzkarList } from "./AzkarList.js";
 import { azkarCategoryName, useTranslation } from "./i18n/index.js";
+import { Icon, isIconName } from "./icons/Icon.js";
 
 export interface AzkarBrowserProps {
   sections: AzkarSection[];
@@ -88,7 +89,7 @@ export function AzkarBrowser({ sections, categories, initialSectionId }: AzkarBr
               className="azkar-browser-section-tab"
               onClick={() => selectSection(s.id)}
             >
-              <span aria-hidden="true">{s.icon}</span>
+              <SectionIcon name={s.icon} />
               <span>{t(`azkarSection.${s.id}`)}</span>
             </button>
           );
@@ -106,7 +107,7 @@ export function AzkarBrowser({ sections, categories, initialSectionId }: AzkarBr
                   <button type="button" onClick={() => openFromSearch(category, inSection)}>
                     <span className="azkar-browser-category-name">{azkarCategoryName(category, language)}</span>
                     <span className="azkar-browser-category-meta">
-                      {inSection.icon} {t(`azkarSection.${inSection.id}`)} ·{" "}
+                      <SectionIcon name={inSection.icon} /> {t(`azkarSection.${inSection.id}`)} ·{" "}
                       {t("azkarBrowser.itemCount", { count: category.items.length })}
                     </span>
                   </button>
@@ -119,7 +120,7 @@ export function AzkarBrowser({ sections, categories, initialSectionId }: AzkarBr
         <div className="azkar-browser-category" role="tabpanel">
           {sectionCategories.length > 1 && openCategorySection && (
             <button type="button" className="azkar-browser-back" onClick={() => setOpenCategoryId(null)}>
-              {language === "ar" ? "→" : "←"}{" "}
+              <Icon name="arrow-left" size={16} />{" "}
               {t("azkarBrowser.backTo", { section: t(`azkarSection.${openCategorySection.id}`) })}
             </button>
           )}
@@ -146,4 +147,9 @@ export function AzkarBrowser({ sections, categories, initialSectionId }: AzkarBr
       )}
     </div>
   );
+}
+
+/** A section's icon, by name; an unknown name draws nothing rather than a broken glyph. */
+function SectionIcon({ name }: { name: string }) {
+  return isIconName(name) ? <Icon name={name} size={16} /> : null;
 }

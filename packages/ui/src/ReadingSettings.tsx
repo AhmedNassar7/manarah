@@ -1,5 +1,6 @@
 import { READER_FONT_SCALES, clampReaderFontStep, readerFontScale, type Reciter } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 export interface ReadingSettingsProps {
   /** Index into READER_FONT_SCALES. */
@@ -45,7 +46,7 @@ export function ReadingSettings({
             disabled={step === 0}
             onClick={() => onFontStepChange(step - 1)}
           >
-            A−
+            <Icon name="text-smaller" size={20} />
           </button>
           <output aria-live="polite">{Math.round(readerFontScale(step) * 100)}%</output>
           <button
@@ -54,7 +55,7 @@ export function ReadingSettings({
             disabled={step === lastStep}
             onClick={() => onFontStepChange(step + 1)}
           >
-            A+
+            <Icon name="text-larger" size={20} />
           </button>
         </div>
       </div>

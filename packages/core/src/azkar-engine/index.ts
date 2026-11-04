@@ -31,7 +31,7 @@ export interface AzkarCategory {
 /** A themed group of categories for browsing (e.g. "Travel", "Illness & death") — see @manarah/data's AZKAR_SECTIONS. */
 export interface AzkarSection {
   id: string;
-  /** Decorative glyph shown beside the title. */
+  /** Name of the icon (in the UI's icon set, e.g. "sunrise") shown beside the title. */
   icon: string;
   categoryIds: string[];
 }

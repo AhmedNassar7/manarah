@@ -108,7 +108,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 336 tests passing across all 4 packages (`core` 129, `storage` 17, `data` 39, `ui` 151), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 391 tests passing across all 4 packages (`core` 129, `storage` 17, `data` 39, `ui` 206), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -140,7 +140,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - Three-column desktop reader layout (index / page / marginalia) + "immersive reader" mode that hides chrome on scroll — real layout restructuring, not a styling tweak
 - Framer Motion / Rive — deliberately staying CSS-only; revisit only if a specific interaction genuinely can't be done in CSS
 - Prayer-time-driven ambient background gradient (Fajr → indigo, Dhuhr → neutral, Asr → amber, ...) — needs new "what period is it right now" logic, a real feature addition
-- Hand-drawn geometric icon set (rub el-hizb/star motifs) replacing inline SVGs — one-time illustration effort
+- Full hand-drawn geometric icon set (rub el-hizb/star motifs) for *every* glyph — superseded by the "Iconography" section above (vendored generic icons + 5 custom domain icons); an optional rub el-hizb star at hizb-quarter boundaries in the reader is still open
 - Sound effects (tasbih click, completion chime) — needs asset sourcing + an audio-preference setting
 - Native mobile widgets (iOS Live Activities / Android Dynamic Island) — needs a native Capacitor target, reopens the store-fee question above
 - KFGQPC Uthmanic Script HAFS font — no verified, licensed, freely-linkable source found; Amiri is the substitute, not expected to change without a real source turning up
@@ -175,6 +175,65 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
 **Reviewed but not queued — conflicts with this project's own constraints, flagged rather than silently dropped:**
 - **QuranReflect.com-style reflections/notes sharing** — a social/community feed, which the "Explicitly deferred" list below already rules out to stay lean.
 - **Quran.AI-style assistant** — needs a hosted LLM backend; conflicts with the zero-server/zero-cost constraint that's been unchanged since day one. Would need its own explicit decision to add a paid/hosted dependency before any work starts here.
+
+---
+
+## Iconography — ✅ done (planned and built 2026-11-04)
+
+**Why (the audit that started it).** Every icon was an emoji or a text glyph typed straight into JSX or the i18n dictionaries, and the only real SVGs are the logo and the Qibla compass. Audit of what's there:
+
+| Where | Today | Problem |
+|---|---|---|
+| Nav + Home tiles | 🏠 🕌 🧭 📖 📿 | Colour emoji render differently per OS (Segoe / Apple / Noto), ignore the parchment palette and dark mode, can't take `currentColor`, hover/active tint, or the teal accent |
+| Audio player | ⏮ ▶ ⏸ ⏭ ⏹ | Text glyphs, not icons: font-dependent size and baseline, and iOS silently swaps ▶ and ⏸ for emoji-style images |
+| Reader / panels | ▶ ⋯ × ⌄ A− | Same; `×` and `−` are typographic characters, not matched to anything else |
+| Verse toolbar | text-only buttons (Copy, Share, Bookmark, Tafsir, Word by word, Note) | Eight words to scan; no visual anchor, no bookmarked-state glyph |
+| Qibla / location | 🕋 inside i18n strings, 📍, 📡 | Can't be styled or replaced; baked into translated sentences |
+| Directional arrows | `←` / `→` swapped by hand for Arabic, ↻ ↺ for turn direction | Per-call RTL special-casing |
+
+**Recommendation: one in-house SVG icon set, no emoji in the UI chrome.** A single `<Icon name="…" />` component in `packages/ui/src/icons/`, inline SVG (so no extra requests and it works offline in the PWA and the extension), 24×24 grid, 1.75 stroke, round caps/joins, `currentColor` everywhere. No new runtime dependency (consistent with the working conventions): generic UI glyphs are vendored path data from Lucide (ISC licence — attribution kept in a NOTICE file), and the ~6 domain icons that no library has are drawn by hand on the same grid and stroke so the two halves read as one family. This also delivers the deferred "hand-drawn geometric icon set" item, scoped to what's needed rather than a full illustration project.
+
+**Rules (so it matches the existing design system).**
+- Colour comes from the surrounding text colour: muted at rest, `--accent` on hover/active/pressed. **Gold stays reserved for completion moments and the ayah-end ornament** — a bookmarked verse is a filled *teal* bookmark, never gold, same as the existing teal edge.
+- Sizes 16 / 20 / 24 only (inline in text / buttons / nav). Icon-only buttons keep their `aria-label`; icons beside a visible label are `aria-hidden`.
+- Directional icons (arrow, chevron, back) carry a class that mirrors under `[dir="rtl"]` — replaces the hand-swapped `←`/`→`. Media controls (play/skip) do **not** mirror, as in every audio UI.
+- Motion reuses what's already there: 120 ms `--ease-quiet` tint/press feedback, play⇄pause crossfade, bookmark fill; the global `prefers-reduced-motion` kill-switch still applies.
+- Emoji disappear from all UI strings. Sentences that referenced one (`🕋 reaches the pointer`) are reworded to name the thing ("the Kaaba marker"), and the Kaaba marker on the compass becomes a drawn SVG element.
+
+**Icon map.** *Custom* = hand-drawn on the shared grid; *Lucide* = vendored path (exact icon names confirmed at implementation).
+
+| Place | Icon | Source | Notes |
+|---|---|---|---|
+| Nav / Home: Home | `home` | Lucide | |
+| Nav / Home: Prayer | `mosque` | Custom | dome + minaret + crescent finial — echoes the logo's tower |
+| Nav / Home: Qibla | `qibla` | Custom | compass ring with a small Kaaba cube at the needle tip (Lucide `compass` as fallback) |
+| Nav / Home: Quran | `quran` | Custom | open book on a rehal (stand) with a small eight-point star |
+| Nav / Home: Azkar | `tasbih` | Custom | loop of beads with the end tassel — clearer than 📿 and no emoji skin tones |
+| Audio player | `play` `pause` `stop` `skip-back` `skip-forward` `repeat` `gauge` (speed) | Lucide | per-verse play button is the same `play` at 16 px |
+| Reader controls | `more` (⋯), `x`, `chevron-down` | Lucide | |
+| Verse toolbar (icon **+** label) | `copy` → `check` on success, `share`, `bookmark` (filled when set), `book-open-text` (tafsir), `whole-word` (word by word), `pen-line` (note) | Lucide | keeps the words (they're what makes it learnable), adds the glyph as the scan target |
+| Reading settings | `sliders` (panel), `a-arrow-down` / `a-arrow-up` (text size), `mic` (reciter) | Lucide | replaces `A−` / `A+` |
+| Search | `search` | Lucide | leading icon inside the search box; `arrow-right` (mirrored) on the "Go to 2:255" row |
+| Location | `map-pin`, `locate` (use my location) | Lucide | replaces 📍 / 📡 |
+| Qibla finder | `rotate-cw` / `rotate-ccw` (turn hint), `check` (facing) | Lucide | replaces ↻ ↺ ✓ |
+| Notification prompt | `bell` | Lucide | |
+| Ayah-end marker | keep the existing `﴿n﴾` gold ornament | — | already the right convention; optional later: rub el-hizb star at hizb-quarter boundaries (needs the metadata we already have) |
+| Brand (favicon, PWA, extension, notification PNG) | unchanged | — | already generated from `assets/logo.svg` |
+
+**As built.** `<Icon name="…" />` in `packages/ui/src/icons/` (plus `IconInSvg` for drawing one inside an existing `<svg>`, used for the Kaaba marker on the Qibla dial, and `isIconName` for names that arrive as strings from data). 40 icons: 31 generic ones vendored as plain path data from lucide-static 0.468.0 by a generator script (`lucide.ts` is marked generated; ISC licence in `/NOTICE`) and 5 hand-drawn domain icons in `custom.ts` — `mosque`, `kaaba` (a cube in slight perspective with band and door), `qibla` (ring open at the top where a small Kaaba sits, plus a pointer), `quran` (open book on a rehal), `tasbih`. The custom ones were rasterised and inspected at 96/48/24/16 px and redrawn twice (the first Kaaba read as a window and the first Qibla needle as the letter "A"). The Quran icon has no star — it didn't survive 16 px. Where it's used: nav and Home tiles (Home tiles scale the 24 px icon to 32 px with a lighter stroke), audio player (media icons filled), reader play/more, navigator/panel close, reading-settings text size, search box, location pin / "use my location", Qibla finder (turn arrows, "facing" check, and the Kaaba marker, counter-rotated so it stays upright as the dial turns), Azkar back button (mirrors in RTL), verse toolbar (icon + label, bookmark filled when set), notification prompt, and the 13 azkar section icons (data's `AzkarSection.icon` is now an icon name, not an emoji). Directional icons flip in RTL via `:dir(rtl)`; media icons never do. Translated strings no longer contain emoji or arrows; sentences that mentioned 🕋 now say "the Kaaba marker".
+
+**Guard.** `icons/no-emoji.test.ts` fails the build if any emoji, arrow, media or geometric symbol appears in UI, web, extension, data or core source (comments excluded) — it already caught the 13 azkar-section emoji in `packages/data` that the original audit missed. Built web and extension bundles were also scanned: zero emoji left.
+
+**Not verified in a real browser** (none available here, as ever): the contact sheet of the custom icons was rendered with resvg, but nav/Home/player alignment is checked only by CSS inspection and tests. Screenshots remain the real check; the most likely tweaks are icon size/weight in the nav and verse toolbar.
+
+**Build order** (each step shippable on its own):
+1. ✅ **Foundation** — `Icon` component + registry, `.icon` CSS (sizes, `currentColor`, RTL mirror class), registry test (every name resolves, every path has a `viewBox`), NOTICE for Lucide.
+2. ✅ **Domain icons** — draw `mosque`, `qibla`, `quran`, `tasbih` (+ the Kaaba marker in `QiblaCompass`/`QiblaFinder`), review each at 16/20/24 in light and dark.
+3. ✅ **Chrome swap** — Nav, Home tiles, audio player, reader buttons, navigator/panel close, reading-settings stepper, search box.
+4. ✅ **Verse toolbar** — icon + label buttons, filled-bookmark state.
+5. ✅ **i18n clean-up** — remove emoji/arrow characters from dictionary strings, reword the hints; guard test that fails if any UI source or dictionary contains an emoji (small allow-list for the Quranic ornament characters).
+
+**Open choices (recommendation in bold).** Nav on phones: **icon over a small label** (current layout) vs icon-only. Icon source: **vendored Lucide + custom domain icons** vs all-custom (more work, more distinctive, harder to keep consistent). Emoji anywhere at all: **none in the UI**; system notification text stays plain text.
 
 ---
 

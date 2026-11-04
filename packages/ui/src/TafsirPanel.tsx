@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { TafsirEdition, TafsirEntry } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 /** Everything QuranReader needs to offer tafsir — grouped so the reader takes one optional prop instead of four. */
 export interface TafsirSource {
@@ -64,7 +65,7 @@ export function TafsirPanel({ source, surah, ayah, onClose }: TafsirPanelProps) 
           </select>
         </label>
         <button type="button" className="tafsir-panel-close" aria-label={t("tafsir.close")} onClick={onClose}>
-          ×
+          <Icon name="close" size={16} />
         </button>
       </div>
 

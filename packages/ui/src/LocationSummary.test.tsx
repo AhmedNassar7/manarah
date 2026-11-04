@@ -50,7 +50,7 @@ describe("LocationSummary", () => {
       <LocationSummary {...baseProps} coordinates={undefined} location={undefined} onUseCurrentLocation={() => {}} />
     );
     expect(screen.getByText(/Where are you\?/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "📡 Use my current location" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Use my current location" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Or search for your city…")).toBeInTheDocument();
   });
 
@@ -83,7 +83,7 @@ describe("LocationSummary", () => {
         onUseCurrentLocation={onUseCurrentLocation}
       />
     );
-    fireEvent.click(screen.getByRole("button", { name: "📡 Use my current location" }));
+    fireEvent.click(screen.getByRole("button", { name: "Use my current location" }));
     expect(onUseCurrentLocation).toHaveBeenCalled();
 
     rerender(

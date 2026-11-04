@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Surah, VerseRef } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 type NavigatorTab = "surah" | "ayah" | "juz" | "page";
 
@@ -66,7 +67,7 @@ export function QuranNavigator({
         ) : (
           <span>{t("quranNavigator.open")}</span>
         )}
-        <span aria-hidden="true">⌄</span>
+        <Icon name="chevron-down" size={16} />
       </button>
     );
   }
@@ -137,7 +138,7 @@ export function QuranNavigator({
           ))}
         </div>
         <button type="button" className="quran-navigator-close" aria-label={t("quranNavigator.close")} onClick={close}>
-          ×
+          <Icon name="close" size={16} />
         </button>
       </div>
 

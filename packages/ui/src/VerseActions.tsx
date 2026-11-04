@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 export interface VerseActionsProps {
   ayah: number;
@@ -80,31 +81,32 @@ export function VerseActions({
     <div className="verse-actions" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
       <div className="verse-actions-buttons">
         <button type="button" onClick={handleCopy}>
-          {copied ? t("verseActions.copied") : t("verseActions.copy")}
+          <Icon name={copied ? "check" : "copy"} size={16} /> {copied ? t("verseActions.copied") : t("verseActions.copy")}
         </button>
         {canShare && (
           <button type="button" onClick={handleShare}>
-            {t("verseActions.share")}
+            <Icon name="share" size={16} /> {t("verseActions.share")}
           </button>
         )}
         {onToggleBookmark && (
           <button type="button" aria-pressed={bookmarked} onClick={onToggleBookmark}>
+            <Icon name="bookmark" size={16} filled={bookmarked} />{" "}
             {bookmarked ? t("verseActions.removeBookmark") : t("verseActions.bookmark")}
           </button>
         )}
         {onToggleTafsir && (
           <button type="button" aria-pressed={tafsirOpen} onClick={onToggleTafsir}>
-            {tafsirOpen ? t("verseActions.hideTafsir") : t("verseActions.tafsir")}
+            <Icon name="tafsir" size={16} /> {tafsirOpen ? t("verseActions.hideTafsir") : t("verseActions.tafsir")}
           </button>
         )}
         {onToggleWords && (
           <button type="button" aria-pressed={wordsOpen} onClick={onToggleWords}>
-            {wordsOpen ? t("verseActions.hideWords") : t("verseActions.words")}
+            <Icon name="word-by-word" size={16} /> {wordsOpen ? t("verseActions.hideWords") : t("verseActions.words")}
           </button>
         )}
         {onSaveNote && !editingNote && (
           <button type="button" onClick={startEditingNote}>
-            {note ? t("verseActions.editNote") : t("verseActions.addNote")}
+            <Icon name="note" size={16} /> {note ? t("verseActions.editNote") : t("verseActions.addNote")}
           </button>
         )}
       </div>

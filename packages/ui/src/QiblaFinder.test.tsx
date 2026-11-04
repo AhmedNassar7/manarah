@@ -43,7 +43,7 @@ describe("QiblaFinder", () => {
 
     it("confirms once the user faces the Qibla", () => {
       const { container } = render(<QiblaFinder bearing={136} distanceKm={1000} heading={135} />);
-      expect(screen.getByText("✓ You're facing the Qibla")).toBeInTheDocument();
+      expect(screen.getByText("You're facing the Qibla")).toBeInTheDocument();
       expect(container.querySelector(".qibla-finder")).toHaveClass("qibla-finder-facing");
     });
 

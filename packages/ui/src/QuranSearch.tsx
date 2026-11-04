@@ -8,6 +8,7 @@ import {
   type VerseRef,
 } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 const PAGE_SIZE = 50;
 
@@ -76,7 +77,9 @@ export function QuranSearch({ surahs, search, onSelect }: QuranSearchProps) {
 
   return (
     <div className="quran-search" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
-      <input
+      <div className="quran-search-field">
+        <Icon name="search" size={16} className="quran-search-icon" />
+        <input
         type="search"
         role="searchbox"
         className="quran-search-input"
@@ -88,14 +91,16 @@ export function QuranSearch({ surahs, search, onSelect }: QuranSearchProps) {
           setLimit(PAGE_SIZE);
         }}
         dir="auto"
-      />
+        />
+      </div>
 
       {reference && (
         <ul className="quran-search-results">
           <li>
             <button type="button" onClick={() => select(reference)}>
               <span className="quran-search-ref">
-                {t("quranSearch.goTo", { surah: surahLabel(reference.surah), ayah: reference.ayah })}
+                {t("quranSearch.goTo", { surah: surahLabel(reference.surah), ayah: reference.ayah })}{" "}
+                <Icon name="arrow-right" size={16} />
               </span>
             </button>
           </li>

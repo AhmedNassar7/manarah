@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useTranslation } from "@manarah/ui";
+import { Icon, useTranslation } from "@manarah/ui";
 
 /** One-time opt-in banner for prayer/azkar notifications — shown only while permission hasn't been decided yet (not after a grant or a denial, since the browser owns that choice from then on). */
 export function NotificationPrompt() {
@@ -19,7 +19,7 @@ export function NotificationPrompt() {
     <div className="notice">
       <p>{t("notifications.enablePrompt")}</p>
       <button type="button" onClick={() => void handleEnable()}>
-        {t("notifications.enableButton")}
+        <Icon name="bell" size={16} /> {t("notifications.enableButton")}
       </button>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { QuranWord } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 export interface WordByWordPanelProps {
   surah: number;
@@ -44,7 +45,7 @@ export function WordByWordPanel({ surah, ayah, load, onClose }: WordByWordPanelP
       <div className="word-by-word-header">
         <span>{t("wordByWord.title", { ayah })}</span>
         <button type="button" className="word-by-word-close" aria-label={t("wordByWord.close")} onClick={onClose}>
-          ×
+          <Icon name="close" size={16} />
         </button>
       </div>
 

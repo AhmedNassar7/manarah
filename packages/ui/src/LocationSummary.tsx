@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { City, Coordinates, SavedLocation } from "@manarah/core";
 import { CitySearch } from "./CitySearch.js";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 export interface LocationSummaryProps {
   coordinates: Coordinates | undefined;
@@ -65,8 +66,8 @@ export function LocationSummary({
     <section className="location-summary card" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
       {hasLocation ? (
         <div className="location-summary-current">
-          <span className="location-summary-pin" aria-hidden="true">
-            📍
+          <span className="location-summary-pin">
+            <Icon name="map-pin" size={24} />
           </span>
           <div className="location-summary-text">
             <span className="location-summary-name">{label}</span>
@@ -102,7 +103,7 @@ export function LocationSummary({
               onClick={handleUseCurrentLocation}
               disabled={locating}
             >
-              {locating ? t("location.locating") : t("location.useCurrent")}
+              <Icon name="locate" size={16} /> {locating ? t("location.locating") : t("location.useCurrent")}
             </button>
           )}
           <CitySearch search={search} onSelect={handleCitySelect} placeholder={t("location.searchPlaceholder")} />

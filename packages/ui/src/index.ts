@@ -15,6 +15,7 @@ export * from "./VerseActions.js";
 export * from "./QuranBookmarks.js";
 export * from "./QuranSearch.js";
 export * from "./ReadingSettings.js";
+export { Icon, IconInSvg, ICONS, isIconName, type IconName, type IconProps, type IconSize } from "./icons/Icon.js";
 export * from "./TafsirPanel.js";
 export * from "./WordByWordPanel.js";
 export * from "./LanguageSwitcher.js";

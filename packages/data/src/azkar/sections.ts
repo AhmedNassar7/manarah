@@ -12,24 +12,24 @@ import type { AzkarSection } from "@manarah/core";
  * Section titles live in the UI dictionaries (`azkarSection.<id>`).
  */
 export const AZKAR_SECTIONS: AzkarSection[] = [
-  { id: "morning-evening", icon: "🌅", categoryIds: ["27"] },
-  { id: "sleep", icon: "🌙", categoryIds: ["28", "29", "30", "31", "1"] },
+  { id: "morning-evening", icon: "sunrise", categoryIds: ["27"] },
+  { id: "sleep", icon: "moon", categoryIds: ["28", "29", "30", "31", "1"] },
   {
     id: "prayer",
-    icon: "🕌",
+    icon: "mosque",
     categoryIds: ["15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "32", "33", "42", "26"],
   },
-  { id: "purification-mosque", icon: "💧", categoryIds: ["6", "7", "8", "9", "12", "13", "14"] },
-  { id: "home-dress", icon: "🏠", categoryIds: ["10", "11", "2", "3", "4", "5"] },
-  { id: "food-fasting", icon: "🍽️", categoryIds: ["69", "70", "71", "72", "68", "73", "74", "75", "76"] },
+  { id: "purification-mosque", icon: "droplet", categoryIds: ["6", "7", "8", "9", "12", "13", "14"] },
+  { id: "home-dress", icon: "home", categoryIds: ["10", "11", "2", "3", "4", "5"] },
+  { id: "food-fasting", icon: "utensils", categoryIds: ["69", "70", "71", "72", "68", "73", "74", "75", "76"] },
   {
     id: "travel",
-    icon: "🧳",
+    icon: "luggage",
     categoryIds: ["95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105"],
   },
   {
     id: "hardship",
-    icon: "🤲",
+    icon: "hand-heart",
     categoryIds: [
       "34",
       "35",
@@ -55,13 +55,13 @@ export const AZKAR_SECTIONS: AzkarSection[] = [
   },
   {
     id: "illness-death",
-    icon: "🕊️",
+    icon: "heart-pulse",
     categoryIds: ["49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60"],
   },
-  { id: "nature", icon: "🌧️", categoryIds: ["61", "62", "63", "64", "65", "66", "67", "110", "111"] },
+  { id: "nature", icon: "cloud-rain", categoryIds: ["61", "62", "63", "64", "65", "66", "67", "110", "111"] },
   {
     id: "social",
-    icon: "🤝",
+    icon: "handshake",
     categoryIds: [
       "108",
       "109",
@@ -89,6 +89,6 @@ export const AZKAR_SECTIONS: AzkarSection[] = [
       "81",
     ],
   },
-  { id: "hajj", icon: "🕋", categoryIds: ["115", "116", "117", "118", "119", "120", "121", "127"] },
-  { id: "dhikr-forgiveness", icon: "📿", categoryIds: ["129", "130", "131", "107"] },
+  { id: "hajj", icon: "kaaba", categoryIds: ["115", "116", "117", "118", "119", "120", "121", "127"] },
+  { id: "dhikr-forgiveness", icon: "tasbih", categoryIds: ["129", "130", "131", "107"] },
 ];

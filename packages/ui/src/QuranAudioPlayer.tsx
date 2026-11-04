@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { ayahAudioUrl, type Reciter, type Surah, type Verse } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { Icon } from "./icons/Icon.js";
 
 const REPEAT_OPTIONS = [1, 2, 3, 5];
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2];
@@ -140,7 +141,7 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
 
       <div className="quran-audio-player-transport">
         <button type="button" onClick={handlePrevious} disabled={!hasPrevious} aria-label={t("quranAudioPlayer.previous")}>
-          ⏮
+          <Icon name="skip-back" size={20} filled />
         </button>
         <button
           type="button"
@@ -148,13 +149,13 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
           onClick={handlePlayPause}
           aria-label={isPlaying ? t("quranAudioPlayer.pause") : t("quranAudioPlayer.play")}
         >
-          {isPlaying ? "⏸" : "▶"}
+          <Icon name={isPlaying ? "pause" : "play"} size={20} filled />
         </button>
         <button type="button" onClick={handleNext} disabled={!hasNext} aria-label={t("quranAudioPlayer.next")}>
-          ⏭
+          <Icon name="skip-forward" size={20} filled />
         </button>
         <button type="button" onClick={handleStop} disabled={currentAyah == null} aria-label={t("quranAudioPlayer.stop")}>
-          ⏹
+          <Icon name="stop" size={16} filled />
         </button>
         <span className="quran-audio-player-status">
           {currentAyah != null ? t("quranAudioPlayer.nowPlaying", { ayah: currentAyah }) : t("quranAudioPlayer.idle")}
