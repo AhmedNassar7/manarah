@@ -1,4 +1,12 @@
-import { READER_FONT_SCALES, clampReaderFontStep, readerFontScale, type Reciter } from "@manarah/core";
+import {
+  READER_FONT_SCALES,
+  clampReaderFontStep,
+  readerFontScale,
+  reciterStyles,
+  resolveReciterStyle,
+  type Reciter,
+  type ReciterStyle,
+} from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
 
@@ -11,6 +19,9 @@ export interface ReadingSettingsProps {
   reciters: Reciter[];
   reciterId: string;
   onReciterChange: (id: string) => void;
+  /** The style (murattal / mujawwad / muallim) — the control appears only when the chosen sheikh has more than one. */
+  reciterStyle?: ReciterStyle;
+  onReciterStyleChange?: (style: ReciterStyle) => void;
 }
 
 /**
@@ -28,10 +39,14 @@ export function ReadingSettings({
   reciters,
   reciterId,
   onReciterChange,
+  reciterStyle,
+  onReciterStyleChange,
 }: ReadingSettingsProps) {
   const { t, language } = useTranslation();
   const step = clampReaderFontStep(fontStep);
   const lastStep = READER_FONT_SCALES.length - 1;
+  const reciter = reciters.find((r) => r.id === reciterId) ?? reciters[0];
+  const styles = reciter ? reciterStyles(reciter) : [];
 
   return (
     <details className="reading-settings" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
@@ -79,6 +94,22 @@ export function ReadingSettings({
           ))}
         </select>
       </label>
+
+      {styles.length > 1 && reciter && (
+        <label className="reading-settings-row">
+          <span>{t("readingSettings.reciterStyle")}</span>
+          <select
+            value={resolveReciterStyle(reciter, reciterStyle)}
+            onChange={(event) => onReciterStyleChange?.(event.target.value as ReciterStyle)}
+          >
+            {styles.map((style) => (
+              <option key={style} value={style}>
+                {t(`reciterStyle.${style}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </details>
   );
 }

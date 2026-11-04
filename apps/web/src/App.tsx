@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import {
   clampHijriAdjustment,
   clampReaderFontStep,
@@ -20,6 +20,7 @@ import {
   type DailyPrayerTimes,
   type Language,
   type PrayerTimesSettings,
+  type ReciterStyle,
   type SavedLocation,
   type Translation,
   type UserSettings,
@@ -272,6 +273,22 @@ export function App() {
     });
   }
 
+  function handleReciterStyleChange(reciterStyle: ReciterStyle) {
+    setSettings((prev) => {
+      const next = { ...prev, reciterStyle };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
+  function handleTranslationAudioChange(translationAudio: boolean) {
+    setSettings((prev) => {
+      const next = { ...prev, translationAudio };
+      void store.set(SETTINGS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handleReciterChange(reciterId: string) {
     setSettings((prev) => {
       const next = { ...prev, reciterId };
@@ -371,6 +388,7 @@ export function App() {
                   tomorrowsFajr={tomorrowsFajr}
                   prayerTimesSettings={settings.prayerTimesSettings}
                   onPrayerSettingsChange={handlePrayerSettingsChange}
+                  hijriAdjustment={settings.hijriAdjustment}
                 />
               }
             />
@@ -399,6 +417,10 @@ export function App() {
                   resolvePageStart={getPageStart}
                   reciterId={settings.reciterId}
                   onReciterChange={handleReciterChange}
+                  reciterStyle={settings.reciterStyle}
+                  onReciterStyleChange={handleReciterStyleChange}
+                  translationAudio={settings.translationAudio}
+                  onTranslationAudioChange={handleTranslationAudioChange}
                   verseAnnotations={verseAnnotations}
                   onToggleBookmark={handleToggleBookmark}
                   onSaveNote={handleSaveNote}
@@ -454,6 +476,8 @@ export function App() {
 /** Header + nav, shared by every route. Sits inside LanguageProvider so it (and the routed page inside it) can call useTranslation(). */
 function AppShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
+  // Each section has its own colour (see "Joy layer" in styles.css); the router path says which one we're in.
+  const section = useLocation().pathname.split("/")[1] || "home";
 
   return (
     <main className="app-shell">
@@ -463,7 +487,7 @@ function AppShell({ children }: { children: ReactNode }) {
         <LanguageSwitcher />
       </header>
       <Nav />
-      <div className="app-content">
+      <div className="app-content" data-section={section}>
         <NotificationPrompt />
         {children}
       </div>

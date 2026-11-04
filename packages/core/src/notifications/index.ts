@@ -4,7 +4,7 @@ import {
   type AzkarCategory,
   type AzkarTrigger,
 } from "../azkar-engine/index.js";
-import { hijriDateOfCivilDay, observancesOn, toCalendarDate, type HijriDate } from "../hijri/index.js";
+import { hijriDateOfCivilDay, observancesOn, ramadanStatus, toCalendarDate, type HijriDate } from "../hijri/index.js";
 import type { DailyPrayerTimes } from "../prayer-times/index.js";
 import { computePrayerTimes } from "../prayer-times/index.js";
 import { withDefaultSettings, type Language, type UserSettings } from "../settings/index.js";
@@ -48,7 +48,11 @@ export type DueNotification =
   | { type: "post-salah-azkar"; prayer: PrayerName; categories: AzkarCategory[] }
   | { type: "azkar-reminder"; slot: AzkarReminderSlotId; categories: AzkarCategory[] }
   | { type: "custom-azkar"; category: AzkarCategory; time: string }
-  | { type: "observance"; observance: string; when: ObservanceWhen };
+  | { type: "observance"; observance: string; when: ObservanceWhen }
+  | { type: "ramadan-countdown"; daysAway: number };
+
+/** How many days before Ramadan to say so: a month out (time to prepare) and a week out. */
+export const RAMADAN_COUNTDOWN_MILESTONES: readonly number[] = [30, 7];
 
 /**
  * When an observance reminder fires relative to the observance's day:
@@ -260,6 +264,16 @@ export function computeDueNotifications(
         if (state.firedObservances.includes(key)) continue;
 
         if (isFresh(at)) due.push({ type: "observance", observance: id, when });
+        state.firedObservances.push(key);
+      }
+    }
+
+    // "Ramadan in 30 days" / "in 7 days" — at Fajr, on the morning that many days remain.
+    const ramadan = ramadanStatus(civilToday, observances.adjustment);
+    if (ramadan.phase === "before" && RAMADAN_COUNTDOWN_MILESTONES.includes(ramadan.daysAway) && now >= times.fajr) {
+      const key = `countdown:${ramadan.daysAway}`;
+      if (!state.firedObservances.includes(key)) {
+        if (isFresh(times.fajr)) due.push({ type: "ramadan-countdown", daysAway: ramadan.daysAway });
         state.firedObservances.push(key);
       }
     }

@@ -14,8 +14,10 @@ import {
   searchQuran,
   SURAHS,
   TAFSIR_EDITIONS,
+  TRANSLATION_AUDIO,
   TRANSLATION_EDITIONS,
 } from "./index.js";
+import everyAyahFolders from "./everyayah-folders.json";
 
 describe("Quran data integrity", () => {
   it("has exactly the canonical 114 surahs and 6236 verses", async () => {
@@ -135,6 +137,27 @@ describe("Quran data integrity", () => {
     for (const reciter of RECITERS) {
       expect(reciter.everyAyahSubfolder.trim().length).toBeGreaterThan(0);
     }
+  });
+
+  it("only uses folders that exist in EveryAyah's official reciter list (a typo would be silence in the player)", () => {
+    const official = new Set(everyAyahFolders.subfolders);
+    const used = [
+      ...RECITERS.flatMap((r) => [r.everyAyahSubfolder, ...Object.values(r.styles ?? {})]),
+      TRANSLATION_AUDIO.everyAyahSubfolder,
+    ];
+    for (const folder of used) expect(official.has(folder), folder).toBe(true);
+  });
+
+  it("gives every sheikh a murattal reading and only offers the styles EveryAyah really has", () => {
+    const byId = Object.fromEntries(RECITERS.map((r) => [r.id, r]));
+    expect(Object.keys(byId["husary"].styles ?? {}).sort()).toEqual(["muallim", "mujawwad"]);
+    expect(Object.keys(byId["abdul-basit"].styles ?? {})).toEqual(["mujawwad"]);
+    expect(Object.keys(byId["minshawy"].styles ?? {})).toEqual(["mujawwad"]);
+    expect(byId["alafasy"].styles).toBeUndefined();
+  });
+
+  it("includes Nasser Al-Qatami", () => {
+    expect(RECITERS.find((r) => r.id === "nasser-alqatami")?.everyAyahSubfolder).toBe("Nasser_Alqatami_128kbps");
   });
 
   it("has unique tafsir editions (by id and Quran.com resource id), with at least one per UI language", () => {

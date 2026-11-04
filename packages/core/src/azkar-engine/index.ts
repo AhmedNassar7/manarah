@@ -17,6 +17,8 @@ export interface AzkarItem {
   translation?: string;
   repeatCount: number;
   audioUrl?: string;
+  /** Where the text comes from, where it isn't self-evident — e.g. "2:201" for a Quranic dua (surah:ayah). */
+  reference?: string;
 }
 
 export interface AzkarCategory {

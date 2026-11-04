@@ -10,6 +10,7 @@ import {
   MAX_HIJRI_ADJUSTMENT,
   nextOccurrence,
   observancesOn,
+  ramadanStatus,
   shiftHijriMonth,
   toCalendarDate,
   upcomingEvents,
@@ -260,3 +261,58 @@ describe("upcomingEvents", () => {
     }
   });
 });
+
+describe("ramadanStatus", () => {
+  const first = hijriToGregorian({ year: 1448, month: 9, day: 1 });
+  const at = (offsetDays: number) => new Date(first.getTime() + offsetDays * DAY);
+
+  it("counts the days until the first of Ramadan", () => {
+    expect(ramadanStatus(at(-95))).toMatchObject({ phase: "before", daysAway: 95 });
+    expect(ramadanStatus(at(-1))).toMatchObject({ phase: "before", daysAway: 1 }); // starts tomorrow
+  });
+
+  it("reports the first of Ramadan's civil date", () => {
+    const status = ramadanStatus(at(-10));
+    expect(status.phase === "before" && status.startsOn.getTime()).toBe(first.getTime());
+  });
+
+  it("is under way from the first day, with the day number and the days left", () => {
+    expect(ramadanStatus(at(0))).toMatchObject({ phase: "during", day: 1 });
+    const mid = ramadanStatus(at(11));
+    expect(mid).toMatchObject({ phase: "during", day: 12 });
+    expect(mid.phase === "during" && mid.daysLeft).toBe(mid.phase === "during" ? mid.length - 12 : -1);
+    expect(mid.phase === "during" && [29, 30]).toContain(mid.phase === "during" ? mid.length : 0);
+  });
+
+  it("reaches the last day of Ramadan with no days left", () => {
+    const length = daysInHijriMonth(1448, 9);
+    expect(ramadanStatus(at(length - 1))).toMatchObject({ phase: "during", day: length, daysLeft: 0 });
+  });
+
+  it("is Eid on the first of Shawwal", () => {
+    expect(ramadanStatus(at(daysInHijriMonth(1448, 9)))).toEqual({ phase: "eid" });
+  });
+
+  it("counts towards NEXT year's Ramadan once this one is over", () => {
+    const status = ramadanStatus(at(daysInHijriMonth(1448, 9) + 5));
+    expect(status.phase).toBe("before");
+    // A lunar year is ~354 days; five days past Eid, next Ramadan is about 354 - 30 - 5 away.
+    expect(status.phase === "before" && status.daysAway).toBeGreaterThan(310);
+    expect(status.phase === "before" && status.daysAway).toBeLessThan(330);
+  });
+
+  it("follows the user's adjustment: a later Hijri date brings Ramadan a civil day earlier", () => {
+    const today = at(-10);
+    const plain = ramadanStatus(today, 0);
+    const later = ramadanStatus(today, 1);
+    expect(plain.phase === "before" && later.phase === "before" && later.daysAway).toBe(plain.phase === "before" ? plain.daysAway - 1 : -1);
+  });
+
+  it("agrees with the calendar's own Ramadan event", () => {
+    const today = at(-50);
+    const fromEvents = upcomingEvents(today).find((u) => u.event.id === "ramadan-start")!;
+    const status = ramadanStatus(today);
+    expect(status.phase === "before" && status.daysAway).toBe(fromEvents.daysAway);
+  });
+});
+

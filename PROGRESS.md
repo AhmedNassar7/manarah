@@ -41,6 +41,7 @@ pnpm workspace monorepo, no Turborepo:
                  - tafsir: Quran.com tafsir URL/response parsing, HTML → plain-text blocks, edition choice ✅
                  - word-by-word: Quran.com per-word meaning/transliteration URL + response parsing       ✅
                  - hadith: hadith-api URL fallback chain, response parsing, Arabic/English pairing        ✅
+                 - azkar-text: splits a dua's stored string into display parts (words / verse / note / variant) ✅
                  - zakat: nisab/2.5% calculation, forgiving amount parsing (Arabic-Indic digits, EU style) ✅
                  - quran-search: Arabic-skeleton/translation full-text matching, "2:255" references      ✅
   /ui          Shared React components + design system (styles.css) + i18n                       ✅
@@ -112,7 +113,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 565 tests passing across all 4 packages (`core` 209, `storage` 17, `data` 53, `ui` 269), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 658 tests passing across all 4 packages (`core` 259, `storage` 17, `data` 74, `ui` 308), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -143,7 +144,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - Native App Store/Play Store listings — PWA + Capacitor sideload/Chrome Web Store cover "mobile"/"extension" without the $99/yr + $25 store fees; revisit only if official store listings are explicitly wanted later
 - Three-column desktop reader layout (index / page / marginalia) + "immersive reader" mode that hides chrome on scroll — real layout restructuring, not a styling tweak
 - Framer Motion / Rive — deliberately staying CSS-only; revisit only if a specific interaction genuinely can't be done in CSS
-- Prayer-time-driven ambient background gradient (Fajr → indigo, Dhuhr → neutral, Asr → amber, ...) — needs new "what period is it right now" logic, a real feature addition
+- ~~Prayer-time-driven ambient background gradient~~ — built 2026-11-05 as the Home/Prayer hero (see "Joy layer"); extending it to the page background is still open
 - Full hand-drawn geometric icon set (rub el-hizb/star motifs) for *every* glyph — superseded by the "Iconography" section above (vendored generic icons + 5 custom domain icons); an optional rub el-hizb star at hizb-quarter boundaries in the reader is still open
 - Sound effects (tasbih click, completion chime) — needs asset sourcing + an audio-preference setting
 - Native mobile widgets (iOS Live Activities / Android Dynamic Island) — needs a native Capacitor target, reopens the store-fee question above
@@ -157,7 +158,7 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
 
 1. [x] **Translation display** — one bundled edition (Saheeh International), show/hide toggle in `QuranReader`. *(Multi-edition selection is still open — see Phase 2 list.)*
 2. [x] **Navigation overhaul** — `QuranNavigator`: tabbed Surah/Ayah/Juz'/Page picker with search, replacing the old surah-only list; per-verse `focusAyah` jump-and-highlight in `QuranReader`; juz'/page/manzil/ruku'/sajdah metadata (`packages/data/quran/metadata.json`, sourced free from the same AlQuran Cloud response as the translation).
-3. [x] **Audio recitation player** — `QuranAudioPlayer`: 10 curated reciters, play/pause/prev/next, repeat count (1/2/3/5×), speed (0.75–2×), auto-scroll + persistent highlight for the playing verse (`QuranReader`'s new `playingAyah`), per-verse play button. Built entirely on EveryAyah.com per-verse files (no surah-wide file + timestamp sync needed) — every reciter folder name and the URL pattern verified live before use, not guessed.
+3. [x] **Audio recitation player** — `QuranAudioPlayer`: 11 curated reciters (see "Reciters, reading styles and translation audio" for styles and translation audio), play/pause/prev/next, repeat count (1/2/3/5×), speed (0.75–2×), auto-scroll + persistent highlight for the playing verse (`QuranReader`'s new `playingAyah`), per-verse play button. Built entirely on EveryAyah.com per-verse files (no surah-wide file + timestamp sync needed) — every reciter folder name and the URL pattern verified live before use, not guessed.
 4. [x] **Per-verse action toolbar + notes/bookmarks** — a ⋯ button under each verse's play button opens `VerseActions` (one verse at a time): Copy and Share (Web Share API, button hidden where unsupported) of the verse text + visible translation + a "(Surah s:a)" citation, Bookmark toggle, and an inline personal-note editor. Bookmarked verses get a teal inline-start edge; notes render under the verse. `QuranBookmarks` on the Quran page lists every bookmark/note in mushaf order and jumps to it. Pure model in `packages/core/verse-annotations` (`toggleBookmark`/`setNote`/`listAnnotations`/`formatVerseForSharing`, injected `now`, empty entries pruned), persisted through the existing `Store` interface under one key (`manarah:verse-annotations`) — no new table needed, and it's covered by JSON export/import automatically. Web only for now: the extension has no reader, and a single key would hit `chrome.storage.sync`'s 8KB per-item limit at a few hundred notes if it's ever synced there.
 5. [x] **Tafsir panel** — a "Tafsir" action in the verse toolbar opens `TafsirPanel` inline under that verse (stays open when the toolbar closes; one verse at a time): source picker across all six editions (choice persisted as `UserSettings.tafsirEditionId`; unset → first edition in the UI language, so English readers default to the abridged English Ibn Kathir), loading / error-with-retry / "no separate commentary" states, a "Commentary on verses a–b" note when the source treats a passage as one unit (real: English Ibn Kathir returns 114:1–6 as one entry), bounded scroll box (al-Tabari on 2:255 is ~57k chars). The API's HTML is flattened to plain heading/paragraph blocks in `packages/core/tafsir` and rendered as text — no `dangerouslySetInnerHTML`, so nothing from the API can inject markup. Fetching lives in `apps/web/src/tafsir.ts` (session cache that evicts failures so Retry really retries) and is injected into the UI, keeping `packages/ui` platform-agnostic. Known limitation: al-Qurtubi and as-Sa'di come from the API with no paragraph markup at all, so they render as one long block — same as on Quran.com; not heuristically split.
 6. 🚧 **Word-by-word** — split into two halves after the license check (decided 2026-09-30):
@@ -290,6 +291,47 @@ The web app was a single 720px column, so on a wide screen both sides sat empty,
 - Only `.app-shell` is restyled; the extension, which reuses `.app-header` only, is untouched.
 
 Recommended next for phones (not done): a bottom tab bar with the four or five most-used sections plus a "More" sheet is the standard mobile pattern and beats a scrolling strip for reach — the strip is the cheap fix; the tab bar is the better one.
+
+## Azkar text structure — ✅ done (2026-11-05, from a user screenshot)
+
+**The problem.** Each dua is one string in the source (Hisn al-Muslim, hisnmuslim.com — its own API serves it identically), so the riding dua showed as a single run-together block: the opening words, a Quranic verse and the closing praise fused, with the source's printed-book markers (`((`, `))`) showing as stray punctuation (and mirrored in RTL). The `((` are not a mistake: they are that book's convention. Researched against reference platforms — one editions page splits this same dua into "1/3, 2/3, 3/3" (opening words, the verse in ﴿ ﴾, the closing praise), another prints it as one run-on block like we did; the split form is the better reading experience.
+
+**The source's conventions** (audited across all 266 entries): `((…))` wraps the words to say (237 entries); `﴿…﴾` a Quranic verse (16), with `*` between its verses; `(…)` an instruction such as "(three times)"; `[…]` an alternative wording, usually the evening version of a morning dua. Text outside any marker is *not* reliably an instruction — the opening "أعوذ بالله من الشيطان الرجيم" of Ayat al-Kursi sits outside, and is recited — so parts are classified by content, not just by position.
+
+**The fix** is presentation-only; the stored data is untouched, so it stays faithful to its source and re-syncable. `parseAzkarText` (`packages/core/azkar-text`) returns typed parts, and `AzkarList` renders each on its own:
+- **dua** — the words to say, prominent.
+- **quran** — a verse: Amiri (the Quran face), teal, in a quiet tinted block between gold ﴿ ﴾ brackets, with the source's `*` replaced by the gold verse-end ornament ۝.
+- **note** — an instruction or introduction ("(three times)", "The Prophet ﷺ said:"): smaller and muted — context, not recitation.
+- **variant** — an alternative wording (the evening version): its own block with an accent rule. Each bracketed group is its own part, wherever it sits.
+- One tally per dua, as in the source — the parts are visual, the count is not per part. The English translation (still opt-in) is split by `splitAzkarTranslation` along the same printed-book groups, with the wrapping parentheses removed and "(three times)" kept; it is not aligned part-for-part with the Arabic, because the two aren't reliably one-to-one.
+- Tolerates the source's real mess: unbalanced and nested `((`, stray `))`, one unclosed `﴿`, groups of `(…)` containing a verse (each surah with its basmala).
+
+**Guarantee.** `packages/data/src/azkar/text.test.ts` runs the parser over every real entry and proves: not one letter or diacritic is lost or invented (the parts together are exactly the original text), no source marker survives in displayed text, every `﴿…﴾` becomes a verse part, and every translation keeps every word. This caught a real bug during the work — a regex whose `\b` had been turned into invisible backspace characters by my own scripting — which the repo was then scanned for.
+
+Known limits: a few rare entries keep a short instruction inside the dua it introduces (e.g. "يجمع كفيه … فيقرأ فيهما:" runs into the basmala after it; the Hajj narrations are broken into note/dua/note but stay long); the heuristics for what counts as an instruction are tuned to this corpus and would need review for a new one. Also fixed in the same pass: the repetition counter read "1 / 0" instead of "0 / 1" in Arabic (digits reordered in an RTL context — now forced left-to-right).
+
+## Reciters, reading styles and translation audio — ✅ done (2026-11-05, on request)
+
+- **More sheikhs, in a way that scales.** Nasser Al-Qatami added (11 reciters). Rather than guess more, the full official EveryAyah list (79 recordings) was fetched and the names *not yet added* were handed to the user to choose from; the folder names are checked in a test against a snapshot of that list (`everyayah-folders.json`), so a typo can't ship as silence.
+- **Reading styles.** `Reciter` keeps its murattal folder and gains optional `styles` (`mujawwad`, `muallim`) — only where EveryAyah really has them, each file HEAD-checked live: **Mujawwad** for Abdul Basit, Al-Husary and Al-Minshawi; **Muallim** (teaching) for Al-Husary. `UserSettings.reciterStyle` is remembered; for a sheikh without that style the player quietly uses murattal. The style picker appears only when the chosen sheikh has more than one reading (in the player and the reading-settings panel).
+- **Translation audio.** An option in the player reads the **English translation (Saheeh International, Ibrahim Walk)** after each verse's recitation, then moves on; repeats finish before the translation, and the last verse stops cleanly. `UserSettings.translationAudio`. EveryAyah also has Urdu, Persian, Azerbaijani and Bosnian translation audio — not wired in.
+
+## Joy layer — colour, light and motion — ✅ first wave done (2026-11-05)
+
+From the user's note that the design was static and flat. Principle: **scripture stays calm, the chrome around it gets life** (Quran, Hadith and azkar text surfaces are untouched). All CSS, no animation library, all under the global `prefers-reduced-motion` switch; verified on real screenshots (desktop/phone, English/Arabic, light/dark).
+- **A colour per section** (prayer teal, qibla lapis, quran emerald, hadith terracotta, calendar saffron, zakat amethyst, azkar rose; brighter in dark mode): nav icons, the active item (tinted pill + a marker on the sidebar divider), page-title bars and Home tiles. Driven by `data-hue` / `data-section`.
+- **The hero is a sky that follows the day** (`PrayerHero`): dawn blue→peach, golden morning, midday sky, amber afternoon, sunset purple→coral, night indigo; an eight-point-star lattice texture; a ring that fills as the current prayer period runs out (and turns the right way in Arabic); an icon for the period (sunrise / sun / cloud-sun / sunset / moon-star) that floats; the Gregorian **and** Hijri date; a live countdown. Driven by new pure `prayerProgress` (current period, start, fraction — tested), so colour, icon and ring come from one fact.
+- **Motion:** blocks rise in one after another on each page; cards and Home tiles lift on hover (tiles glow in their section colour); nav icons spring; buttons press; the next prayer row breathes; stars twinkle on the Ramadan card.
+- Dates: the Gregorian date now sits beside the Hijri one on Home and the Prayer page (and in the Calendar hero).
+- Not done / next: a prayer-period tint on the page background itself, a tasbih-style tap burst on azkar completion, animated number changes, page transitions (View Transitions API), and a bottom tab bar on phones.
+
+## Ramadan countdown — ✅ done (2026-11-05)
+
+`RamadanCountdown` on Home: **"95 days to go"** with the expected date, becoming **"Day 13 of 30"** with a progress bar and days left during Ramadan, **"Eid Mubarak!"** on the first of Shawwal, and counting to next year's afterwards. Pure `ramadanStatus` in `packages/core/hijri` (follows the Hijri adjustment; cross-checked against the calendar's own Ramadan event). Always says "calculated date — confirm with your local announcement". **Notifications** too: `RAMADAN_COUNTDOWN_MILESTONES` = 30 and 7 days before, at Fajr, through the same engine and the same "remind me about these days" switch (fire-once, stale-safe, adjustment-aware, English + Arabic).
+
+## Quranic duas — ✅ done (2026-11-05)
+
+The plan covered prophetic duas (Hisn al-Muslim: 132 chapters, 266 entries) but not the duas that are *verses of the Qur'an*. New section **"Duas from the Qur'an"** in the Azkar page: 38 duas in 7 themes (forgiveness and mercy; good in this life and the next; family and children; parents; knowledge and ease; trust and protection; the Hereafter and the Fire). **Not hand-typed:** each was generated from the bundled Uthmani text and Saheeh translation for its `reference` (surah:ayah or range), and `quranic-duas.test.ts` re-checks every Arabic text and translation against the Quran data on every run, plus that each parses as exactly one verse block. A verse is given whole (including any introducing words such as "They said, …"). Shown in the Quran face with gold brackets and a "Qur'an 2:201" reference line; `AzkarItem` gained an optional `reference`. Kept apart from the Hisn corpus so that stays a faithful copy of its source. Not schedulable for reminders (the schedule editor still lists the Hisn corpus only).
 
 ## Testing strategy — ✅ framework in place, coverage ongoing
 

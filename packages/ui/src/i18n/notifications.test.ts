@@ -93,3 +93,14 @@ describe("formatNotification — observances", () => {
     }
   });
 });
+
+describe("formatNotification — Ramadan countdown", () => {
+  it("says how many days away Ramadan is, and that it is calculated, in English and Arabic", () => {
+    expect(formatNotification({ type: "ramadan-countdown", daysAway: 30 }, "en")).toEqual({
+      title: "Ramadan is 30 days away",
+      body: "Expected, by the calculated calendar. Confirm with your local announcement.",
+    });
+    expect(formatNotification({ type: "ramadan-countdown", daysAway: 7 }, "ar").title).toBe("بقي 7 يومًا على رمضان");
+  });
+});
+

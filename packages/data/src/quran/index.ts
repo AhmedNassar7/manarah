@@ -3,6 +3,7 @@ import type {
   Surah,
   TafsirEdition,
   Translation,
+  TranslationAudio,
   TranslationEdition,
   Verse,
   VerseLocation,
@@ -161,16 +162,43 @@ export async function getPageStart(page: number): Promise<VerseRef | undefined> 
  */
 export const RECITERS: Reciter[] = [
   { id: "alafasy", everyAyahSubfolder: "Alafasy_128kbps" },
-  { id: "abdul-basit", everyAyahSubfolder: "Abdul_Basit_Murattal_192kbps" },
+  {
+    id: "abdul-basit",
+    everyAyahSubfolder: "Abdul_Basit_Murattal_192kbps",
+    styles: { mujawwad: "Abdul_Basit_Mujawwad_128kbps" },
+  },
   { id: "sudais", everyAyahSubfolder: "Abdurrahmaan_As-Sudais_192kbps" },
   { id: "shuraym", everyAyahSubfolder: "Saood_ash-Shuraym_128kbps" },
-  { id: "husary", everyAyahSubfolder: "Husary_128kbps" },
-  { id: "minshawy", everyAyahSubfolder: "Minshawy_Murattal_128kbps" },
+  {
+    id: "husary",
+    everyAyahSubfolder: "Husary_128kbps",
+    styles: { mujawwad: "Husary_128kbps_Mujawwad", muallim: "Husary_Muallim_128kbps" },
+  },
+  {
+    id: "minshawy",
+    everyAyahSubfolder: "Minshawy_Murattal_128kbps",
+    styles: { mujawwad: "Minshawy_Mujawwad_192kbps" },
+  },
   { id: "maher-almuaiqly", everyAyahSubfolder: "MaherAlMuaiqly128kbps" },
   { id: "muhammad-ayyoub", everyAyahSubfolder: "Muhammad_Ayyoub_128kbps" },
   { id: "abdullah-basfar", everyAyahSubfolder: "Abdullah_Basfar_192kbps" },
   { id: "yasser-dussary", everyAyahSubfolder: "Yasser_Ad-Dussary_128kbps" },
+  { id: "nasser-alqatami", everyAyahSubfolder: "Nasser_Alqatami_128kbps" },
 ];
+
+/**
+ * The verses' translation read aloud (English, Saheeh International, read by
+ * Ibrahim Walk) — the same per-verse files and naming as the recitations, so
+ * the player can read each verse and then its translation. Folder verified
+ * live 2026-11-05 for the first, a middle and the last verse. Other languages
+ * exist on EveryAyah (Urdu, Persian, Azerbaijani, Bosnian); this is the one
+ * wired in so far.
+ */
+export const TRANSLATION_AUDIO: TranslationAudio = {
+  id: "en-sahih-walk",
+  language: "en",
+  everyAyahSubfolder: "English/Sahih_Intnl_Ibrahim_Walk_192kbps",
+};
 
 /**
  * Tafsir editions served by the Quran.com API — the classical Ahl al-Sunnah

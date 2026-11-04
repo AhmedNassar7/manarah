@@ -1,5 +1,15 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { ayahAudioUrl, type Reciter, type Surah, type Verse } from "@manarah/core";
+import {
+  ayahAudioUrl,
+  reciterStyles,
+  resolveReciterStyle,
+  translationAudioUrl,
+  type Reciter,
+  type ReciterStyle,
+  type Surah,
+  type TranslationAudio,
+  type Verse,
+} from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
 
@@ -18,6 +28,13 @@ export interface QuranAudioPlayerProps {
   surah: Surah;
   /** The surah's verses, in ayah order — defines what "next"/"previous" and end-of-surah mean. */
   verses: Verse[];
+  /** How the reciter reads (murattal / mujawwad / muallim). Used where the chosen sheikh has it, else murattal. Omit for murattal only. */
+  reciterStyle?: ReciterStyle;
+  onReciterStyleChange?: (style: ReciterStyle) => void;
+  /** A recording of the translation, read per verse. When given, a switch offers to read it after each verse. */
+  translationAudio?: TranslationAudio;
+  translationAudioEnabled?: boolean;
+  onTranslationAudioEnabledChange?: (enabled: boolean) => void;
   /** Notified with the ayah currently sounding (null when paused/stopped), for QuranReader's playingAyah highlight. */
   onPlayingAyahChange: (ayah: number | null) => void;
 }
@@ -32,7 +49,19 @@ export interface QuranAudioPlayerProps {
  * page can start playback at a specific verse.
  */
 export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPlayerProps>(function QuranAudioPlayer(
-  { reciters, reciterId, onReciterChange, surah, verses, onPlayingAyahChange },
+  {
+    reciters,
+    reciterId,
+    onReciterChange,
+    reciterStyle,
+    onReciterStyleChange,
+    translationAudio,
+    translationAudioEnabled = false,
+    onTranslationAudioEnabledChange,
+    surah,
+    verses,
+    onPlayingAyahChange,
+  },
   ref
 ) {
   const { t } = useTranslation();
@@ -42,8 +71,12 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
   const [repeatCount, setRepeatCount] = useState(1);
   const [repeatsRemaining, setRepeatsRemaining] = useState(1);
   const [speed, setSpeed] = useState(1);
+  /** What the current ayah is sounding: its recitation, or (when enabled) the translation that follows it. */
+  const [phase, setPhase] = useState<"recitation" | "translation">("recitation");
 
   const reciter = reciters.find((r) => r.id === reciterId) ?? reciters[0];
+  const style = reciter ? resolveReciterStyle(reciter, reciterStyle) : "murattal";
+  const availableStyles = reciter ? reciterStyles(reciter) : [];
 
   useEffect(() => {
     onPlayingAyahChange(isPlaying ? currentAyah : null);
@@ -57,6 +90,7 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
   }, [surah.number]);
 
   function playAyah(ayah: number, repeats: number = repeatCount) {
+    setPhase("recitation");
     setRepeatsRemaining(repeats);
     setIsPlaying(true);
     setCurrentAyah(ayah);
@@ -70,14 +104,17 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || currentAyah == null || !reciter) return;
-    audio.src = ayahAudioUrl(reciter, surah.number, currentAyah);
+    audio.src =
+      phase === "translation" && translationAudio
+        ? translationAudioUrl(translationAudio, surah.number, currentAyah)
+        : ayahAudioUrl(reciter, surah.number, currentAyah, style);
     audio.playbackRate = speed;
     void audio.play();
     // `speed` is read here (a fresh load starts at the current rate) but
     // deliberately left out of the dependency list — a speed change
     // mid-verse is handled by the effect right below instead, without
     // reloading/restarting the audio from 0.
-  }, [currentAyah, reciter, surah.number]);
+  }, [currentAyah, reciter, style, phase, surah.number]);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.playbackRate = speed;
@@ -87,18 +124,32 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
     return verses.findIndex((v) => v.ayah === currentAyah);
   }
 
-  function handleEnded() {
-    if (repeatsRemaining > 1) {
-      setRepeatsRemaining((n) => n - 1);
-      void audioRef.current?.play();
-      return;
-    }
+  function advance() {
     const next = verses[currentIndex() + 1];
     if (next) {
       playAyah(next.ayah);
     } else {
       setIsPlaying(false);
     }
+  }
+
+  function handleEnded() {
+    // The translation is the last thing said about a verse: once it finishes, move on.
+    if (phase === "translation") {
+      advance();
+      return;
+    }
+    if (repeatsRemaining > 1) {
+      setRepeatsRemaining((n) => n - 1);
+      void audioRef.current?.play();
+      return;
+    }
+    // Recitation (and its repeats) done: read the translation next, if asked to.
+    if (translationAudioEnabled && translationAudio) {
+      setPhase("translation");
+      return;
+    }
+    advance();
   }
 
   function handlePlayPause() {
@@ -174,6 +225,19 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
           </select>
         </label>
 
+        {availableStyles.length > 1 && (
+          <label>
+            {t("quranAudioPlayer.style")}
+            <select value={style} onChange={(event) => onReciterStyleChange?.(event.target.value as ReciterStyle)}>
+              {availableStyles.map((s) => (
+                <option key={s} value={s}>
+                  {t(`reciterStyle.${s}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <label>
           {t("quranAudioPlayer.repeat")}
           <select value={repeatCount} onChange={(event) => setRepeatCount(Number(event.target.value))}>
@@ -196,6 +260,22 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
           </select>
         </label>
       </div>
+
+      {translationAudio && (
+        <label className="quran-audio-player-translation">
+          <input
+            type="checkbox"
+            checked={translationAudioEnabled}
+            onChange={(event) => onTranslationAudioEnabledChange?.(event.target.checked)}
+          />
+          <span>{t("quranAudioPlayer.translationAfter")}</span>
+        </label>
+      )}
+      {phase === "translation" && isPlaying && (
+        <p className="quran-audio-player-phase" role="status">
+          {t("quranAudioPlayer.readingTranslation")}
+        </p>
+      )}
     </div>
   );
 });

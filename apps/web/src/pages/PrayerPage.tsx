@@ -1,8 +1,9 @@
-import type { Coordinates, DailyPrayerTimes, PrayerTimesSettings } from "@manarah/core";
+import { currentHijriDate, type Coordinates, type DailyPrayerTimes, type PrayerTimesSettings } from "@manarah/core";
+import { todaysMaghrib } from "./CalendarPage.js";
 import { CALCULATION_METHODS } from "@manarah/data";
 import {
   LocationSummary,
-  PrayerCountdown,
+  PrayerHero,
   PrayerSettingsEditor,
   PrayerTimesList,
   useTranslation,
@@ -16,6 +17,7 @@ export interface PrayerPageProps {
   tomorrowsFajr: Date | null;
   prayerTimesSettings: PrayerTimesSettings;
   onPrayerSettingsChange: (settings: PrayerTimesSettings) => void;
+  hijriAdjustment: number;
 }
 
 export function PrayerPage({
@@ -25,8 +27,10 @@ export function PrayerPage({
   tomorrowsFajr,
   prayerTimesSettings,
   onPrayerSettingsChange,
+  hijriAdjustment,
 }: PrayerPageProps) {
   const { t } = useTranslation();
+  const now = new Date();
 
   return (
     <>
@@ -37,7 +41,11 @@ export function PrayerPage({
         <div className="page-split">
           {times && (
             <div className="card-stack">
-              <PrayerCountdown todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} />
+              <PrayerHero
+                todaysTimes={times}
+                tomorrowsFajr={tomorrowsFajr ?? undefined}
+                hijri={currentHijriDate(now, { maghrib: todaysMaghrib(times, now), adjustment: hijriAdjustment })}
+              />
               <PrayerTimesList todaysTimes={times} />
             </div>
           )}

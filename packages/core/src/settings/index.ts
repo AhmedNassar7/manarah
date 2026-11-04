@@ -1,4 +1,5 @@
 import type { AzkarSchedule } from "../azkar-engine/index.js";
+import type { ReciterStyle } from "../quran-data/index.js";
 import type { Coordinates, PrayerTimesSettings } from "../prayer-times/index.js";
 
 export interface LastRead {
@@ -40,6 +41,10 @@ export interface UserSettings {
   language: Language;
   /** Reciter id (see @manarah/data's RECITERS) used for Quran audio playback. */
   reciterId: string;
+  /** How the reciter reads: murattal (default), mujawwad or muallim — used where the chosen reciter has it, else murattal. */
+  reciterStyle: ReciterStyle;
+  /** Read the English translation aloud after each verse's recitation. */
+  translationAudio: boolean;
   /** Tafsir edition id (see @manarah/data's TAFSIR_EDITIONS); unset means "first edition in the UI language". */
   tafsirEditionId?: string;
   /** Quran reader text size, as an index into READER_FONT_SCALES (use `readerFontScale`, which tolerates out-of-range stored values). */
@@ -71,6 +76,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   azkarSchedules: [],
   language: "en",
   reciterId: "alafasy",
+  reciterStyle: "murattal",
+  translationAudio: false,
   readerFontStep: DEFAULT_READER_FONT_STEP,
   /** Arabic-only by default; the translation is opt-in (reading settings or the reader's own toggle). */
   showTranslation: false,

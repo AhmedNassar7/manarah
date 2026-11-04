@@ -1,6 +1,10 @@
 import type { AzkarSchedule } from "@manarah/core";
-import { AZKAR_CATEGORIES, AZKAR_SECTIONS } from "@manarah/data";
+import { AZKAR_CATEGORIES, AZKAR_SECTIONS, QURANIC_DUA_CATEGORIES, QURANIC_DUA_SECTION } from "@manarah/data";
 import { AzkarBrowser, AzkarScheduleEditor, useTranslation } from "@manarah/ui";
+
+/** What the browser shows: the Hisn al-Muslim sections plus the Quranic duas. (Scheduling a reminder still applies to the Hisn corpus only.) */
+const BROWSER_SECTIONS = [...AZKAR_SECTIONS, QURANIC_DUA_SECTION];
+const BROWSER_CATEGORIES = [...AZKAR_CATEGORIES, ...QURANIC_DUA_CATEGORIES];
 
 export interface AzkarPageProps {
   azkarSchedules: AzkarSchedule[];
@@ -16,8 +20,8 @@ export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, 
     <>
       <h2 className="section-title">{t("app.sectionAzkar")}</h2>
       <AzkarBrowser
-        sections={AZKAR_SECTIONS}
-        categories={AZKAR_CATEGORIES}
+        sections={BROWSER_SECTIONS}
+        categories={BROWSER_CATEGORIES}
         showTranslation={showTranslation}
         onShowTranslationChange={onShowTranslationChange}
       />

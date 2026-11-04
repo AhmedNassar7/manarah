@@ -8,6 +8,7 @@ import {
   initialNotificationState,
   localDateKey,
   OBSERVANCE_REMINDER_POLICY,
+  RAMADAN_COUNTDOWN_MILESTONES,
   runNotificationCheck,
   type CustomTimeAzkar,
   type DueNotification,
@@ -638,3 +639,70 @@ describe("runNotificationCheck — observance reminders", () => {
     expect(notified.filter((n) => n.type === "observance")).toEqual([]);
   });
 });
+
+describe("Ramadan countdown reminders", () => {
+  const firstOfRamadan = hijriToGregorian({ year: 1448, month: 9, day: 1 });
+  /** Local YYYY-MM-DD of the civil day `daysBefore` days before the first of Ramadan. */
+  const dayBefore = (daysBefore: number, adjustment = 0) => {
+    const d = new Date(firstOfRamadan.getTime() - (daysBefore + adjustment) * 86_400_000);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  };
+  const atFajr = (dateStr: string, adjustment = 0, disabled = false) => {
+    const times = timesOn(dateStr);
+    const result = computeDueNotifications(
+      new Date(times.fajr.getTime() + 60_000),
+      times,
+      noAzkar,
+      initialNotificationState(dateStr),
+      disabled ? undefined : { adjustment }
+    );
+    return { ...result, countdown: result.due.filter((d) => d.type === "ramadan-countdown") };
+  };
+
+  it("announces Ramadan a month out, at Fajr", () => {
+    expect(atFajr(dayBefore(30)).countdown).toEqual([{ type: "ramadan-countdown", daysAway: 30 }]);
+  });
+
+  it("announces it again a week out", () => {
+    expect(atFajr(dayBefore(7)).countdown).toEqual([{ type: "ramadan-countdown", daysAway: 7 }]);
+  });
+
+  it("says nothing on the other days", () => {
+    for (const n of [31, 29, 20, 8, 6, 3]) expect(atFajr(dayBefore(n)).countdown, `${n} days`).toEqual([]);
+  });
+
+  it("does not announce before Fajr, and only once", () => {
+    const dateStr = dayBefore(30);
+    const times = timesOn(dateStr);
+    const early = computeDueNotifications(new Date(times.fajr.getTime() - 60_000), times, noAzkar, initialNotificationState(dateStr), { adjustment: 0 });
+    expect(early.due.filter((d) => d.type === "ramadan-countdown")).toEqual([]);
+
+    const first = atFajr(dateStr);
+    const again = computeDueNotifications(new Date(times.fajr.getTime() + 6 * 60_000), times, noAzkar, first.nextState, { adjustment: 0 });
+    expect(again.due.filter((d) => d.type === "ramadan-countdown")).toEqual([]);
+  });
+
+  it("is silent during Ramadan itself, and when observance reminders are off", () => {
+    expect(atFajr(dayBefore(-10)).countdown).toEqual([]);
+    expect(atFajr(dayBefore(30), 0, true).countdown).toEqual([]);
+  });
+
+  it("follows the user's Hijri adjustment", () => {
+    // With +1, Ramadan is one civil day sooner, so "30 days away" lands a day earlier.
+    expect(atFajr(dayBefore(30, 1), 1).countdown).toEqual([{ type: "ramadan-countdown", daysAway: 30 }]);
+    expect(atFajr(dayBefore(30, 1), 0).countdown).toEqual([]);
+  });
+
+  it("marks a missed one handled without delivering a stale notification", () => {
+    const dateStr = dayBefore(30);
+    const times = timesOn(dateStr);
+    const late = computeDueNotifications(new Date(times.fajr.getTime() + 3 * 3_600_000), times, noAzkar, initialNotificationState(dateStr), { adjustment: 0 });
+    expect(late.due.filter((d) => d.type === "ramadan-countdown")).toEqual([]);
+    expect(late.nextState.firedObservances).toContain("countdown:30");
+  });
+
+  it("uses milestones of 30 and 7 days", () => {
+    expect(RAMADAN_COUNTDOWN_MILESTONES).toEqual([30, 7]);
+  });
+});
+

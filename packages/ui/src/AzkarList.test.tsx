@@ -61,6 +61,75 @@ describe("AzkarList", () => {
     }
   });
 
+  describe("a dua made of several parts", () => {
+    const riding: AzkarCategory = {
+      id: "95",
+      name: "Invocation for riding",
+      nameArabic: "دعاء الركوب",
+      trigger: "situational",
+      items: [
+        {
+          id: "206",
+          arabic: "((بِسْمِ اللَّهِ، وَالْحَمْدُ للَّهِ ﴿سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا﴾، ((الْحَمْدُ لِلَّهِ، اللَّهُ أَكْبَرُ)).",
+          translation: "(In the name of Allah.  How perfect He is.  All praise is for Allah.)",
+          repeatCount: 1,
+        },
+      ],
+    };
+
+    it("shows each part on its own instead of one run-together block, with no source markers", () => {
+      const { container } = render(<AzkarList category={riding} />);
+      const parts = [...container.querySelectorAll(".azkar-part")];
+      expect(parts.map((p) => p.className.replace("azkar-part ", ""))).toEqual(["azkar-part-dua", "azkar-part-quran", "azkar-part-dua"]);
+      expect(container.textContent).not.toMatch(/\(\(|\)\)/);
+      expect(parts[0]).toHaveTextContent("بِسْمِ اللَّهِ، وَالْحَمْدُ للَّهِ");
+      expect(parts[2]).toHaveTextContent("الْحَمْدُ لِلَّهِ، اللَّهُ أَكْبَرُ");
+    });
+
+    it("sets a verse between ornamental brackets that are decoration, not text for a screen reader", () => {
+      const { container } = render(<AzkarList category={riding} />);
+      const verse = container.querySelector(".azkar-part-quran")!;
+      const brackets = verse.querySelectorAll(".azkar-bracket");
+      expect(brackets).toHaveLength(2);
+      for (const bracket of brackets) expect(bracket).toHaveAttribute("aria-hidden", "true");
+      expect(verse).toHaveTextContent("سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا");
+    });
+
+    it("keeps one tally for the whole dua, not one per part", () => {
+      render(<AzkarList category={riding} />);
+      expect(screen.getAllByRole("button", { name: /^\d+ \/ \d+$/ })).toHaveLength(1);
+    });
+
+    it("shows the translation without its wrapping parentheses, and only when asked", () => {
+      render(<AzkarList category={riding} />);
+      expect(screen.queryByText(/How perfect He is/)).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Show translation" }));
+      expect(screen.getByText("In the name of Allah. How perfect He is. All praise is for Allah.")).toBeInTheDocument();
+    });
+  });
+
+  describe("variants and instructions", () => {
+    const morning: AzkarCategory = {
+      id: "27",
+      name: "Morning",
+      trigger: "morning",
+      items: [
+        {
+          id: "1",
+          arabic: "((اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ)) (أربعَ مَرَّاتٍ). [وإذا أمسى قال: اللَّهم إني أمسيت]",
+          repeatCount: 4,
+        },
+      ],
+    };
+
+    it("shows an instruction quietly, and an alternative wording as its own part", () => {
+      const { container } = render(<AzkarList category={morning} />);
+      const classes = [...container.querySelectorAll(".azkar-part")].map((p) => p.className.replace("azkar-part ", ""));
+      expect(classes).toEqual(["azkar-part-dua", "azkar-part-note", "azkar-part-variant"]);
+      expect(container.querySelector(".azkar-part-note")).toHaveTextContent("(أربعَ مَرَّاتٍ)");
+    });
+  });
+
   it("starts every item's tally at 0 of its repeat count", () => {
     render(<AzkarList category={category} />);
     expect(screen.getByRole("button", { name: "0 / 3" })).toBeInTheDocument();

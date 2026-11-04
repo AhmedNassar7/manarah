@@ -18,6 +18,8 @@ export * from "./ReadingSettings.js";
 export * from "./HadithBrowser.js";
 export * from "./HijriCalendar.js";
 export * from "./PrayerTimesList.js";
+export * from "./PrayerHero.js";
+export * from "./RamadanCountdown.js";
 export * from "./ZakatCalculator.js";
 export { Icon, IconInSvg, ICONS, isIconName, type IconName, type IconProps, type IconSize } from "./icons/Icon.js";
 export * from "./TafsirPanel.js";

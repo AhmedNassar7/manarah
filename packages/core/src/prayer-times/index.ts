@@ -62,6 +62,56 @@ export function nextPrayer(times: DailyPrayerTimes, now: Date): UpcomingPrayer |
   return upcoming ? { name: upcoming[0], at: times[upcoming[1]] } : null;
 }
 
+export interface PrayerProgress {
+  /** The period we're in — the most recent waypoint that has begun ("Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib" or "Isha"). */
+  current: string;
+  /** The waypoint the period ends at. */
+  next: UpcomingPrayer;
+  /** When the current period began. */
+  startedAt: Date;
+  /** How far through the current period we are, 0 to 1. */
+  fraction: number;
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Where we are in the day's schedule: which period (Fajr…Isha) is current, when
+ * it started, and how far through it we are — what the home screen's progress
+ * ring and time-of-day colouring are driven by. Before Fajr the current period
+ * is last night's Isha (started about a day before today's Isha); after Isha
+ * it runs to `tomorrowsFajr`, and with no tomorrow's Fajr there is nothing to
+ * measure towards, so it returns null.
+ */
+export function prayerProgress(times: DailyPrayerTimes, tomorrowsFajr: Date | undefined, now: Date): PrayerProgress | null {
+  const waypoints = DISPLAY_ORDER.map(([name, key]) => ({ name, at: times[key] }));
+  const t = now.getTime();
+
+  const nextIndex = waypoints.findIndex((w) => w.at.getTime() > t);
+  let current: string;
+  let startedAt: Date;
+  let next: UpcomingPrayer;
+
+  if (nextIndex === -1) {
+    if (!tomorrowsFajr) return null;
+    current = waypoints[waypoints.length - 1].name;
+    startedAt = waypoints[waypoints.length - 1].at;
+    next = { name: "Fajr", at: tomorrowsFajr };
+  } else if (nextIndex === 0) {
+    current = waypoints[waypoints.length - 1].name; // last night's Isha
+    startedAt = new Date(waypoints[waypoints.length - 1].at.getTime() - DAY_MS);
+    next = waypoints[0];
+  } else {
+    current = waypoints[nextIndex - 1].name;
+    startedAt = waypoints[nextIndex - 1].at;
+    next = waypoints[nextIndex];
+  }
+
+  const span = next.at.getTime() - startedAt.getTime();
+  const fraction = span > 0 ? Math.min(1, Math.max(0, (t - startedAt.getTime()) / span)) : 0;
+  return { current, next, startedAt, fraction };
+}
+
 export function computePrayerTimes(
   coordinates: Coordinates,
   date: Date,

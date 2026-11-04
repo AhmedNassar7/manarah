@@ -1,6 +1,20 @@
 import { useState } from "react";
-import type { AzkarCategory } from "@manarah/core";
+import { AYAH_SEPARATOR, parseAzkarText, splitAzkarTranslation, type AzkarCategory } from "@manarah/core";
 import { azkarCategoryName, useTranslation } from "./i18n/index.js";
+
+/** A verse's text with each verse-end ornament drawn in gold, like the brackets around it. */
+function withAyahMarks(text: string) {
+  return text.split(AYAH_SEPARATOR).flatMap((chunk, index) =>
+    index === 0
+      ? [chunk]
+      : [
+          <span key={`mark-${index}`} className="azkar-ayah-end" aria-hidden="true">
+            {AYAH_SEPARATOR}
+          </span>,
+          chunk,
+        ]
+  );
+}
 
 export interface AzkarListProps {
   category: AzkarCategory;
@@ -63,13 +77,39 @@ export function AzkarList({ category, showTranslation: showTranslationProp, onSh
 
           return (
             <li key={item.id} className={isCompleted ? "completed" : undefined}>
-              <p dir="rtl" lang="ar">
-                {item.arabic}
-              </p>
-              {showTranslation && item.translation && (
-                <p dir="ltr" lang="en">
-                  {item.translation}
+              {/* The stored text is one string with the source's printed-book markers; show its parts one by one. */}
+              <div className="azkar-text">
+                {parseAzkarText(item.arabic).map((part, index) => (
+                  <p key={index} className={`azkar-part azkar-part-${part.kind}`} dir="rtl" lang="ar">
+                    {part.kind === "quran" ? (
+                      <>
+                        <span className="azkar-bracket" aria-hidden="true">
+                          ﴿
+                        </span>
+                        {withAyahMarks(part.text)}
+                        <span className="azkar-bracket" aria-hidden="true">
+                          ﴾
+                        </span>
+                      </>
+                    ) : (
+                      part.text
+                    )}
+                  </p>
+                ))}
+              </div>
+              {item.reference && (
+                <p className="azkar-reference" dir="ltr">
+                  {t("azkar.quranRef", { ref: item.reference })}
                 </p>
+              )}
+              {showTranslation && item.translation && (
+                <div className="azkar-translation">
+                  {splitAzkarTranslation(item.translation).map((paragraph, index) => (
+                    <p key={index} dir="ltr" lang="en">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               )}
               <button
                 type="button"

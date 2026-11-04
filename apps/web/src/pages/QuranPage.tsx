@@ -2,13 +2,14 @@ import { useRef, useState } from "react";
 import {
   readerFontScale,
   resolveTafsirEdition,
+  type ReciterStyle,
   type Surah,
   type Translation,
   type Verse,
   type VerseAnnotations,
   type VerseRef,
 } from "@manarah/core";
-import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS, TAFSIR_EDITIONS, searchQuran } from "@manarah/data";
+import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS, TAFSIR_EDITIONS, TRANSLATION_AUDIO, searchQuran } from "@manarah/data";
 import {
   QuranAudioPlayer,
   QuranBookmarks,
@@ -37,6 +38,10 @@ export interface QuranPageProps {
   resolvePageStart: (page: number) => VerseRef | undefined | Promise<VerseRef | undefined>;
   reciterId: string;
   onReciterChange: (id: string) => void;
+  reciterStyle: ReciterStyle;
+  onReciterStyleChange: (style: ReciterStyle) => void;
+  translationAudio: boolean;
+  onTranslationAudioChange: (enabled: boolean) => void;
   verseAnnotations: VerseAnnotations;
   onToggleBookmark: (surah: number, ayah: number) => void;
   onSaveNote: (surah: number, ayah: number, note: string) => void;
@@ -59,6 +64,10 @@ export function QuranPage({
   resolvePageStart,
   reciterId,
   onReciterChange,
+  reciterStyle,
+  onReciterStyleChange,
+  translationAudio,
+  onTranslationAudioChange,
   verseAnnotations,
   onToggleBookmark,
   onSaveNote,
@@ -98,6 +107,8 @@ export function QuranPage({
         reciters={RECITERS}
         reciterId={reciterId}
         onReciterChange={onReciterChange}
+        reciterStyle={reciterStyle}
+        onReciterStyleChange={onReciterStyleChange}
       />
       <QuranBookmarks annotations={verseAnnotations} surahs={SURAHS} onSelect={onNavigate} />
       </aside>
@@ -132,6 +143,11 @@ export function QuranPage({
             reciters={RECITERS}
             reciterId={reciterId}
             onReciterChange={onReciterChange}
+            reciterStyle={reciterStyle}
+            onReciterStyleChange={onReciterStyleChange}
+            translationAudio={TRANSLATION_AUDIO}
+            translationAudioEnabled={translationAudio}
+            onTranslationAudioEnabledChange={onTranslationAudioChange}
             surah={selectedSurah}
             verses={selectedSurahVerses}
             onPlayingAyahChange={setPlayingAyah}

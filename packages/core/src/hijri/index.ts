@@ -189,3 +189,34 @@ export function upcomingEvents(today: Date, adjustment = 0): UpcomingEvent[] {
     return { event, date, daysAway: Math.round((date.getTime() - today.getTime()) / MS_PER_DAY) };
   }).sort((a, b) => a.daysAway - b.daysAway);
 }
+
+export type RamadanStatus =
+  /** Ramadan is still to come: `daysAway` whole days until its first day (1 = it starts tomorrow). */
+  | { phase: "before"; daysAway: number; startsOn: Date }
+  /** Ramadan is under way: today is `day` of `length` days. */
+  | { phase: "during"; day: number; length: number; daysLeft: number }
+  /** The first of Shawwal — Eid al-Fitr. */
+  | { phase: "eid" };
+
+/**
+ * Where we are relative to Ramadan, for a "days until Ramadan" countdown that
+ * turns into "day N of Ramadan" once it begins. `today` is a civil date from
+ * toCalendarDate. Like everything here it follows the tabular calendar plus
+ * the user's adjustment, so it can be a day off the real announcement.
+ */
+export function ramadanStatus(today: Date, adjustment = 0): RamadanStatus {
+  const hijri = hijriDateOfCivilDay(today, adjustment);
+
+  if (hijri.month === 9) {
+    const length = daysInHijriMonth(hijri.year, 9);
+    return { phase: "during", day: hijri.day, length, daysLeft: length - hijri.day };
+  }
+  if (hijri.month === 10 && hijri.day === 1) return { phase: "eid" };
+
+  // Next 1 Ramadan: this Hijri year's if it hasn't started, otherwise next year's.
+  const year = hijri.month < 9 ? hijri.year : hijri.year + 1;
+  const shift = clampHijriAdjustment(adjustment);
+  const startsOn = addDays(hijriToGregorian({ year, month: 9, day: 1 }), -shift);
+  return { phase: "before", daysAway: Math.round((startsOn.getTime() - today.getTime()) / MS_PER_DAY), startsOn };
+}
+

@@ -2,6 +2,7 @@ import type { AzkarCategory } from "@manarah/core";
 import categoriesData from "./categories.json";
 
 export * from "./sections.js";
+export * from "./quranic-duas.js";
 
 /**
  * Default Hisn al-Muslim azkar set (132 categories, 266 items), sourced from

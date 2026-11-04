@@ -39,6 +39,11 @@ export function formatNotification(notification: DueNotification, language: Lang
         title: azkarCategoryName(notification.category, language),
         body: t("notification.customBody", { time: notification.time }),
       };
+    case "ramadan-countdown":
+      return {
+        title: t("notification.ramadanCountdownTitle", { count: notification.daysAway }),
+        body: t("notification.ramadanCountdownBody"),
+      };
     case "observance": {
       const isEid = notification.observance === "eid-al-fitr" || notification.observance === "eid-al-adha";
       return {
