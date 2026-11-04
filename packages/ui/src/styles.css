@@ -2326,6 +2326,197 @@ button {
   font-size: 0.88rem;
 }
 
+/* ---------- Zakat calculator ----------
+   Cards for the three groups of inputs, then a result card that states the
+   outcome first and the working beneath it. Numbers are always LTR, even in
+   Arabic, so digits and decimal points can't be reordered. */
+.zakat {
+  font-family: var(--font-body);
+}
+
+.zakat[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.zakat-intro {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.zakat-card {
+  margin-bottom: 12px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+}
+
+.zakat-card h3 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.zakat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px 14px;
+}
+
+.zakat-metals {
+  margin-top: 12px;
+}
+
+.zakat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.zakat-field input,
+.zakat-field select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.zakat-field input:focus-visible,
+.zakat-field select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-sunken);
+}
+
+.zakat-field input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.zakat small,
+.zakat-basis small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.zakat-card > small {
+  display: block;
+  margin-top: 8px;
+}
+
+.zakat .zakat-error {
+  color: var(--danger);
+}
+
+.zakat-basis {
+  margin: 12px 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.88rem;
+}
+
+.zakat-basis legend {
+  padding: 0;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+
+.zakat-basis label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zakat-result {
+  margin: 16px 0;
+  padding: 16px 18px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-page);
+}
+
+.zakat-result p {
+  margin: 0;
+}
+
+.zakat-due,
+.zakat-not-due {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
+.zakat-verdict {
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.zakat-breakdown {
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.88rem;
+}
+
+.zakat-breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.zakat-breakdown dt {
+  color: var(--muted);
+}
+
+.zakat-breakdown dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  direction: ltr;
+}
+
+.zakat-breakdown .zakat-total dt {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.zakat-breakdown .zakat-total dd {
+  font-weight: 600;
+}
+
+.zakat-notes {
+  margin: 0 0 12px;
+  padding-inline-start: 18px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.zakat-clear {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.zakat-clear:hover {
+  border-color: var(--accent);
+}
+
 /* ---------- Tafsir panel ----------
    Opens inline under its verse from the verse toolbar. Commentary can run
    to tens of thousands of characters (al-Tabari on 2:255 is ~57k), so the
@@ -2906,6 +3097,23 @@ button {
 
 .azkar-browser-empty {
   color: var(--muted);
+}
+
+.azkar-translation-toggle {
+  display: block;
+  margin: 0 0 10px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.azkar-translation-toggle:hover {
+  border-color: var(--accent);
 }
 
 .azkar-browser-back {

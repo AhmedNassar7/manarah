@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { AzkarCategory } from "@manarah/core";
 import { AzkarList } from "./AzkarList.js";
 
@@ -22,8 +22,35 @@ describe("AzkarList", () => {
     expect(screen.getByText("سُبْحَانَ ٱللَّهِ")).toBeInTheDocument();
   });
 
-  it("shows the translation only when the item has one", () => {
+  it("is Arabic-only by default — the English translation is not shown unless asked for", () => {
     render(<AzkarList category={category} />);
+    expect(screen.getByText("أَعُوذُ بِاللَّهِ")).toBeInTheDocument();
+    expect(screen.queryByText("I seek refuge in Allah")).not.toBeInTheDocument();
+  });
+
+  it("shows the translation on request, only under the items that have one, and can hide it again", () => {
+    render(<AzkarList category={category} />);
+    fireEvent.click(screen.getByRole("button", { name: "Show translation" }));
+    expect(screen.getByText("I seek refuge in Allah")).toBeInTheDocument();
+    expect(document.querySelectorAll('p[lang="en"]')).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide translation" }));
+    expect(screen.queryByText("I seek refuge in Allah")).not.toBeInTheDocument();
+  });
+
+  it("offers no translation toggle when the category has no translations", () => {
+    render(<AzkarList category={{ ...category, items: [category.items[1]] }} />);
+    expect(screen.queryByRole("button", { name: /translation/i })).not.toBeInTheDocument();
+  });
+
+  it("follows a controlled showTranslation and reports toggles instead of owning the state", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<AzkarList category={category} showTranslation={false} onShowTranslationChange={onChange} />);
+    fireEvent.click(screen.getByRole("button", { name: "Show translation" }));
+    expect(onChange).toHaveBeenCalledWith(true);
+    expect(screen.queryByText("I seek refuge in Allah")).not.toBeInTheDocument(); // nothing changes until the parent says so
+
+    rerender(<AzkarList category={category} showTranslation onShowTranslationChange={onChange} />);
     expect(screen.getByText("I seek refuge in Allah")).toBeInTheDocument();
   });
 

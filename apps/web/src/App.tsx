@@ -9,9 +9,11 @@ import {
   shouldRefreshLocationFromGps,
   toggleBookmark,
   withDefaultSettings,
+  withDefaultZakatForm,
   DEFAULT_SETTINGS,
   SETTINGS_STORAGE_KEY,
   VERSE_ANNOTATIONS_STORAGE_KEY,
+  ZAKAT_STORAGE_KEY,
   type AzkarSchedule,
   type City,
   type Coordinates,
@@ -24,6 +26,7 @@ import {
   type Verse,
   type VerseAnnotations,
   type VerseRef,
+  type ZakatForm,
 } from "@manarah/core";
 import {
   DEFAULT_TRANSLATION_EDITION_ID,
@@ -47,6 +50,7 @@ import { QiblaPage } from "./pages/QiblaPage.js";
 import { CalendarPage } from "./pages/CalendarPage.js";
 import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
+import { ZakatPage } from "./pages/ZakatPage.js";
 
 const store = new IndexedDbStore();
 
@@ -79,6 +83,7 @@ export function App() {
   const [selectedSurahVerses, setSelectedSurahVerses] = useState<Verse[] | null>(null);
   const [selectedSurahTranslation, setSelectedSurahTranslation] = useState<Translation[] | null>(null);
   const [verseAnnotations, setVerseAnnotations] = useState<VerseAnnotations>({});
+  const [zakatForm, setZakatForm] = useState<ZakatForm>(() => withDefaultZakatForm(undefined));
 
   useEffect(() => {
     let cancelled = false;
@@ -86,8 +91,10 @@ export function App() {
     async function load() {
       const stored = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
       const storedAnnotations = await store.get<VerseAnnotations>(VERSE_ANNOTATIONS_STORAGE_KEY);
+      const storedZakat = await store.get<Partial<ZakatForm>>(ZAKAT_STORAGE_KEY);
       if (cancelled) return;
       setSettings(stored);
+      setZakatForm(withDefaultZakatForm(storedZakat));
       setVerseAnnotations(storedAnnotations ?? {});
       // Resume wherever the user last left off, rather than always starting at Al-Fatiha.
       setSelectedSurahNumber(stored.lastRead?.surah ?? 1);
@@ -321,6 +328,11 @@ export function App() {
     });
   }
 
+  function handleZakatFormChange(next: ZakatForm) {
+    setZakatForm(next);
+    void store.set(ZAKAT_STORAGE_KEY, next);
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -411,6 +423,7 @@ export function App() {
                 />
               }
             />
+            <Route path="/zakat" element={<ZakatPage form={zakatForm} onChange={handleZakatFormChange} />} />
             <Route
               path="/hadith"
               element={
@@ -422,7 +435,14 @@ export function App() {
             />
             <Route
               path="/azkar"
-              element={<AzkarPage azkarSchedules={settings.azkarSchedules} onSchedulesChange={handleSchedulesChange} />}
+              element={
+                <AzkarPage
+                  azkarSchedules={settings.azkarSchedules}
+                  onSchedulesChange={handleSchedulesChange}
+                  showTranslation={settings.showTranslation}
+                  onShowTranslationChange={handleShowTranslationChange}
+                />
+              }
             />
           </Routes>
         </AppShell>

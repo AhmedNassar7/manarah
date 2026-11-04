@@ -4,11 +4,26 @@ import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 
 export interface AzkarListProps {
   category: AzkarCategory;
+  /** Whether the English translation is shown under each dhikr. When omitted the list keeps this itself — hidden by default, so the Arabic is what you read. */
+  showTranslation?: boolean;
+  onShowTranslationChange?: (show: boolean) => void;
 }
 
-/** Renders one azkar category with a per-item tally counter. Shared across web/extension/desktop/mobile. */
-export function AzkarList({ category }: AzkarListProps) {
-  const { language } = useTranslation();
+/**
+ * Renders one azkar category with a per-item tally counter. Arabic only by
+ * default — the translation is opt-in (a toggle appears when the category
+ * has one), the same Arabic-first rule as the Quran reader, so it doesn't
+ * compete with the text being recited. Shared across web/extension/desktop/mobile.
+ */
+export function AzkarList({ category, showTranslation: showTranslationProp, onShowTranslationChange }: AzkarListProps) {
+  const { t, language } = useTranslation();
+  const [localShowTranslation, setLocalShowTranslation] = useState(false);
+  const showTranslation = showTranslationProp ?? localShowTranslation;
+  const hasTranslations = category.items.some((item) => item.translation);
+  function setShowTranslation(show: boolean) {
+    setLocalShowTranslation(show);
+    onShowTranslationChange?.(show);
+  }
   const [counts, setCounts] = useState<Record<string, number>>({});
   // Tracks which button is mid-bounce so only the just-tapped one animates,
   // not every button in the list. Cleared via onAnimationEnd, not a timer,
@@ -26,6 +41,16 @@ export function AzkarList({ category }: AzkarListProps) {
   return (
     <section className="azkar-list">
       <h2 lang={language === "ar" && category.nameArabic ? "ar" : "en"}>{azkarCategoryName(category, language)}</h2>
+      {hasTranslations && (
+        <button
+          type="button"
+          className="azkar-translation-toggle"
+          aria-pressed={showTranslation}
+          onClick={() => setShowTranslation(!showTranslation)}
+        >
+          {showTranslation ? t("quranReader.hideTranslation") : t("quranReader.showTranslation")}
+        </button>
+      )}
       <ul>
         {category.items.map((item) => {
           const done = counts[item.id] ?? 0;
@@ -41,7 +66,7 @@ export function AzkarList({ category }: AzkarListProps) {
               <p dir="rtl" lang="ar">
                 {item.arabic}
               </p>
-              {item.translation && (
+              {showTranslation && item.translation && (
                 <p dir="ltr" lang="en">
                   {item.translation}
                 </p>

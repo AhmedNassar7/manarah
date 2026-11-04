@@ -12,3 +12,4 @@ export * from "./tafsir/index.js";
 export * from "./word-by-word/index.js";
 export * from "./quran-search/index.js";
 export * from "./hadith/index.js";
+export * from "./zakat/index.js";

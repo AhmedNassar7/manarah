@@ -9,6 +9,9 @@ export interface AzkarBrowserProps {
   categories: AzkarCategory[];
   /** Section open on first render; defaults to the first section. */
   initialSectionId?: string;
+  /** Passed through to the opened category's AzkarList; see its props. */
+  showTranslation?: boolean;
+  onShowTranslationChange?: (show: boolean) => void;
 }
 
 /** Arabic search should match with or without harakat — strip diacritics/tatweel and fold alef/ya/ta-marbuta variants. */
@@ -28,7 +31,13 @@ function normalizeForSearch(text: string): string {
  * categories, plus a search across every category title in both languages.
  * A section holding a single category opens straight into its azkar.
  */
-export function AzkarBrowser({ sections, categories, initialSectionId }: AzkarBrowserProps) {
+export function AzkarBrowser({
+  sections,
+  categories,
+  initialSectionId,
+  showTranslation,
+  onShowTranslationChange,
+}: AzkarBrowserProps) {
   const { t, language } = useTranslation();
   const [sectionId, setSectionId] = useState(initialSectionId ?? sections[0]?.id);
   const [openCategoryId, setOpenCategoryId] = useState<string | null>(null);
@@ -125,7 +134,12 @@ export function AzkarBrowser({ sections, categories, initialSectionId }: AzkarBr
             </button>
           )}
           {/* Keyed so tally counts reset when switching to a different category. */}
-          <AzkarList key={openCategory.id} category={openCategory} />
+          <AzkarList
+            key={openCategory.id}
+            category={openCategory}
+            showTranslation={showTranslation}
+            onShowTranslationChange={onShowTranslationChange}
+          />
         </div>
       ) : (
         section && (

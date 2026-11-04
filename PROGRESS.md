@@ -41,6 +41,7 @@ pnpm workspace monorepo, no Turborepo:
                  - tafsir: Quran.com tafsir URL/response parsing, HTML → plain-text blocks, edition choice ✅
                  - word-by-word: Quran.com per-word meaning/transliteration URL + response parsing       ✅
                  - hadith: hadith-api URL fallback chain, response parsing, Arabic/English pairing        ✅
+                 - zakat: nisab/2.5% calculation, forgiving amount parsing (Arabic-Indic digits, EU style) ✅
                  - quran-search: Arabic-skeleton/translation full-text matching, "2:255" references      ✅
   /ui          Shared React components + design system (styles.css) + i18n                       ✅
   /storage     Store interface — IndexedDbStore (Dexie) / ChromeSyncStore + JSON export/import    ✅
@@ -110,7 +111,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 498 tests passing across all 4 packages (`core` 181, `storage` 17, `data` 53, `ui` 247), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 540 tests passing across all 4 packages (`core` 209, `storage` 17, `data` 53, `ui` 261), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -130,7 +131,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 ### Phase 3 — Depth — ⬜ not started
 
 - [x] Hadith library — browse the six collections book by book, Arabic-first with opt-in English and attributed gradings (see reader roadmap step 9). Still open: search, bookmarks/notes, cross-links from tafsir
-- [x] Hijri calendar page (month grid, observances, coming events, ±2-day adjustment) — see "Hijri calendar" below. Holiday reminders are done too (see below). Still open: Qada/fasting tracker, Zakat calculator
+- [x] Hijri calendar page (month grid, observances, coming events, ±2-day adjustment) — see "Hijri calendar" below. Holiday reminders are done too (see below), and so is the Zakat calculator (see "Zakat calculator"). Still open: Qada/fasting tracker
 - [ ] Khatmah (completion) reading-plan generator
 - [ ] AR/camera-assisted Qibla on mobile
 
@@ -261,6 +262,20 @@ Correctness points that are easy to get wrong, all unit-tested in `packages/core
 - One switch (`UserSettings.observanceReminders`, default on, effective only once notification permission is granted) on the Calendar page. Like every web notification here, it only fires while a tab (or the extension) is running — there is no push server.
 
 Known limits: no Laylat al-Qadr marking (its date is a matter of scholarly difference — deliberately not asserted); week starts Sunday in English and Saturday in Arabic with no separate setting; the layout has only been checked by tests and CSS inspection, not on screen.
+
+## Zakat calculator — ✅ done (2026-11-05)
+
+New `/zakat` route (nav + Home tile). `ZakatCalculator` (`packages/ui`) takes what you own (cash/savings, gold by weight and karat, silver by weight, investments, business goods, money owed to you, other), what you owe that's due now, today's gold and silver prices, and a nisab basis; it shows the nisab, net wealth, whether zakat is due, and 2.5% of net wealth if so — with the working beneath the verdict. Pure arithmetic in `packages/core/zakat`; the form is saved on-device only under `manarah:zakat` (covered by JSON export, which dumps the whole store) and "Clear amounts" resets it while keeping currency and basis.
+
+Decisions worth knowing:
+- **No price feed.** A live gold/silver API would break the zero-cost/no-server rule, and a bundled price would be silently wrong within weeks — so the user enters today's per-gram prices and the nisab is derived from them. If a needed price is missing the result says which one instead of guessing.
+- **Nisab basis is the user's choice, never silently picked** — default silver (595 g, the lower threshold) or gold (85 g); the UI says scholars differ. A note mentions the slightly higher Hanafi weights (87.48 g / 612.36 g).
+- **Jewelry** is not decided for the user: a note states the Hanafi view (counted) and the Shafi'i/Maliki/Hanbali view (exempt) and says to enter its weight only if you follow a view that counts it.
+- **Combined wealth reaches the nisab together** (e.g. 5 g gold + cash), as the rule intends; zakat is 2.5% of *all* net wealth once over, not of the excess; exactly at the nisab counts as due. Gold is valued as pure gold (weight × karat ÷ 24).
+- **Amount parsing errs on the side of not understating wealth.** `parseAmount` reads Arabic-Indic/Persian digits and separators, `1,250.50` and `1.250,50`; and for *money* fields a dot-grouped value such as `1.250` is read as 1,250 (a European thousands separator), not 1.25. Grams and per-gram prices are parsed separately, where a dot is always a decimal (`10.500` g, a silver price of `0.855`). Invalid text is flagged on the field and counted as 0 with a visible warning — never silently.
+- **Honest limits stated on the page:** the app can't know whether a full lunar year (hawl) has passed; shares held long-term are a matter of scholarly difference; "this is a guide, not a fatwa".
+
+Known limits: one gold entry (single karat) and one silver entry — someone holding several karats must convert to one; no per-category breakdown of which assets are exempt; zakat on agricultural produce, livestock and mining is out of scope; no reminder for the user's own zakat date (a natural pairing with the Hijri calendar and observance reminders).
 
 ## Testing strategy — ✅ framework in place, coverage ongoing
 

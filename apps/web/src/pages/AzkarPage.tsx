@@ -5,15 +5,22 @@ import { AzkarBrowser, AzkarScheduleEditor, useTranslation } from "@manarah/ui";
 export interface AzkarPageProps {
   azkarSchedules: AzkarSchedule[];
   onSchedulesChange: (schedules: AzkarSchedule[]) => void;
+  showTranslation: boolean;
+  onShowTranslationChange: (show: boolean) => void;
 }
 
-export function AzkarPage({ azkarSchedules, onSchedulesChange }: AzkarPageProps) {
+export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, onShowTranslationChange }: AzkarPageProps) {
   const { t } = useTranslation();
 
   return (
     <>
       <h2 className="section-title">{t("app.sectionAzkar")}</h2>
-      <AzkarBrowser sections={AZKAR_SECTIONS} categories={AZKAR_CATEGORIES} />
+      <AzkarBrowser
+        sections={AZKAR_SECTIONS}
+        categories={AZKAR_CATEGORIES}
+        showTranslation={showTranslation}
+        onShowTranslationChange={onShowTranslationChange}
+      />
 
       {/* 132 rows — collapsed by default so it doesn't bury the azkar themselves. */}
       <details className="azkar-settings">

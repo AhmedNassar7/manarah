@@ -32,6 +32,7 @@ const QUICK_LINKS = [
   { to: "/quran", icon: "quran", labelKey: "app.sectionQuran" },
   { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith" },
   { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar" },
+  { to: "/zakat", icon: "zakat", labelKey: "app.sectionZakat" },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar" },
 ] as const;
 
