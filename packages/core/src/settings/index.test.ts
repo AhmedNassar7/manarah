@@ -33,10 +33,10 @@ describe("withDefaultSettings", () => {
 });
 
 describe("reader text size", () => {
-  it("defaults to the 1x step and backfills reading settings missing from older saved settings", () => {
+  it("defaults to the 1x step and backfills reading settings (Arabic-only, translation off) missing from older saved settings", () => {
     const settings = withDefaultSettings({ language: "ar" });
     expect(readerFontScale(settings.readerFontStep)).toBe(1);
-    expect(settings.showTranslation).toBe(true);
+    expect(settings.showTranslation).toBe(false);
   });
 
   it("clamps out-of-range, fractional and non-numeric steps", () => {

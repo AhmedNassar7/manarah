@@ -155,7 +155,12 @@ export function QuranNavigator({
         {tab === "surah" &&
           filteredSurahs.map((s) => (
             <li key={s.number}>
-              <button type="button" aria-current={s.number === currentSurahNumber ? "true" : undefined} onClick={() => handleSurahSelect(s.number)}>
+              <button
+                type="button"
+                className="quran-navigator-surah"
+                aria-current={s.number === currentSurahNumber ? "true" : undefined}
+                onClick={() => handleSurahSelect(s.number)}
+              >
                 <span className="quran-navigator-number">{s.number}</span>
                 <span dir="rtl" lang="ar">
                   {s.nameArabic}

@@ -44,7 +44,7 @@ export interface UserSettings {
   tafsirEditionId?: string;
   /** Quran reader text size, as an index into READER_FONT_SCALES (use `readerFontScale`, which tolerates out-of-range stored values). */
   readerFontStep: number;
-  /** Whether the reader shows the translation under each verse. */
+  /** Whether the reader shows the translation under each verse (default: no — the reader opens Arabic-only). */
   showTranslation: boolean;
 }
 
@@ -68,7 +68,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   language: "en",
   reciterId: "alafasy",
   readerFontStep: DEFAULT_READER_FONT_STEP,
-  showTranslation: true,
+  /** Arabic-only by default; the translation is opt-in (reading settings or the reader's own toggle). */
+  showTranslation: false,
 };
 
 export const SETTINGS_STORAGE_KEY = "manarah:settings";

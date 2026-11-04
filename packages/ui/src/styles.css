@@ -982,12 +982,17 @@ button {
   max-height: 340px;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  /* Every cell is the same height whatever the content, so a long name
+     can't make one card taller than its neighbours. */
+  grid-auto-rows: 56px;
   gap: 6px;
 }
 
 .quran-navigator-list li {
   list-style: none;
+  display: flex;
+  min-width: 0;
 }
 
 .quran-navigator-empty {
@@ -999,8 +1004,11 @@ button {
 
 .quran-navigator-list button {
   width: 100%;
+  height: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid transparent;
@@ -1046,6 +1054,47 @@ button {
 .quran-navigator-translit {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+/* Surah cards: number beside a two-line name block (Arabic over
+   transliteration). Names that don't fit are ellipsized rather than wrapped,
+   which is what kept the cards uneven. */
+.quran-navigator-list button.quran-navigator-surah {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "number arabic"
+    "number translit";
+  column-gap: 10px;
+  row-gap: 0;
+  align-items: center;
+  justify-content: stretch;
+}
+
+.quran-navigator-surah .quran-navigator-number {
+  grid-area: number;
+  min-width: 1.8em;
+  text-align: center;
+}
+
+.quran-navigator-surah span[lang="ar"] {
+  grid-area: arabic;
+  line-height: 1.5;
+  text-align: start;
+}
+
+.quran-navigator-surah .quran-navigator-translit {
+  grid-area: translit;
+  line-height: 1.3;
+  text-align: start;
+}
+
+.quran-navigator-surah span[lang="ar"],
+.quran-navigator-surah .quran-navigator-translit {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- Quran reader ----------
