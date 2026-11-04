@@ -54,6 +54,13 @@ describe("AzkarList", () => {
     expect(screen.getByText("I seek refuge in Allah")).toBeInTheDocument();
   });
 
+  it("keeps the tally left-to-right so Arabic layouts don't reorder '0 / 3' into '3 / 0'", () => {
+    render(<AzkarList category={category} />);
+    for (const button of screen.getAllByRole("button", { name: /^\d+ \/ \d+$/ })) {
+      expect(button).toHaveAttribute("dir", "ltr");
+    }
+  });
+
   it("starts every item's tally at 0 of its repeat count", () => {
     render(<AzkarList category={category} />);
     expect(screen.getByRole("button", { name: "0 / 3" })).toBeInTheDocument();

@@ -73,6 +73,8 @@ export function AzkarList({ category, showTranslation: showTranslationProp, onSh
               )}
               <button
                 type="button"
+                // Numbers read left-to-right in every language: without this, an Arabic layout reorders "0 / 1" into "1 / 0".
+                dir="ltr"
                 className={tappedId === item.id ? "tapped" : undefined}
                 onAnimationEnd={() => setTappedId((current) => (current === item.id ? null : current))}
                 onClick={() => tally(item.id, item.repeatCount)}
