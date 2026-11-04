@@ -1432,6 +1432,141 @@ button {
   max-width: 100%;
 }
 
+/* ---------- Quran full-text search ----------
+   Sits between the navigator and the reader. Results are a bounded,
+   scrolling list so a broad query doesn't push the reader off-screen; the
+   matched text is marked with the soft teal tint (gold stays reserved for
+   completion moments). */
+.quran-search {
+  margin-top: 12px;
+  font-family: var(--font-body);
+}
+
+.quran-search[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+}
+
+.quran-search-input {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  transition:
+    border-color 150ms var(--ease-quiet),
+    background-color 150ms var(--ease-quiet);
+}
+
+.quran-search-input:hover {
+  border-color: var(--accent);
+}
+
+.quran-search-input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-sunken);
+}
+
+.quran-search-status {
+  margin: 8px 2px 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+.quran-search[lang="ar"] .quran-search-status {
+  font-family: var(--font-arabic-ui);
+}
+
+.quran-search-results {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 380px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+}
+
+.quran-search-results li + li {
+  border-top: 1px solid var(--line);
+}
+
+.quran-search-results button {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-quiet);
+}
+
+.quran-search-results button:hover {
+  background: var(--accent-soft);
+}
+
+.quran-search-ref {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+}
+
+.quran-search[lang="ar"] .quran-search-ref {
+  font-family: var(--font-arabic-ui);
+}
+
+.quran-search-arabic {
+  font-family: var(--font-arabic-quran);
+  font-size: 1.35rem;
+  line-height: 1.9;
+}
+
+.quran-search-translation {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.quran-search mark {
+  background: var(--accent-soft);
+  color: inherit;
+  border-radius: 3px;
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  font-weight: 600;
+}
+
+.quran-search-more {
+  display: block;
+  margin: 8px auto 0;
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 150ms var(--ease-quiet);
+}
+
+.quran-search-more:hover {
+  border-color: var(--accent);
+}
+
 /* ---------- Tafsir panel ----------
    Opens inline under its verse from the verse toolbar. Commentary can run
    to tens of thousands of characters (al-Tabari on 2:255 is ~57k), so the

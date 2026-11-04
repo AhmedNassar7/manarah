@@ -24,6 +24,7 @@ import {
   type VerseRef,
 } from "@manarah/core";
 import {
+  DEFAULT_TRANSLATION_EDITION_ID,
   findCities,
   getAllCities,
   getJuzStart,
@@ -44,9 +45,6 @@ import { QiblaPage } from "./pages/QiblaPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 
 const store = new IndexedDbStore();
-
-/** The one translation edition wired in so far — a per-user choice among TRANSLATION_EDITIONS is future work. */
-const DEFAULT_TRANSLATION_EDITION = "en.sahih";
 
 const geolocationAvailable = typeof navigator !== "undefined" && "geolocation" in navigator;
 
@@ -119,7 +117,7 @@ export function App() {
       if (!cancelled) setSelectedSurahVerses(verses);
     });
     setSelectedSurahTranslation(null);
-    void getTranslationForSurah(selectedSurahNumber, DEFAULT_TRANSLATION_EDITION).then((translation) => {
+    void getTranslationForSurah(selectedSurahNumber, DEFAULT_TRANSLATION_EDITION_ID).then((translation) => {
       if (!cancelled) setSelectedSurahTranslation(translation);
     });
     return () => {

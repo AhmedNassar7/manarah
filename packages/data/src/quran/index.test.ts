@@ -11,6 +11,7 @@ import {
   JUZ_COUNT,
   PAGE_COUNT,
   RECITERS,
+  searchQuran,
   SURAHS,
   TAFSIR_EDITIONS,
   TRANSLATION_EDITIONS,
@@ -143,5 +144,51 @@ describe("Quran data integrity", () => {
     expect(new Set(resourceIds).size).toBe(resourceIds.length);
     expect(TAFSIR_EDITIONS.some((e) => e.language === "en")).toBe(true);
     expect(TAFSIR_EDITIONS.some((e) => e.language === "ar")).toBe(true);
+  });
+});
+
+describe("searchQuran (against the real corpus)", () => {
+  const keys = (response: Awaited<ReturnType<typeof searchQuran>>) => response.hits.map((h) => `${h.surah}:${h.ayah}`);
+
+  it("finds Ayat al-Kursi from bare, unvocalised Arabic", async () => {
+    const response = await searchQuran("الحي القيوم");
+    expect(response.field).toBe("arabic");
+    expect(keys(response)).toContain("2:255");
+    expect(keys(response)).toContain("3:2");
+  });
+
+  it("finds the same verse with the vocalised or alef-wasla spelling", async () => {
+    expect(keys(await searchQuran("ٱلْحَىُّ ٱلْقَيُّومُ"))).toContain("2:255");
+  });
+
+  it("finds Al-Fatiha's 'Alamin whether typed with or without the long alef", async () => {
+    expect(keys(await searchQuran("رب العالمين"))).toContain("1:2");
+    expect(keys(await searchQuran("رب العلمين"))).toContain("1:2");
+  });
+
+  it("returns hits in mushaf order with in-range highlight ranges", async () => {
+    const { hits } = await searchQuran("الرحمن", undefined, { limit: 500 });
+    expect(hits.length).toBeGreaterThan(50);
+    for (let i = 1; i < hits.length; i++) {
+      const [a, b] = [hits[i - 1], hits[i]];
+      expect(a.surah * 1000 + a.ayah).toBeLessThan(b.surah * 1000 + b.ayah);
+    }
+    for (const hit of hits) {
+      expect(hit.ranges.length).toBeGreaterThan(0);
+      for (const [start, end] of hit.ranges) {
+        expect(start).toBeLessThan(end);
+        expect(end).toBeLessThanOrEqual(hit.uthmaniText.length);
+      }
+    }
+  });
+
+  it("searches the English translation for a Latin query", async () => {
+    const response = await searchQuran("Sustainer of existence");
+    expect(response.field).toBe("translation");
+    expect(keys(response)).toContain("2:255");
+  });
+
+  it("throws on an unknown translation edition rather than silently searching nothing", async () => {
+    await expect(searchQuran("mercy", "xx.nope")).rejects.toThrow(/Unknown translation edition/);
   });
 });

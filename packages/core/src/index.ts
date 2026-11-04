@@ -10,3 +10,4 @@ export * from "./badge/index.js";
 export * from "./verse-annotations/index.js";
 export * from "./tafsir/index.js";
 export * from "./word-by-word/index.js";
+export * from "./quran-search/index.js";

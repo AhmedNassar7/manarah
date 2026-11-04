@@ -8,7 +8,14 @@ import type {
   VerseLocation,
   VerseRef,
 } from "@manarah/core";
-import { pickRandomVerse } from "@manarah/core";
+import {
+  buildQuranSearchIndex,
+  pickRandomVerse,
+  searchQuranIndex,
+  type QuranSearchIndex,
+  type QuranSearchOptions,
+  type QuranSearchResponse,
+} from "@manarah/core";
 import surahsData from "./surahs.json";
 
 /**
@@ -63,6 +70,9 @@ export const TRANSLATION_EDITIONS: TranslationEdition[] = [
   { id: "en.sahih", name: "Saheeh International", language: "en" },
 ];
 
+/** The edition shown by default, and the one full-text search runs against. */
+export const DEFAULT_TRANSLATION_EDITION_ID = "en.sahih";
+
 const translationLoaders: Record<string, () => Promise<{ default: Translation[] } | Translation[]>> = {
   "en.sahih": () => import("./translations/en-sahih.json"),
 };
@@ -80,6 +90,30 @@ function loadTranslation(editionId: string): Promise<Translation[]> {
 export async function getTranslationForSurah(surahNumber: number, editionId: string): Promise<Translation[]> {
   const translations = await loadTranslation(editionId);
   return translations.filter((t) => t.surah === surahNumber);
+}
+
+const searchIndexPromises: Partial<Record<string, Promise<QuranSearchIndex>>> = {};
+
+function loadSearchIndex(translationEditionId: string): Promise<QuranSearchIndex> {
+  searchIndexPromises[translationEditionId] ??= Promise.all([loadVerses(), loadTranslation(translationEditionId)]).then(
+    ([verses, translations]) => buildQuranSearchIndex(verses, translations)
+  );
+  return searchIndexPromises[translationEditionId]!;
+}
+
+/**
+ * Full-text search across all 6236 verses: an Arabic query searches the
+ * Arabic text (harakat-insensitive), anything else searches the given
+ * translation. The first call loads the verse text and translation and
+ * folds them into an in-memory index (tens of ms); later calls are plain
+ * substring scans, fast enough to run on every keystroke.
+ */
+export async function searchQuran(
+  query: string,
+  translationEditionId: string = DEFAULT_TRANSLATION_EDITION_ID,
+  options?: QuranSearchOptions
+): Promise<QuranSearchResponse> {
+  return searchQuranIndex(await loadSearchIndex(translationEditionId), query, options);
 }
 
 /**

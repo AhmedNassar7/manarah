@@ -7,16 +7,22 @@ import {
   type VerseAnnotations,
   type VerseRef,
 } from "@manarah/core";
-import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS, TAFSIR_EDITIONS } from "@manarah/data";
+import { JUZ_COUNT, PAGE_COUNT, RECITERS, SURAHS, TAFSIR_EDITIONS, searchQuran } from "@manarah/data";
 import {
   QuranAudioPlayer,
   QuranBookmarks,
   QuranNavigator,
   QuranReader,
+  QuranSearch,
   useTranslation,
   type QuranAudioPlayerHandle,
 } from "@manarah/ui";
 import { loadTafsir, loadWords } from "../quran-com.js";
+
+/** Module-level so QuranSearch's effect sees a stable function and doesn't re-search on every render. */
+function runSearch(query: string, limit: number) {
+  return searchQuran(query, undefined, { limit });
+}
 
 export interface QuranPageProps {
   selectedSurahNumber: number | null;
@@ -71,6 +77,7 @@ export function QuranPage({
         juzCount={JUZ_COUNT}
         pageCount={PAGE_COUNT}
       />
+      <QuranSearch surahs={SURAHS} search={runSearch} onSelect={onNavigate} />
       <QuranBookmarks annotations={verseAnnotations} surahs={SURAHS} onSelect={onNavigate} />
       {selectedSurah && selectedSurahVerses && (
         <>

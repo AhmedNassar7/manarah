@@ -1,6 +1,6 @@
 # Manarah (منارة) — Master Plan & Progress
 
-**Status as of 2026-09-30.** Single source of truth for this project: the full plan (architecture, data sourcing, phased roadmap, testing strategy) *and* what's actually done vs. in progress vs. not started. Lives in the codebase — not in any AI tool's local plan storage — so any contributor, human or LLM, can read it directly. Update this file whenever a plan item's status changes or a decision changes; don't let it drift from reality.
+**Status as of 2026-11-04.** Single source of truth for this project: the full plan (architecture, data sourcing, phased roadmap, testing strategy) *and* what's actually done vs. in progress vs. not started. Lives in the codebase — not in any AI tool's local plan storage — so any contributor, human or LLM, can read it directly. Update this file whenever a plan item's status changes or a decision changes; don't let it drift from reality.
 
 Status markers used throughout: ✅ done &nbsp;·&nbsp; 🚧 in progress &nbsp;·&nbsp; ⬜ not started
 
@@ -40,6 +40,7 @@ pnpm workspace monorepo, no Turborepo:
                  - verse-annotations: per-verse bookmarks/notes model, copy/share text formatting    ✅
                  - tafsir: Quran.com tafsir URL/response parsing, HTML → plain-text blocks, edition choice ✅
                  - word-by-word: Quran.com per-word meaning/transliteration URL + response parsing       ✅
+                 - quran-search: Arabic-skeleton/translation full-text matching, "2:255" references      ✅
   /ui          Shared React components + design system (styles.css) + i18n                       ✅
   /storage     Store interface — IndexedDbStore (Dexie) / ChromeSyncStore + JSON export/import    ✅
   /data        Static bundled assets: Quran text, surah metadata, azkar corpus, GeoNames cities   ✅
@@ -106,7 +107,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 292 tests passing across all 4 packages (`core` 108, `storage` 17, `data` 33, `ui` 134), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 326 tests passing across all 4 packages (`core` 126, `storage` 17, `data` 39, `ui` 144), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -157,8 +158,12 @@ Started after reviewing Quran.com, Sunnah.com, and corpus.quran.com in detail �
 6. 🚧 **Word-by-word** — split into two halves after the license check (decided 2026-09-30):
    - [x] **Meaning + transliteration** — a "Word by word" action in the verse toolbar opens `WordByWordPanel` inline under the verse: every word as a card (Uthmani word in Amiri, transliteration, English meaning), flowing right-to-left in reading order; loading / error-with-retry states; independent of the tafsir panel, so both can be open at once. Fetched per verse from Quran.com (`/api/v4/verses/by_key/{s:a}?words=true&word_fields=text_uthmani`, verified live: CORS `*`, no key; the verse-end number marker the API mixes in is filtered out), through the same `apps/web/src/quran-com.ts` cached loader as tafsir, with its own service-worker CacheFirst cache. Shown as a separate word list rather than making the verse's own words tappable: Quran.com's word segmentation/spelling isn't guaranteed to line up one-to-one with the bundled AlQuran Cloud text (e.g. tatweel differences), and a misaligned word→meaning mapping on scripture is worse than none. English meanings only for now (Quran.com has other `word_translation_language`s).
    - [ ] **Roots / morphology / grammar** — ⛔ **blocked on licensing, needs an explicit decision before any work.** The Quranic Arabic Corpus (corpus.quran.com, v0.4) is "GNU General Public License" *plus* its own terms: "copy and distribute verbatim copies of this file, but CHANGING IT IS NOT ALLOWED", source must be credited with a link to corpus.quran.com, and the copyright notice kept. Converting it into this project's JSON shape arguably counts as changing it; bundling GPL data into an app that has no license of its own raises copyleft questions; and the download is gated behind submitting a contact email. Quran.com's public API doesn't expose root/lemma/morphology (requested `word_fields=root,lemma,stem` are silently ignored). Options if revisited: ship the corpus file verbatim and parse it at runtime (with credit + link), after deciding the project's own license; or find another source with clear terms.
-7. [ ] **Full-text search** — *Recommended next.* — search Arabic text and translation, jump to a result (distinct from the Ayah/Juz'/Page *navigation* search added in step 2, which only searches numbers/surah names, not verse content).
-8. [ ] **Reading settings panel** — script style (Uthmani/IndoPak), font size, default reciter, default/managed translation editions — consolidates choices steps 1, 3, and 6 each introduce into one place instead of scattering controls.
+7. [x] **Full-text search** — `QuranSearch` on the Quran page (between the navigator and bookmarks): search-as-you-type over all 6236 verses, results as a bounded scrolling list (surah · verse, Arabic, translation) with the matched text `<mark>`-highlighted, "Show more" in pages of 50 with a total count; choosing a result jumps the reader there. Distinct from the navigator's number/surah-name search. Pure matching lives in `packages/core/quran-search`; `searchQuran` in `packages/data` lazy-loads verses + translation and builds the in-memory index on first use (tens of ms; later keystrokes are plain substring scans), and `QuranSearch` takes the search function by injection like tafsir/word-by-word do.
+   - **Arabic**: an Arabic-script query searches the Arabic text, without needing harakat. Both sides are folded to a bare skeleton (harakat, Quranic annotation marks and tatweel dropped; alef wasla/hamza-alef → alef, alef maqsura → ya, ta marbuta → ha, hamza-on-waw/ya folded, Persian kaf/ya accepted). The dagger alef is ambiguous — ٱلرَّحْمَٰنِ is typed "الرحمن" but ٱلْعَٰلَمِينَ is typed "العالمين" — so each verse is indexed both with and without it and a term matches either way. Highlights map back onto the original vocalised text (a highlighted word keeps its harakat).
+   - **Everything else** searches the English translation (case/accent/punctuation-insensitive; apostrophes dropped so "Abraham's" finds "Abraham"). Multi-word queries need every word, in any order, as substrings ("رحم" finds "الرحمن"); queries under 2 letters return nothing. Hits are in mushaf order, not relevance order.
+   - **`2:255`-style queries** are a jump, not a search (validated against real verse counts; out-of-range falls through to a normal search).
+   - Known limits: no root/lemma search (needs the blocked morphology data from step 6 — "الله" won't find "لِلَّهِ"); no phrase-adjacency or relevance ranking; translation search covers the one bundled edition only; web only (the extension has no reader).
+8. [ ] **Reading settings panel** — *Recommended next.* — script style (Uthmani/IndoPak), font size, default reciter, default/managed translation editions — consolidates choices steps 1, 3, and 6 each introduce into one place instead of scattering controls.
 9. [ ] **Hadith library** (sunnah.com API, the Nine Books + selections) — already Phase 3 below; cross-links from the tafsir panel (step 5) once both exist.
 
 **Reviewed but not queued — conflicts with this project's own constraints, flagged rather than silently dropped:**

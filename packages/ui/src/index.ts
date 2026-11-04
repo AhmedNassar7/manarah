@@ -13,6 +13,7 @@ export * from "./VerseOfTheDay.js";
 export * from "./QuranNavigator.js";
 export * from "./VerseActions.js";
 export * from "./QuranBookmarks.js";
+export * from "./QuranSearch.js";
 export * from "./TafsirPanel.js";
 export * from "./WordByWordPanel.js";
 export * from "./LanguageSwitcher.js";
