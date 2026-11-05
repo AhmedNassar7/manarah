@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Icon, useTranslation } from "@manarah/ui";
+import { useTransitionLink } from "./view-transition.js";
 
 const PRIMARY_ITEMS = [
   { to: "/", icon: "home", labelKey: "app.sectionHome", end: true, hue: "home" },
@@ -18,6 +19,20 @@ const SECONDARY_ITEMS = [
   { to: "/challenge", icon: "trophy", labelKey: "app.sectionChallenge", end: false, hue: "challenge" },
   { to: "/settings", icon: "gear", labelKey: "app.sectionSettings", end: false, hue: "home" },
 ] as const;
+
+type NavItem = (typeof PRIMARY_ITEMS)[number] | (typeof SECONDARY_ITEMS)[number];
+
+/** One section link; moving to it crossfades the page. */
+function NavItemLink({ item }: { item: NavItem }) {
+  const { t } = useTranslation();
+  const onClick = useTransitionLink(item.to);
+  return (
+    <NavLink to={item.to} end={item.end} data-hue={item.hue} className={({ isActive }) => (isActive ? "active" : undefined)} onClick={onClick}>
+      <Icon name={item.icon} size={20} />
+      <span>{t(item.labelKey)}</span>
+    </NavLink>
+  );
+}
 
 /**
  * Persistent section navigation — each feature gets its own page/route instead of one long scroll.
@@ -55,18 +70,16 @@ export function Nav() {
 
   const secondaryActive = SECONDARY_ITEMS.some((item) => pathname === item.to || pathname.startsWith(`${item.to}/`));
 
-  const renderLink = (item: (typeof PRIMARY_ITEMS)[number] | (typeof SECONDARY_ITEMS)[number]) => (
-    <NavLink key={item.to} to={item.to} end={item.end} data-hue={item.hue} className={({ isActive }) => (isActive ? "active" : undefined)}>
-      <Icon name={item.icon} size={20} />
-      <span>{t(item.labelKey)}</span>
-    </NavLink>
-  );
 
   return (
     <nav className="app-nav" aria-label={t("app.sectionHome")} data-more-open={moreOpen || undefined}>
-      {PRIMARY_ITEMS.map(renderLink)}
+      {PRIMARY_ITEMS.map((item) => (
+        <NavItemLink key={item.to} item={item} />
+      ))}
       <div className="app-nav-more" id="app-nav-more" ref={moreRef}>
-        {SECONDARY_ITEMS.map(renderLink)}
+        {SECONDARY_ITEMS.map((item) => (
+          <NavItemLink key={item.to} item={item} />
+        ))}
       </div>
       <button
         type="button"

@@ -113,7 +113,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 923 tests passing across all 4 packages (`core` 364, `storage` 17, `data` 95, `ui` 447), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 931 tests passing across all 4 packages (`core` 364, `storage` 17, `data` 95, `ui` 455), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -391,6 +391,16 @@ Rule (the user's, restated): when the interface is Arabic everything in it is Ar
 - **Searching in Arabic:** typing "القاهرة", a partial "قاهر", "الاسكندرية" (bare alef) or "المدينه" (ha for ta marbuta) now finds the city (`foldArabic`).
 - **Saved locations:** `SavedLocation.nameAr`; a location saved before this existed is upgraded once, the first time the language is Arabic (`""` means "looked up, none exists", so it isn't looked up again).
 - **Quran:** the transliterated surah name ("Al-Faatiha") is no longer shown in Arabic mode — in the reader's subtitle, the navigator list, or the extension's verse-of-the-day; it stays in English mode, where it helps pronunciation, and the navigator still *searches* by it.
+
+## Design system v2 — modern controls, elevation, real motion — ✅ done (2026-11-05, on request)
+
+Intent: keep it simple, clear and direct — no new decoration; make what is already there feel modern and responsive. Done at the *token* level so every page changes at once, then checked on every route.
+- **Shape and depth.** Corners went from 3px to a family: cards 14, controls 10, small rows 8 (`--radius-page/-control/-sm`); information cards rest on a soft warm shadow (`--shadow-1`). **Scripture surfaces stay flat** (Quran text, hadith cards, azkar) — calm by design. A box nested inside a card (Settings) is a light tint with no border or shadow, not another card.
+- **Controls.** Selects use one drawn chevron (light/dark variants, flips in RTL) instead of each browser's arrow; every field has the same hover border and a soft accent focus ring; **checkboxes became switches** (the native blue one clashed with every palette) — the thumb slides on `transform` with a slight spring, flips direction in RTL (verified: -18px in Arabic) and stretches a little while pressed; a label holding a switch lays out on one line.
+- **Motion — CSS plus one platform API, no library.** Durations `--dur-fast` 140ms / `--dur-base` 240ms with the existing `--ease-quiet` / `--ease-spring`; one default for every pressable thing (colour/shadow/transform transitions, a 0.97 press); pages enter in 40ms steps instead of up to 300ms. **Moving between sections crossfades** and **changing the theme crossfades**, using the View Transitions API (`apps/web/src/view-transition.ts`): the header and nav hold still (`view-transition-name`), links keep working with modified clicks (new tab), and where the browser lacks it, or the person prefers reduced motion, the change simply happens (verified in Chrome: transitions run on navigation and theme change; zero start under reduced motion, and navigation still works). **Loading** a hadith book shows skeleton cards with a calm shimmer instead of a line of text; assistive tech still hears "Loading…". Removed in the previous pass: hover-lift on cards that aren't clickable.
+- **Rhythm.** Page gap 28 -> 20px, location bar no longer adds its own bottom margin.
+- **A real find on the way: the prayer hero's small text failed contrast in two of its six sky colours** (Fajr and Maghrib), and its dimming (opacity 0.8-0.88) hurt the others — invisible to an audit run at one time of day. Fixed (deeper gradient ends, full-strength text) and now guarded by a test over all six periods (`design-tokens.test.ts`).
+- Not done: a sliding indicator under the active nav item and count-up numbers (both JS for little gain); the Quran, Hadith and Azkar reading surfaces were left alone on purpose.
 
 ## Testing strategy — ✅ framework in place, coverage ongoing
 

@@ -76,4 +76,22 @@ describe("colour tokens", () => {
     expect(m).not.toBeNull();
     for (const stop of m!.slice(1)) expect(contrast("#fffaf0", stop)).toBeGreaterThanOrEqual(4.5);
   });
+
+  // The hero's sky changes with the hour, so an audit run at one time of day sees only one of its six colour pairs.
+  // The small text (dates, label, "at 2:42 PM") sits in the left ~60% of the gradient.
+  it.each(["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"])("the %s hero keeps its small text readable across the left 60%% of its sky", (period) => {
+    const start = css.indexOf(`.prayer-hero[data-period="${period}"] {`);
+    expect(start).toBeGreaterThan(-1);
+    const body = css.slice(start, css.indexOf("}", start));
+    const from = body.match(/--hero-from: (#[0-9a-fA-F]{6})/)![1];
+    const to = body.match(/--hero-to: (#[0-9a-fA-F]{6})/)![1];
+    const ink = body.match(/--hero-ink: (#[0-9a-fA-F]{6})/)![1];
+    const mix = (t: number) =>
+      "#" +
+      [0, 1, 2]
+        .map((i) => Math.round(channel(from, i) + (channel(to, i) - channel(from, i)) * t).toString(16).padStart(2, "0"))
+        .join("");
+    for (const t of [0, 0.2, 0.4, 0.6]) expect(contrast(ink, mix(t)), `${period} at ${t * 100}%`).toBeGreaterThanOrEqual(4.5);
+  });
 });
+

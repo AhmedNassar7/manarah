@@ -236,3 +236,23 @@ describe("HadithBrowser — book titles follow the language", () => {
     expect(heading).not.toHaveTextContent("Belief");
   });
 });
+
+describe("HadithBrowser — while a book loads", () => {
+  it("shows skeleton cards in the shape of the hadiths coming, and tells a screen reader it is loading", () => {
+    setup({ load: vi.fn().mockReturnValue(new Promise(() => {})) });
+    fireEvent.click(screen.getByRole("button", { name: /Revelation/ }));
+    expect(document.querySelectorAll(".skeleton-card")).toHaveLength(3);
+    expect(document.querySelector("[aria-busy='true']")).not.toBeNull();
+    // The shimmer is decoration; the loading message is for assistive technology.
+    expect(document.querySelector(".skeleton-card")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByRole("status")).toHaveTextContent("Loading…");
+  });
+
+  it("replaces the skeleton with the hadiths once they arrive", async () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: /Revelation/ }));
+    await screen.findByText("نص عربي 1");
+    expect(document.querySelectorAll(".skeleton-card")).toHaveLength(0);
+  });
+});
+

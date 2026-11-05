@@ -138,9 +138,18 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
           </h3>
 
           {state.status === "loading" && (
-            <p className="hadith-status" role="status">
-              {t("hadith.loading")}
-            </p>
+            <div aria-busy="true">
+              <p className="sr-only" role="status">
+                {t("hadith.loading")}
+              </p>
+              {[0, 1, 2].map((i) => (
+                <div className="skeleton-card" aria-hidden="true" key={i}>
+                  <span className="skeleton" style={{ width: "100%" }} />
+                  <span className="skeleton" style={{ width: "92%" }} />
+                  <span className="skeleton" style={{ width: "64%" }} />
+                </div>
+              ))}
+            </div>
           )}
           {state.status === "error" && (
             <div className="hadith-status" role="alert">

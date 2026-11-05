@@ -11,6 +11,7 @@ import {
   type ProgressState,
 } from "@manarah/core";
 import { HISTORICAL_EVENTS } from "@manarah/data";
+import { useTransitionLink } from "../view-transition.js";
 import { todaysMaghrib } from "./CalendarPage.js";
 import {
   HijriToday,
@@ -47,6 +48,16 @@ const QUICK_LINKS = [
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", hue: "azkar" },
   { to: "/challenge", icon: "trophy", labelKey: "app.sectionChallenge", hue: "challenge" },
 ] as const;
+
+function QuickLink({ link, label }: { link: (typeof QUICK_LINKS)[number]; label: string }) {
+  const onClick = useTransitionLink(link.to);
+  return (
+    <Link to={link.to} className="home-link-card" data-hue={link.hue} onClick={onClick}>
+      <Icon name={link.icon} size={24} />
+      <span>{label}</span>
+    </Link>
+  );
+}
 
 /**
  * The landing page: the day's sky with the next prayer, the day's timetable,
@@ -88,10 +99,7 @@ export function Home({ locationSummary, coordinates, times, tomorrowsFajr, headi
 
       <div className="home-links">
         {QUICK_LINKS.map((link) => (
-          <Link key={link.to} to={link.to} className="home-link-card" data-hue={link.hue}>
-            <Icon name={link.icon} size={24} />
-            <span>{t(link.labelKey)}</span>
-          </Link>
+          <QuickLink key={link.to} link={link} label={t(link.labelKey)} />
         ))}
       </div>
     </>

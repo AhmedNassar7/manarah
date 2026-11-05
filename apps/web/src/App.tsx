@@ -53,6 +53,7 @@ import { LanguageProvider, LanguageSwitcher, Toast, encouragementText, translate
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
+import { withViewTransition } from "./view-transition.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
 import { Home } from "./pages/Home.js";
 import { PrayerPage } from "./pages/PrayerPage.js";
@@ -179,13 +180,20 @@ export function App() {
   }, []);
 
   // Apply the chosen theme to <html>: the stylesheet keys on data-theme (light/dark) and data-palette.
+  const themeApplied = useRef(false);
   useEffect(() => {
     const { mode, palette } = themeAttributes(resolveTheme(settings.theme));
     const root = document.documentElement;
-    if (mode) root.dataset.theme = mode;
-    else delete root.dataset.theme;
-    if (palette) root.dataset.palette = palette;
-    else delete root.dataset.palette;
+    const apply = () => {
+      if (mode) root.dataset.theme = mode;
+      else delete root.dataset.theme;
+      if (palette) root.dataset.palette = palette;
+      else delete root.dataset.palette;
+    };
+    // The first application (page load) is immediate; a change made by the person crossfades.
+    if (themeApplied.current) withViewTransition(apply);
+    else apply();
+    themeApplied.current = true;
   }, [settings.theme]);
 
   useEffect(() => {
