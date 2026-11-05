@@ -20,11 +20,11 @@ export const POINTS = {
   allFiveBonus: 20,
   azkar: 2,
   quizCorrect: 5,
-  tasbihRound: 3,
+  tasbihMilestone: 3,
 } as const;
 
 /** Per-day limits on the repeatable ones, so points reward steady practice rather than tapping the same dhikr for hours. */
-export const DAILY_CAPS = { azkar: 20, quizCorrect: 20, tasbihRound: 10 } as const;
+export const DAILY_CAPS = { azkar: 20, quizCorrect: 20, tasbihMilestone: 10 } as const;
 
 export interface DayRecord {
   prayers: ProgressPrayer[];
@@ -32,7 +32,7 @@ export interface DayRecord {
   azkar: number;
   quizCorrect: number;
   quizAnswered: number;
-  /** Tasbih rounds completed. */
+  /** Full turns of the tasbih ring (every 33 counts). */
   tasbih: number;
 }
 
@@ -174,7 +174,7 @@ export type ProgressEvent =
   | { type: "prayer"; prayer: ProgressPrayer; done: boolean }
   | { type: "azkar-completed" }
   | { type: "quiz-answer"; correct: boolean }
-  | { type: "tasbih-round" };
+  | { type: "tasbih-milestone" };
 
 /** What to say after an event — the UI turns it into a message in the user's language. */
 export type EncouragementKind = "prayer" | "all-five" | "azkar" | "tasbih" | "quiz-correct" | "quiz-wrong" | "streak" | "badge" | "none";
@@ -227,10 +227,10 @@ export function applyEvent(previous: ProgressState, event: ProgressEvent, now: D
       pointsDelta = POINTS.azkar;
       encouragement = "azkar";
     }
-  } else if (event.type === "tasbih-round") {
+  } else if (event.type === "tasbih-milestone") {
     state = withDay(state, key, (d) => ({ ...d, tasbih: d.tasbih + 1 }));
-    if (before.tasbih < DAILY_CAPS.tasbihRound) {
-      pointsDelta = POINTS.tasbihRound;
+    if (before.tasbih < DAILY_CAPS.tasbihMilestone) {
+      pointsDelta = POINTS.tasbihMilestone;
       encouragement = "tasbih";
     }
   } else {

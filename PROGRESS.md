@@ -438,6 +438,21 @@ Also caught: the tasbih count was black on a dark background in dark mode (a `<b
 
 **Tasbih: round size removed.** The 33 / 99 / 100 / Free row is gone — a round is one turn of the 33-bead ring. (`target` left the saved state; an earlier choice is ignored on load.)
 
+## Simpler tasbih, install guide, Tafsir al-Muyassar — ✅ done (2026-11-05, on request)
+
+**Tasbih simplified (supersedes the two tasbih sections above where they differ).** The "round size" idea is gone entirely — no 33/99/100 target, no "/33" under the count, no rounds stat, "New round" is just **Reset**. A turn of the 33-bead ring is the only unit (a gentle "Masha'Allah" and a progress point at each 33; the `tasbih-10` badge is 330). **Vibration removed.** **Sound is three soft choices — Off / Click / Wood / Bell** — still synthesised with Web Audio (no files, works offline); old saved state (`target`, `vibrate`, `rounds`, `sound: true`) is read safely. Measured offline with an `OfflineAudioContext` (levels, decay, partials) but **nobody has listened to it: the user already called the first version "not good", so treat the sounds as unverified by ear** and expect to adjust them from feedback.
+
+**Install.** The app now tells people how to get it: an **Install** button in the header (starts the browser's own install where Chrome/Edge offers it; opens the steps on an iPhone/Android browser that doesn't), an "Install the app" section in **Settings** (this device's steps first, others folded; says so when already installed), and a "Get the app" section in the README. Verified in Chrome with an iPhone user agent, a simulated install offer and standalone mode. The browser extension is still on no store (Chrome Web Store has a one-time fee, against the zero-cost rule; Edge Add-ons is free) — README documents load-unpacked.
+
+**Phone fit.** The header (Install + Share + language) wraps cleanly at 360 px; a long reciter name no longer pushes the Settings page past the screen. Swept 360/390/414 px across every route: 0 overflow cases.
+
+**Tafsir al-Muyassar (التفسير الميسر)** was missing; added as Quran.com resource 16 (confirmed in its `/resources/tafsirs` listing and by fetching 2:255), first among the Arabic editions — so it is also the default tafsir in Arabic. Pinned by a test.
+
+**Asked for, not done, and why**
+- **Reciters عبدالله الأسمر and فيصل بن جذيان:** neither is in EveryAyah (what the app streams from), mp3quran.net, Quran.com or Quranic Audio — checked their live listings. Adding them needs a source with a licence we can stream from; none was found. Needs the user to point to one (or the reciters' own permission/host).
+- **Calmer azkar Listen voice:** the current recordings (hisnmuslim.com) are the only complete per-dhikr human set found; no better-sounding set with an open licence was found. One honest option not yet built: for the Quranic items (Ayat al-Kursi, the three Quls, verses) play the user's chosen Quran reciter via EveryAyah instead.
+- **Evidence/virtue for every hadith:** the Hadith section already shows the Arabic, source book + number and scholars' gradings for all six books. A verified "virtue" per hadith for ~35,000 hadith can't be written without a sourced dataset; sunnah.com (which has it) blocks automated checks, so links to it were not added unverified.
+
 ## Notifications — where it stands and what is worth adding (2026-11-05)
 
 **In the plan and built:** prayer times; azkar after each prayer; morning azkar at Fajr and evening azkar at Asr (now separate lists); azkar before sleep; custom-time azkar; Islamic observances the evening before and on the day; the Ramadan countdown; all in Arabic and English, each at most once a day, stale ones dropped silently. **The big limit, by design:** on the web they fire only while the app is open in a tab (and in the extension, only while the browser is running). A PWA cannot be woken by the system without a push server, and the zero-server rule rules that out — it is the single biggest gap between this and a native app. Not built: desktop (Tauri) and phone (Capacitor) apps, which *would* schedule real background notifications.

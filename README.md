@@ -17,6 +17,22 @@
   <img src="https://img.shields.io/badge/pnpm-workspaces-b08d3e" alt="pnpm workspaces">
 </p>
 
+## Get the app
+
+**Open it:** <https://ahmednassar7.github.io/manarah/> — it works in any browser, nothing to sign up for.
+
+**Put it on your phone or computer** (so it has its own icon and opens full screen) — it is a web app, so there is no store to download from:
+
+| Device | How |
+| --- | --- |
+| **iPhone / iPad** | Open the link in Safari → tap **Share** → **Add to Home Screen** → **Add**. |
+| **Android** | Open the link in Chrome → tap the **⋮** menu → **Install app** (or **Add to Home screen**) → **Install**. |
+| **Computer (Chrome / Edge)** | Open the link → click the **install icon** at the right end of the address bar (or **⋮** → **Install Manarah**) → **Install**. |
+
+The app shows these same steps — an **Install** button in the header where the browser allows it, and an "Install the app" section in **Settings** (English and Arabic). Firefox can't install web apps; on a Mac with Safari use **File → Add to Dock**.
+
+The **browser extension** (prayer countdown in the toolbar, new-tab verse) is not on any store yet. To use it today: `pnpm install && pnpm --filter extension build`, then in `chrome://extensions` turn on *Developer mode* → *Load unpacked* → choose `apps/extension/dist`.
+
 ## Features
 
 <table>

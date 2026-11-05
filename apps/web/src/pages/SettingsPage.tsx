@@ -7,10 +7,12 @@ import {
 } from "@manarah/core";
 import { CALCULATION_METHODS, RECITERS } from "@manarah/data";
 import { exportStore, importStore, type Store } from "@manarah/storage";
+import { useInstall } from "../install.js";
 import { appShareUrl } from "../share-url.js";
 import {
   FeedbackForm,
   Icon,
+  InstallGuide,
   LanguageSwitcher,
   LocationSummary,
   PrayerSettingsEditor,
@@ -47,6 +49,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
 
 /** Every setting in one place: appearance, prayer times, recitation, calendar, notifications, backup, and rating/feedback. */
 export function SettingsPage({ settings, onSettingsChange, onPrayerSettingsChange, locationSummary, store }: SettingsPageProps) {
+  const install = useInstall();
   const { t } = useTranslation();
   const fileInput = useRef<HTMLInputElement>(null);
   const [backupMessage, setBackupMessage] = useState<string | null>(null);
@@ -164,6 +167,10 @@ export function SettingsPage({ settings, onSettingsChange, onPrayerSettingsChang
               {backupMessage}
             </p>
           )}
+        </Section>
+
+        <Section title={t("install.title")}>
+          <InstallGuide platform={install.platform} canPrompt={install.canPrompt} installed={install.installed} onInstall={() => void install.prompt()} />
         </Section>
 
         <Section title={t("share.title")}>

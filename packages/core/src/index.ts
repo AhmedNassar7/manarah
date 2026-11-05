@@ -21,4 +21,5 @@ export * from "./progress/index.js";
 export * from "./tasbih/index.js";
 export * from "./azkar-progress/index.js";
 export * from "./share/index.js";
+export * from "./install/index.js";
 export * from "./quiz/index.js";

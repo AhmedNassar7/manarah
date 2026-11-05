@@ -59,10 +59,11 @@ import {
   getVersesForSurah,
 } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { LanguageProvider, LanguageSwitcher, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
+import { InstallButton, LanguageProvider, LanguageSwitcher, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
+import { useInstall } from "./install.js";
 import { appShareUrl } from "./share-url.js";
 import { withViewTransition } from "./view-transition.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
@@ -606,7 +607,7 @@ export function App() {
             />
             <Route
               path="/tasbih"
-              element={<TasbihPage state={tasbih} onChange={handleTasbihChange} onRoundCompleted={() => award({ type: "tasbih-round" })} />}
+              element={<TasbihPage state={tasbih} onChange={handleTasbihChange} onMilestone={() => award({ type: "tasbih-milestone" })} />}
             />
             <Route
               path="/challenge"
@@ -623,6 +624,7 @@ export function App() {
 /** Header + nav, shared by every route. Sits inside LanguageProvider so it (and the routed page inside it) can call useTranslation(). */
 function AppShell({ children }: { children: ReactNode }) {
   const { t, language } = useTranslation();
+  const install = useInstall();
   // Each section has its own colour (see "Joy layer" in styles.css); the router path says which one we're in.
   const section = useLocation().pathname.split("/")[1] || "home";
 
@@ -640,6 +642,7 @@ function AppShell({ children }: { children: ReactNode }) {
         </h1>
         <span className="tagline">{t("app.tagline")}</span>
         <div className="app-header-actions">
+          <InstallButton platform={install.platform} canPrompt={install.canPrompt} installed={install.installed} onInstall={() => void install.prompt()} />
           <ShareButton url={appShareUrl()} />
           <LanguageSwitcher />
         </div>

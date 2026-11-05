@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { buildShareMessage, shareLinks } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
+import { Modal, useReturnFocus } from "./Modal.js";
 
 /** "Whoever guides to something good will have a reward like the one who does it." — reported by Muslim. */
 const GUIDING_HADITH = "مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ";
@@ -96,8 +96,9 @@ export interface ShareButtonProps {
 export function ShareButton({ url }: ShareButtonProps) {
   const { t, language } = useTranslation();
   const [open, setOpen] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => setOpen(false), []);
   const opener = useRef<HTMLButtonElement>(null);
+  useReturnFocus(open, opener);
 
   async function onClick() {
     if (canNativeShare()) {
@@ -112,49 +113,17 @@ export function ShareButton({ url }: ShareButtonProps) {
     setOpen(true);
   }
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    dialogRef.current?.querySelector<HTMLElement>("a, button")?.focus();
-    const button = opener.current;
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      button?.focus();
-    };
-  }, [open]);
-
   return (
     <>
       <button ref={opener} type="button" className="share-button" onClick={onClick} aria-haspopup="dialog">
         <Icon name="share" size={20} />
         <span>{t("app.share")}</span>
       </button>
-      {open &&
-        // In a portal on the page body: the header is a stacking context of its own (it keeps still during page transitions), which would trap the dialog behind the page.
-        createPortal(
-        <div className="share-backdrop" onClick={() => setOpen(false)}>
-          <div
-            ref={dialogRef}
-            className="share-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-label={t("share.title")}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="share-dialog-head">
-              <h3>{t("share.title")}</h3>
-              <button type="button" className="share-close" onClick={() => setOpen(false)} aria-label={t("share.close")}>
-                <Icon name="close" size={20} />
-              </button>
-            </div>
-            <SharePanel url={url} />
-          </div>
-        </div>,
-        document.body,
-        )}
+      {open && (
+        <Modal title={t("share.title")} onClose={close}>
+          <SharePanel url={url} />
+        </Modal>
+      )}
     </>
   );
 }

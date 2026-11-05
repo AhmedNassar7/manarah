@@ -1,17 +1,21 @@
-import type { TasbihTimbre } from "@manarah/core";
+import type { TasbihSoundId } from "@manarah/core";
 
 /**
- * The sounds of the tasbih, made in the browser with the Web Audio API — no audio
- * files, so nothing to license, nothing to download, and it works offline. Each bead
- * is a very short, quiet knock whose character follows the material of the beads
- * (wood knocks, glass ticks, stone clacks, amber is soft), varied a hair in pitch
- * each time so a long count does not sound like a machine. Finishing a round is a
- * gentle three-note chime.
+ * The sounds of the tasbih, made in the browser with the Web Audio API — no audio files, so
+ * nothing to license or download, and it works offline. There are three, all soft:
  *
- * The audio context is only created on the first sound, which is always inside a tap
- * (browsers refuse to start audio any other way), and a suspended context is resumed.
- * If the browser has no Web Audio the calls do nothing: sound is an extra, never a
- * requirement.
+ *  - **click**: a very short, dry tick — a little noise and a tiny high tone, nothing that rings.
+ *  - **wood**: a bead on a bead — a few partials at the inharmonic ratios of struck wood
+ *    (1 : 2.35 : 4.1), each dying away at its own speed, so it "knocks" rather than beeps.
+ *  - **bell**: a soft little "ting" that fades in about a third of a second.
+ *
+ * Every sound goes through a gentle low-pass filter (the harshness of a plain synthesised
+ * tone lives above a few kHz), is kept quiet, and varies about 3% in pitch from bead to bead so a
+ * long count does not sound like a machine. A full turn of the ring gets a soft three-note bell.
+ *
+ * The audio context is only created on the first sound, which is always inside a tap (browsers
+ * refuse to start audio any other way), and a suspended context is resumed. Where there is no
+ * Web Audio the calls do nothing: sound is an extra, never a requirement.
  */
 
 type AudioContextFactory = () => AudioContext | undefined;
@@ -22,16 +26,26 @@ const defaultFactory: AudioContextFactory = () => {
   return Ctor ? new Ctor() : undefined;
 };
 
-/** Overall loudness: the sounds are deliberately soft. */
-const MASTER = 0.5;
+/** Overall loudness: well below full scale. */
+const MASTER = 0.6;
+
+export type BeadSound = Exclude<TasbihSoundId, "off">;
 
 export interface TasbihSound {
-  /** One bead, in the sound of the given material. */
-  bead(timbre: TasbihTimbre): void;
-  /** A round complete. */
-  round(): void;
+  /** One bead, in the chosen sound. */
+  bead(sound: BeadSound): void;
+  /** A full turn of the ring. */
+  milestone(): void;
   /** Releases the audio context. */
   dispose(): void;
+}
+
+interface Partial {
+  /** Frequency as a multiple of the sound's base pitch. */
+  ratio: number;
+  peak: number;
+  /** Seconds to die away. */
+  decay: number;
 }
 
 export function createTasbihSound(factory: AudioContextFactory = defaultFactory): TasbihSound {
@@ -50,7 +64,7 @@ export function createTasbihSound(factory: AudioContextFactory = defaultFactory)
     return ctx;
   }
 
-  /** A few milliseconds of noise: the "click" at the start of a knock. */
+  /** A few milliseconds of noise, fading out: the "click" at the start of a knock. */
   function noiseBuffer(c: AudioContext): AudioBuffer {
     if (!noise) {
       const length = Math.max(1, Math.floor(c.sampleRate * 0.03));
@@ -61,71 +75,94 @@ export function createTasbihSound(factory: AudioContextFactory = defaultFactory)
     return noise;
   }
 
-  /** A pitched tone that falls from `from` to `to` Hz while its loudness dies away. */
-  function tone(c: AudioContext, type: OscillatorType, from: number, to: number, peak: number, seconds: number, delay = 0) {
+  /** The output of one sound: a low-pass filter into the speakers. */
+  function output(c: AudioContext, cutoff: number): AudioNode {
+    const filter = c.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(cutoff, c.currentTime);
+    filter.connect(c.destination);
+    return filter;
+  }
+
+  /** One sine partial: a very short fade-in (so it never pops), then a smooth exponential fade-out. */
+  function partial(c: AudioContext, out: AudioNode, hz: number, peak: number, decay: number, delay = 0) {
     const t0 = c.currentTime + delay;
     const osc = c.createOscillator();
     const gain = c.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(from, t0);
-    if (to !== from) osc.frequency.exponentialRampToValueAtTime(to, t0 + seconds * 0.6);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(hz, t0);
     gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.linearRampToValueAtTime(peak * MASTER, t0 + 0.004);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + seconds);
+    gain.gain.linearRampToValueAtTime(peak * MASTER, t0 + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + decay);
     osc.connect(gain);
-    gain.connect(c.destination);
+    gain.connect(out);
     osc.start(t0);
-    osc.stop(t0 + seconds + 0.02);
+    osc.stop(t0 + decay + 0.02);
   }
 
   /** A burst of filtered noise. */
-  function click(c: AudioContext, filter: BiquadFilterType, frequency: number, q: number, peak: number) {
+  function burst(c: AudioContext, out: AudioNode, hz: number, q: number, peak: number, seconds: number) {
     const t0 = c.currentTime;
     const source = c.createBufferSource();
-    const biquad = c.createBiquadFilter();
+    const band = c.createBiquadFilter();
     const gain = c.createGain();
     source.buffer = noiseBuffer(c);
-    biquad.type = filter;
-    biquad.frequency.setValueAtTime(frequency, t0);
-    biquad.Q.setValueAtTime(q, t0);
+    band.type = "bandpass";
+    band.frequency.setValueAtTime(hz, t0);
+    band.Q.setValueAtTime(q, t0);
     gain.gain.setValueAtTime(peak * MASTER, t0);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.03);
-    source.connect(biquad);
-    biquad.connect(gain);
-    gain.connect(c.destination);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + seconds);
+    source.connect(band);
+    band.connect(gain);
+    gain.connect(out);
     source.start(t0);
   }
 
+  const ring = (c: AudioContext, out: AudioNode, base: number, partials: Partial[], delay = 0) =>
+    partials.forEach((p) => partial(c, out, base * p.ratio, p.peak, p.decay, delay));
+
+  const BELL: Partial[] = [
+    { ratio: 1, peak: 0.3, decay: 0.34 },
+    { ratio: 2, peak: 0.1, decay: 0.22 },
+    { ratio: 3.01, peak: 0.04, decay: 0.14 },
+  ];
+  const WOOD: Partial[] = [
+    { ratio: 1, peak: 0.32, decay: 0.07 },
+    { ratio: 2.35, peak: 0.16, decay: 0.045 },
+    { ratio: 4.1, peak: 0.06, decay: 0.028 },
+  ];
+
   return {
-    bead(timbre) {
+    bead(sound) {
       const c = context();
       if (!c) return;
-      const v = 0.97 + Math.random() * 0.06; // +/- 3% so no two beads are exactly alike
-      switch (timbre) {
-        case "wood":
-          tone(c, "sine", 520 * v, 300 * v, 0.55, 0.09);
-          click(c, "bandpass", 2200, 6, 0.4);
+      const v = 0.97 + Math.random() * 0.06; // +/- 3%: no two beads are exactly alike
+      switch (sound) {
+        case "click": {
+          const out = output(c, 7000);
+          burst(c, out, 3000, 0.8, 0.9, 0.012);
+          partial(c, out, 2000 * v, 0.25, 0.014);
           break;
-        case "glass":
-          tone(c, "sine", 2600 * v, 2600 * v, 0.22, 0.13);
-          tone(c, "sine", 3900 * v, 3900 * v, 0.1, 0.08);
-          click(c, "highpass", 4000, 1, 0.12);
+        }
+        case "wood": {
+          const out = output(c, 5500);
+          ring(c, out, 880 * v, WOOD);
+          burst(c, out, 1600, 1.2, 0.08, 0.008);
           break;
-        case "stone":
-          tone(c, "triangle", 380 * v, 220 * v, 0.5, 0.07);
-          click(c, "lowpass", 1400, 1, 0.35);
+        }
+        case "bell": {
+          const out = output(c, 6000);
+          ring(c, out, 784 * v, BELL);
           break;
-        case "soft":
-          tone(c, "sine", 330 * v, 260 * v, 0.4, 0.12);
-          click(c, "lowpass", 900, 1, 0.12);
-          break;
+        }
       }
     },
-    round() {
+    milestone() {
       const c = context();
       if (!c) return;
-      // G5, C6, E6 — a gentle rising chord, one note after another.
-      [784, 1047, 1319].forEach((hz, i) => tone(c, "sine", hz, hz, 0.28, 0.9, i * 0.09));
+      const out = output(c, 6000);
+      // G5, C6, E6 — a soft rising chord, one note after another.
+      [784, 1047, 1319].forEach((hz, i) => ring(c, out, hz, BELL.map((p) => ({ ...p, peak: p.peak * 0.8, decay: p.decay * 2 })), i * 0.1));
     },
     dispose() {
       const c = ctx;

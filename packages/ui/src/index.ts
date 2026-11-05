@@ -30,6 +30,8 @@ export * from "./TasbihCounter.js";
 export * from "./VirtueDropdown.js";
 export * from "./tasbih-sound.js";
 export * from "./SharePanel.js";
+export * from "./Modal.js";
+export * from "./Install.js";
 export * from "./encouragement.js";
 export * from "./ZakatCalculator.js";
 export { Icon, IconInSvg, ICONS, isIconName, type IconName, type IconProps, type IconSize } from "./icons/Icon.js";

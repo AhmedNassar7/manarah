@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from "react";
-import { TASBIH_DHIKR, TASBIH_ROUND, TASBIH_THEMES, currentDhikr, type AzkarVirtue, type TasbihDay, type TasbihState } from "@manarah/core";
+import { TASBIH_BEADS, TASBIH_DHIKR, TASBIH_SOUNDS, TASBIH_THEMES, currentDhikr, type AzkarVirtue, type TasbihDay, type TasbihSoundId, type TasbihState } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
 import { VirtueDropdown } from "./VirtueDropdown.js";
@@ -12,21 +12,18 @@ export interface TasbihCounterProps {
   onUndo: () => void;
   onReset: () => void;
   onSelectDhikr: (id: string) => void;
-  onVibrateChange?: (vibrate: boolean) => void;
-  /** Whether this device can vibrate; the switch is only shown when it can. */
-  canVibrate?: boolean;
-  /** Turns the bead sound on or off. The control is shown when this is given. */
-  onSoundChange?: (sound: boolean) => void;
+  /** Chooses the sound of a bead (or none). The picker is shown when this is given. */
+  onSoundChange?: (sound: TasbihSoundId) => void;
   /** Chooses what the beads are made of. The picker is shown when this is given. */
   onThemeChange?: (theme: string) => void;
   /** What the Prophet said about the phrase being counted, if there is a firmly established hadith: shown as an "Its virtue" dropdown. */
   virtues?: AzkarVirtue[];
-  /** Goes up by one each time a round completes, to play the celebration (a number, so the same event twice still shows). */
+  /** Goes up by one at each full turn of the ring (every 33), to play the small celebration (a number, so the same event twice still shows). */
   celebration?: number;
 }
 
-/** Beads on the ring: the traditional 33. Targets of 99 and 100 simply go round it more than once. */
-const BEADS = 33;
+/** Beads on the ring: the traditional 33. The count goes on past it; the ring just starts a new turn. */
+const BEADS = TASBIH_BEADS;
 const STEP = 360 / BEADS;
 const RADIUS = 78;
 const BEAD_RADIUS = 8.2;
@@ -35,8 +32,7 @@ const BEAD_RADIUS = 8.2;
  * A tasbih you can feel and see: a ring of 33 shaded beads on a cord that turns one
  * bead with every tap, the count in the middle, a guide bead with its spacer beads and
  * a tassel at the top. The beads are made of something — olive wood, amber, pearl,
- * emerald, turquoise, onyx — and the picker changes the look (and, with sound on, the
- * knock) of all of it. Beads already counted are full colour, the rest a little
+ * emerald, turquoise, onyx — and the picker changes the look of all of it. Beads already counted are full colour, the rest a little
  * quieter. The ring is one big button: a thumb-sized target on a phone, the space bar
  * on a keyboard. It is personal and private — the totals are only for the person who counts.
  */
@@ -47,15 +43,13 @@ export function TasbihCounter({
   onUndo,
   onReset,
   onSelectDhikr,
-  onVibrateChange,
-  canVibrate = false,
   onSoundChange,
   onThemeChange,
   virtues = [],
   celebration = 0,
 }: TasbihCounterProps) {
   const { t, language } = useTranslation();
-  // How many beads the ring has turned. Not saved: it only decides how far the ring has rotated, so it never turns backwards at the end of a round.
+  // How many beads the ring has turned. Not saved: it only decides how far the ring has rotated, so it never turns backwards.
   const [ticks, setTicks] = useState(state.count);
   const [showDone, setShowDone] = useState(false);
   const gradientId = `tasbih-bead-${useId().replace(/:/g, "")}`;
@@ -69,9 +63,11 @@ export function TasbihCounter({
   }, [celebration]);
 
   const dhikr = currentDhikr(state);
-  const counted = Math.min(state.count, BEADS);
-  const ariaCount = t("tasbih.count", { count: state.count, target: TASBIH_ROUND });
-  const canUndo = state.last !== null;
+  // Beads filled on this turn of the ring: a full ring on each multiple of 33, an empty one just after.
+  const lap = state.count % BEADS;
+  const counted = lap === 0 && state.count > 0 ? BEADS : lap;
+  const ariaCount = t("tasbih.count", { count: state.count });
+  const canUndo = state.canUndo;
   const ringTurn = `rotate(${-ticks * STEP}deg)`;
   const faceTurn = `rotate(${ticks * STEP}deg)`;
 
@@ -163,7 +159,6 @@ export function TasbihCounter({
           </svg>
           <span className="tasbih-count" dir="ltr">
             <strong>{state.count}</strong>
-            <small>{`/ ${TASBIH_ROUND}`}</small>
           </span>
           {celebration > 0 && <span key={celebration} className="tasbih-glow" aria-hidden="true" />}
         </button>
@@ -180,12 +175,19 @@ export function TasbihCounter({
         <button type="button" onClick={onReset} disabled={state.count === 0}>
           <Icon name="refresh" size={16} /> {t("tasbih.reset")}
         </button>
-        {onSoundChange && (
-          <button type="button" className="tasbih-sound" aria-pressed={state.sound} onClick={() => onSoundChange(!state.sound)}>
-            <Icon name={state.sound ? "sound-on" : "sound-off"} size={16} /> {t("tasbih.sound")}
-          </button>
-        )}
       </div>
+
+      {onSoundChange && (
+        <div className="tasbih-sounds" role="radiogroup" aria-label={t("tasbih.sound")}>
+          <Icon name={state.sound === "off" ? "sound-off" : "sound-on"} size={16} />
+          <span>{t("tasbih.sound")}</span>
+          {TASBIH_SOUNDS.map((sound) => (
+            <button key={sound} type="button" role="radio" aria-checked={sound === state.sound} onClick={() => onSoundChange(sound)}>
+              {t(`tasbih.sound.${sound}`)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {onThemeChange && (
         <div className="tasbih-themes" role="radiogroup" aria-label={t("tasbih.themeLabel")}>
@@ -211,21 +213,10 @@ export function TasbihCounter({
           <dd dir="ltr">{today.taps}</dd>
         </div>
         <div>
-          <dt>{t("tasbih.rounds")}</dt>
-          <dd dir="ltr">{today.rounds}</dd>
-        </div>
-        <div>
           <dt>{t("tasbih.lifetime")}</dt>
           <dd dir="ltr">{state.lifetime}</dd>
         </div>
       </dl>
-
-      {canVibrate && onVibrateChange && (
-        <label className="tasbih-vibrate">
-          <input type="checkbox" checked={state.vibrate} onChange={(event) => onVibrateChange(event.target.checked)} />
-          <span>{t("tasbih.vibrate")}</span>
-        </label>
-      )}
 
       <p className="tasbih-hint">{t("tasbih.hint")}</p>
     </section>

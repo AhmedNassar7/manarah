@@ -1,34 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  currentTimbre,
-  resetTasbih,
-  selectDhikr,
-  setSound,
-  setTasbihTheme,
-  setVibrate,
-  tapTasbih,
-  todaysTasbih,
-  undoTasbih,
-  type TasbihState,
-} from "@manarah/core";
+import { resetTasbih, selectDhikr, setSound, setTasbihTheme, tapTasbih, todaysTasbih, undoTasbih, type TasbihSoundId, type TasbihState } from "@manarah/core";
 import { virtuesForTasbih } from "@manarah/data";
 import { TasbihCounter, createTasbihSound, useTranslation, type TasbihSound } from "@manarah/ui";
 
 export interface TasbihPageProps {
   state: TasbihState;
   onChange: (state: TasbihState) => void;
-  /** A round was completed — for progress. */
-  onRoundCompleted: () => void;
+  /** A full turn of the ring (every 33) was reached — for progress. */
+  onMilestone: () => void;
 }
 
-const canVibrate = typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
-
 /**
- * The tasbih: the counter, with the device's small vibration (if it has one and it is on),
- * and — only if the person has turned sound on — a knock for each bead in the sound of the
- * beads' material and a chime when a round is complete.
+ * The tasbih: the counter and — only if the person has chosen a sound — a soft sound for each
+ * bead and a small bell at every full turn of the ring. No vibration: it was not wanted.
  */
-export function TasbihPage({ state, onChange, onRoundCompleted }: TasbihPageProps) {
+export function TasbihPage({ state, onChange, onMilestone }: TasbihPageProps) {
   const { t } = useTranslation();
   const [celebration, setCelebration] = useState(0);
   const sound = useRef<TasbihSound | null>(null);
@@ -43,22 +29,22 @@ export function TasbihPage({ state, onChange, onRoundCompleted }: TasbihPageProp
     [],
   );
 
-  function vibrate(pattern: number | number[]) {
-    if (canVibrate && state.vibrate) navigator.vibrate(pattern);
-  }
-
   function tap() {
     const result = tapTasbih(state, new Date());
     onChange(result.state);
-    if (result.roundCompleted) {
-      vibrate([30, 50, 30]);
-      if (state.sound) engine().round();
+    if (result.milestone) {
+      if (state.sound !== "off") engine().milestone();
       setCelebration((n) => n + 1);
-      onRoundCompleted();
-    } else {
-      vibrate(8);
-      if (state.sound) engine().bead(currentTimbre(state));
+      onMilestone();
+    } else if (state.sound !== "off") {
+      engine().bead(state.sound);
     }
+  }
+
+  function chooseSound(choice: TasbihSoundId) {
+    onChange(setSound(state, choice));
+    // Choosing one plays a single bead, so you hear what you chose.
+    if (choice !== "off") engine().bead(choice);
   }
 
   return (
@@ -71,18 +57,8 @@ export function TasbihPage({ state, onChange, onRoundCompleted }: TasbihPageProp
         onUndo={() => onChange(undoTasbih(state, new Date()))}
         onReset={() => onChange(resetTasbih(state))}
         onSelectDhikr={(id) => onChange(selectDhikr(state, id))}
-        onVibrateChange={(on) => onChange(setVibrate(state, on))}
-        canVibrate={canVibrate}
-        onSoundChange={(on) => {
-          onChange(setSound(state, on));
-          // Turning it on plays one bead, so you hear what you chose.
-          if (on) engine().bead(currentTimbre(state));
-        }}
-        onThemeChange={(theme) => {
-          const next = setTasbihTheme(state, theme);
-          onChange(next);
-          if (state.sound) engine().bead(currentTimbre(next));
-        }}
+        onSoundChange={chooseSound}
+        onThemeChange={(theme) => onChange(setTasbihTheme(state, theme))}
         virtues={virtuesForTasbih(state.dhikrId)}
         celebration={celebration}
       />

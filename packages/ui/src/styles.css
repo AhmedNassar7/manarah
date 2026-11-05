@@ -6838,13 +6838,6 @@ label:has(> input[type="checkbox"]) {
   font-size: 1.05rem;
 }
 
-.tasbih-actions .tasbih-sound[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-weight: 700;
-}
-
 /* The material picker: a bead of each, named. */
 .tasbih-themes {
   display: flex;
@@ -7041,4 +7034,193 @@ label:has(> input[type="checkbox"]) {
 
 .tasbih .virtue-panel {
   text-align: start;
+}
+
+/* The sound picker: off, or one of three soft sounds. */
+.tasbih-sounds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tasbih-sounds button {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.tasbih-sounds button:hover {
+  border-color: var(--accent);
+}
+
+.tasbih-sounds button[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+/* ---------- Installing the app ---------- */
+
+.install-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-round);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.install-button:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+}
+
+@media (max-width: 639px) {
+  /* Phones: the icon alone; the word stays for screen readers. */
+  .install-button {
+    padding: 9px;
+  }
+
+  .install-button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.install-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.install-intro,
+.install-note {
+  margin: 0;
+}
+
+.install-note {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.install-now {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.install-platform h4 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.install-platform ol {
+  margin: 0;
+  padding-inline-start: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.install-others summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.install-others section {
+  margin-top: 12px;
+}
+
+.install-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Phones: the header carries the name, Install, Share and the language switch. They are sized down so they fit one row on a 360px screen,
+   and if a longer name or label still does not fit, the actions drop to their own row rather than run off the screen. */
+@media (max-width: 639px) {
+  .app-header {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    column-gap: 8px;
+  }
+
+  .app-header h1,
+  .app-header h1[lang="ar"] {
+    gap: 8px;
+    font-size: 1.45rem;
+  }
+
+  .app-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .app-header-actions {
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .app-header-actions .language-switcher button {
+    padding: 5px 9px;
+    font-size: 0.8rem;
+  }
+}
+
+/* A long option name must never make a select wider than the screen. */
+select {
+  max-width: 100%;
+}
+
+.reading-settings-row select {
+  min-width: 0;
+  flex: 1 1 0;
+  max-width: 60%;
+}
+
+.prayer-settings-editor label,
+.settings-row > *,
+.reading-settings label {
+  min-width: 0;
+}
+
+.prayer-settings-editor select {
+  width: 100%;
 }

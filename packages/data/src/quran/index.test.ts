@@ -168,6 +168,10 @@ describe("Quran data integrity", () => {
     expect(TAFSIR_EDITIONS.some((e) => e.language === "en")).toBe(true);
     expect(TAFSIR_EDITIONS.some((e) => e.language === "ar")).toBe(true);
   });
+
+  it("includes al-Tafsir al-Muyassar, as Quran.com resource 16 (checked against its /resources/tafsirs listing)", () => {
+    expect(TAFSIR_EDITIONS.find((e) => e.id === "muyassar")).toEqual({ id: "muyassar", quranComId: 16, language: "ar" });
+  });
 });
 
 describe("searchQuran (against the real corpus)", () => {

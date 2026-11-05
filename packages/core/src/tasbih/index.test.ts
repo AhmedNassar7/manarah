@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  TASBIH_BEADS,
   TASBIH_DHIKR,
-  TASBIH_ROUND,
+  TASBIH_SOUNDS,
+  TASBIH_THEMES,
   currentDhikr,
   emptyTasbih,
   normalizeTasbih,
@@ -9,9 +11,6 @@ import {
   selectDhikr,
   setSound,
   setTasbihTheme,
-  setVibrate,
-  currentTimbre,
-  TASBIH_THEMES,
   tapTasbih,
   todaysTasbih,
   undoTasbih,
@@ -23,13 +22,13 @@ const nextDay = new Date(2026, 10, 6, 12);
 
 function tapTimes(state: TasbihState, n: number, now = noon) {
   let s = state;
-  let rounds = 0;
+  let milestones = 0;
   for (let i = 0; i < n; i++) {
     const r = tapTasbih(s, now);
     s = r.state;
-    if (r.roundCompleted) rounds++;
+    if (r.milestone) milestones++;
   }
-  return { state: s, rounds };
+  return { state: s, milestones };
 }
 
 describe("tapTasbih", () => {
@@ -37,27 +36,24 @@ describe("tapTasbih", () => {
     const { state } = tapTasbih(emptyTasbih(), noon);
     expect(state.count).toBe(1);
     expect(state.lifetime).toBe(1);
-    expect(todaysTasbih(state, noon)).toEqual({ taps: 1, rounds: 0 });
+    expect(todaysTasbih(state, noon)).toEqual({ taps: 1 });
   });
 
-  it("completes a round exactly at 33 beads and starts the next from zero", () => {
-    const { state, rounds } = tapTimes(emptyTasbih(), 33);
-    expect(rounds).toBe(1);
-    expect(state.count).toBe(0);
-    expect(todaysTasbih(state, noon)).toEqual({ taps: 33, rounds: 1 });
-    expect(state.lifetime).toBe(33);
+  it("just goes on counting — there is no round to finish, and no limit at 33", () => {
+    const { state } = tapTimes(emptyTasbih(), 250);
+    expect(state.count).toBe(250);
+    expect(state.lifetime).toBe(250);
+    expect(todaysTasbih(state, noon).taps).toBe(250);
   });
 
-  it("reports the completion on the tap that finishes the round, and only that one", () => {
-    const almost = tapTimes(emptyTasbih(), 32).state;
-    expect(tapTasbih(almost, noon).roundCompleted).toBe(true);
-    expect(tapTasbih(emptyTasbih(), noon).roundCompleted).toBe(false);
-  });
-
-  it("counts several rounds", () => {
-    const { state, rounds } = tapTimes(emptyTasbih(), 100);
-    expect(rounds).toBe(3); // 33 x 3 = 99, one bead into the fourth
-    expect(state.count).toBe(1);
+  it("marks every full turn of the ring (the 33rd, 66th, 99th…) as a milestone, and only those", () => {
+    const at32 = tapTimes(emptyTasbih(), 32).state;
+    expect(tapTasbih(at32, noon).milestone).toBe(true);
+    expect(tapTasbih(emptyTasbih(), noon).milestone).toBe(false);
+    expect(tapTimes(emptyTasbih(), 100).milestones).toBe(3);
+    expect(tapTimes(emptyTasbih(), 99).milestones).toBe(3);
+    expect(tapTimes(emptyTasbih(), 32).milestones).toBe(0);
+    expect(TASBIH_BEADS).toBe(33);
   });
 
   it("keeps each day's totals apart", () => {
@@ -78,25 +74,20 @@ describe("tapTasbih", () => {
 
 describe("undoTasbih", () => {
   it("takes back the last bead", () => {
-    const s = tapTimes(emptyTasbih(), 5).state;
-    const undone = undoTasbih(s, noon);
+    const undone = undoTasbih(tapTimes(emptyTasbih(), 5).state, noon);
     expect(undone.count).toBe(4);
     expect(undone.lifetime).toBe(4);
     expect(todaysTasbih(undone, noon).taps).toBe(4);
   });
 
-  it("takes back the tap that completed a round — the count returns to the last bead and the round is not counted", () => {
-    const s = tapTimes(emptyTasbih(), 33).state;
-    expect(todaysTasbih(s, noon).rounds).toBe(1);
-    const undone = undoTasbih(s, noon);
+  it("works across a milestone too", () => {
+    const undone = undoTasbih(tapTimes(emptyTasbih(), 33).state, noon);
     expect(undone.count).toBe(32);
-    expect(todaysTasbih(undone, noon)).toEqual({ taps: 32, rounds: 0 });
-    expect(undone.lifetime).toBe(32);
+    expect(todaysTasbih(undone, noon).taps).toBe(32);
   });
 
   it("is one step only, and does nothing when there is nothing to take back", () => {
-    const s = tapTimes(emptyTasbih(), 5).state;
-    const once = undoTasbih(s, noon);
+    const once = undoTasbih(tapTimes(emptyTasbih(), 5).state, noon);
     expect(undoTasbih(once, noon)).toBe(once);
     expect(undoTasbih(emptyTasbih(), noon)).toEqual(emptyTasbih());
   });
@@ -108,12 +99,12 @@ describe("undoTasbih", () => {
 });
 
 describe("choices", () => {
-  it("resetting starts the round again but keeps the totals", () => {
-    const s = tapTimes(emptyTasbih(), 20).state;
-    const r = resetTasbih(s);
+  it("resetting starts the count again but keeps the totals", () => {
+    const r = resetTasbih(tapTimes(emptyTasbih(), 20).state);
     expect(r.count).toBe(0);
     expect(r.lifetime).toBe(20);
     expect(todaysTasbih(r, noon).taps).toBe(20);
+    expect(r.canUndo).toBe(false);
   });
 
   it("choosing another dhikr starts it from zero; an unknown one is ignored", () => {
@@ -122,26 +113,25 @@ describe("choices", () => {
     expect(chosen.dhikrId).toBe("alhamdulillah");
     expect(chosen.count).toBe(0);
     expect(selectDhikr(s, "nonsense")).toBe(s);
+    expect(selectDhikr(s, s.dhikrId)).toBe(s);
     expect(currentDhikr(chosen).id).toBe("alhamdulillah");
   });
 
-  it("keeps a vibration preference — on by default, and kept when it is off", () => {
-    expect(emptyTasbih().vibrate).toBe(true);
-    const off = setVibrate(emptyTasbih(), false);
-    expect(off.vibrate).toBe(false);
-    expect(normalizeTasbih(JSON.parse(JSON.stringify(off))).vibrate).toBe(false);
-    expect(normalizeTasbih({ vibrate: "yes" }).vibrate).toBe(true);
-    expect(tapTasbih(off, noon).state.vibrate).toBe(false);
+  it("is silent until a sound is chosen, and remembers which", () => {
+    expect(emptyTasbih().sound).toBe("off");
+    for (const sound of TASBIH_SOUNDS) {
+      const s = setSound(emptyTasbih(), sound);
+      expect(s.sound).toBe(sound);
+      expect(normalizeTasbih(JSON.parse(JSON.stringify(s))).sound).toBe(sound);
+      expect(tapTasbih(s, noon).state.sound).toBe(sound);
+    }
+    const wood = setSound(emptyTasbih(), "wood");
+    expect(setSound(wood, "wood")).toBe(wood);
+    expect(setSound(wood, "thunder" as never)).toBe(wood);
   });
 
-  it("is silent until sound is turned on, and remembers the choice", () => {
-    expect(emptyTasbih().sound).toBe(false);
-    const on = setSound(emptyTasbih(), true);
-    expect(on.sound).toBe(true);
-    expect(normalizeTasbih(JSON.parse(JSON.stringify(on))).sound).toBe(true);
-    expect(normalizeTasbih({ sound: "loud" }).sound).toBe(false);
-    expect(tapTasbih(on, noon).state.sound).toBe(true);
-    expect(setSound(on, true)).toBe(on);
+  it("offers three soft sounds besides silence", () => {
+    expect(TASBIH_SOUNDS).toEqual(["off", "click", "wood", "bell"]);
   });
 
   it("starts with olive-wood beads, can change material, and ignores a material that does not exist", () => {
@@ -152,14 +142,6 @@ describe("choices", () => {
     expect(normalizeTasbih(JSON.parse(JSON.stringify(pearl))).theme).toBe("pearl");
     expect(normalizeTasbih({ theme: "nonsense" }).theme).toBe("wood");
     expect(tapTasbih(pearl, noon).state.theme).toBe("pearl");
-  });
-
-  it("gives every material a sound that suits it: wood knocks, glass ticks, stone clacks", () => {
-    const timbre = (theme: string) => currentTimbre(setTasbihTheme(emptyTasbih(), theme));
-    expect(timbre("wood")).toBe("wood");
-    expect(timbre("pearl")).toBe("glass");
-    expect(timbre("onyx")).toBe("stone");
-    expect(timbre("amber")).toBe("soft");
     expect(new Set(TASBIH_THEMES.map((t) => t.id)).size).toBe(TASBIH_THEMES.length);
   });
 
@@ -178,27 +160,35 @@ describe("normalizeTasbih", () => {
   it("keeps valid parts and drops malformed ones", () => {
     const s = normalizeTasbih({
       dhikrId: "alhamdulillah",
-      count: 20,
+      count: 120,
       lifetime: 500,
-      last: "tap",
-      days: { "2026-11-05": { taps: 40, rounds: 1 }, "not-a-date": { taps: 9, rounds: 9 }, "2026-11-04": "bad" },
+      canUndo: true,
+      sound: "bell",
+      days: { "2026-11-05": { taps: 40 }, "not-a-date": { taps: 9 }, "2026-11-04": "bad" },
     });
-    expect(s).toMatchObject({ dhikrId: "alhamdulillah", count: 20, lifetime: 500, last: "tap" });
+    expect(s).toMatchObject({ dhikrId: "alhamdulillah", count: 120, lifetime: 500, canUndo: true, sound: "bell" });
     expect(Object.keys(s.days)).toEqual(["2026-11-05"]);
   });
 
-  it("repairs impossible values: an unknown dhikr, a count past a full round, negative numbers", () => {
-    const s = normalizeTasbih({ dhikrId: "?", count: -3, lifetime: -1, last: "weird", days: { "2026-11-05": { taps: -2, rounds: 1.5 } } });
+  it("repairs impossible values: an unknown dhikr or sound, negative numbers", () => {
+    const s = normalizeTasbih({ dhikrId: "?", count: -3, lifetime: -1, sound: "thunder", days: { "2026-11-05": { taps: -2 } } });
     expect(s.dhikrId).toBe(TASBIH_DHIKR[0].id);
     expect(s.count).toBe(0);
     expect(s.lifetime).toBe(0);
-    expect(s.last).toBeNull();
-    expect(s.days["2026-11-05"]).toEqual({ taps: 0, rounds: 0 });
-    expect(normalizeTasbih({ count: 50 }).count).toBe(0);
-    expect(normalizeTasbih({ count: 32 }).count).toBe(32);
-    // A round size chosen in an earlier version is ignored: a round is one ring.
-    expect(normalizeTasbih({ target: 99, count: 40 }).count).toBe(0); // 40 is past one ring
-    expect("target" in normalizeTasbih({ target: 99 })).toBe(false);
-    expect(TASBIH_ROUND).toBe(33);
+    expect(s.sound).toBe("off");
+    expect(s.days["2026-11-05"]).toEqual({ taps: 0 });
+  });
+
+  it("ignores what earlier versions kept — a round size, rounds, vibration — and keeps a count past 33", () => {
+    const s = normalizeTasbih({ target: 99, vibrate: true, count: 40, days: { "2026-11-05": { taps: 40, rounds: 1 } } });
+    expect(s.count).toBe(40);
+    expect("target" in s).toBe(false);
+    expect("vibrate" in s).toBe(false);
+    expect(s.days["2026-11-05"]).toEqual({ taps: 40 });
+  });
+
+  it("turns the old yes/no sound setting into a choice: yes becomes the wood knock it used to be, no stays silent", () => {
+    expect(normalizeTasbih({ sound: true }).sound).toBe("wood");
+    expect(normalizeTasbih({ sound: false }).sound).toBe("off");
   });
 });

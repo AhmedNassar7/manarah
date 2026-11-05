@@ -203,13 +203,15 @@ export const TRANSLATION_AUDIO: TranslationAudio = {
 /**
  * Tafsir editions served by the Quran.com API — the classical Ahl al-Sunnah
  * canon from the plan (Ibn Kathir, al-Tabari, al-Qurtubi, al-Baghawi,
- * as-Sa'di), plus the abridged English Ibn Kathir so English-language
+ * as-Sa'di), plus the short, plain-language al-Tafsir al-Muyassar (King Fahd
+ * Complex), plus the abridged English Ibn Kathir so English-language
  * readers have one they can read. Resource ids copied from the API's own
  * /resources/tafsirs listing and each fetched live for 2:255 on 2026-09-30,
  * not guessed. Display names live in the UI dictionaries (`tafsir.edition.<id>`).
  */
 export const TAFSIR_EDITIONS: TafsirEdition[] = [
   { id: "ibn-kathir-en", quranComId: 169, language: "en" },
+  { id: "muyassar", quranComId: 16, language: "ar" },
   { id: "ibn-kathir", quranComId: 14, language: "ar" },
   { id: "saadi", quranComId: 91, language: "ar" },
   { id: "baghawi", quranComId: 94, language: "ar" },
