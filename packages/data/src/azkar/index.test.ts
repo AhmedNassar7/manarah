@@ -13,13 +13,15 @@ const VALID_TRIGGERS = new Set([
 ]);
 
 describe("Azkar data integrity", () => {
-  it("has the expected 132 categories and 266 total items", () => {
+  it("has the expected 133 categories and 286 total items", () => {
     // 267 items exist in the upstream source; one (id 267) has no Arabic text
     // at all and is dropped during the fetch/transform — see the provenance
-    // note in ./index.ts.
-    expect(AZKAR_CATEGORIES.length).toBe(132);
+    // note in ./index.ts. That leaves 132 categories and 266 items upstream;
+    // the combined morning-and-evening chapter (24 items) is shown as two
+    // lists — morning (23 items) and evening (21) — hence 133 and 286.
+    expect(AZKAR_CATEGORIES.length).toBe(133);
     const totalItems = AZKAR_CATEGORIES.reduce((sum, c) => sum + c.items.length, 0);
-    expect(totalItems).toBe(266);
+    expect(totalItems).toBe(266 - 24 + 23 + 21);
   });
 
   it("has unique category ids", () => {
@@ -42,10 +44,11 @@ describe("Azkar data integrity", () => {
     }
   });
 
-  it("assigns the morning/evening azkar category (id 27) to the combined morning-evening trigger", () => {
-    const category = getAzkarCategory("27");
-    expect(category?.trigger).toBe("morning-evening");
-    expect(category?.items.length).toBeGreaterThan(0);
+  it("gives morning and evening azkar their own categories and reminder triggers (27 = morning, 27e = evening)", () => {
+    expect(getAzkarCategory("27")?.trigger).toBe("morning");
+    expect(getAzkarCategory("27e")?.trigger).toBe("evening");
+    expect(getAzkarCategory("27")?.items.length).toBeGreaterThan(0);
+    expect(getAzkarCategory("27e")?.items.length).toBeGreaterThan(0);
   });
 
   it("getAzkarCategoriesByTrigger only returns categories with that exact trigger", () => {

@@ -15,7 +15,7 @@ function letters(text: string): string {
 
 describe("parseAzkarText against the real Hisn al-Muslim corpus", () => {
   it("covers every entry", () => {
-    expect(items.length).toBe(266);
+    expect(items.length).toBe(286); // 266 upstream, with the 24-item morning-and-evening chapter shown as two lists (23 + 21)
   });
 
   it("never loses or invents a letter or diacritic — the parts together are exactly the original text", () => {

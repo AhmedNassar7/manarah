@@ -1,7 +1,9 @@
 import type { AzkarCategory } from "@manarah/core";
 import categoriesData from "./categories.json";
+import { MORNING_CATEGORY_ID, splitMorningEvening } from "./morning-evening.js";
 
 export * from "./sections.js";
+export * from "./morning-evening.js";
 export * from "./quranic-duas.js";
 
 /**
@@ -14,7 +16,7 @@ export * from "./quranic-duas.js";
  * than shipped incomplete or filled in from memory.
  *
  * `trigger` on each category is a heuristic default based on its title
- * (morning-evening for the combined chapter 27, waking, before-sleep,
+ * (morning and evening for the two halves of the combined chapter 27, waking, before-sleep,
  * post-salah, or "situational" for everything else — contextual duas with
  * no fixed daily time). Users can
  * remap any category's trigger via AzkarSchedule; this is only the default.
@@ -23,7 +25,12 @@ export * from "./quranic-duas.js";
  * index (hisnmuslim.com/api/ar/husn_ar.json), matched by category id —
  * the two editions share the same 132 ids, verified one-to-one 2026-09-30.
  */
-export const AZKAR_CATEGORIES: AzkarCategory[] = categoriesData as AzkarCategory[];
+export const AZKAR_CATEGORIES: AzkarCategory[] = (categoriesData as AzkarCategory[]).flatMap((category) => {
+  // The book's one morning-and-evening chapter is shown as two lists (see morning-evening.ts).
+  if (category.id !== MORNING_CATEGORY_ID) return [category];
+  const { morning, evening } = splitMorningEvening(category);
+  return [morning, evening];
+});
 
 export function getAzkarCategory(id: string): AzkarCategory | undefined {
   return AZKAR_CATEGORIES.find((c) => c.id === id);

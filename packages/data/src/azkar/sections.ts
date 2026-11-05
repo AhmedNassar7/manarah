@@ -12,7 +12,8 @@ import type { AzkarSection } from "@manarah/core";
  * Section titles live in the UI dictionaries (`azkarSection.<id>`).
  */
 export const AZKAR_SECTIONS: AzkarSection[] = [
-  { id: "morning-evening", icon: "sunrise", categoryIds: ["27"] },
+  { id: "morning", icon: "sunrise", categoryIds: ["27"] },
+  { id: "evening", icon: "sunset", categoryIds: ["27e"] },
   { id: "sleep", icon: "moon", categoryIds: ["28", "29", "30", "31", "1"] },
   {
     id: "prayer",
