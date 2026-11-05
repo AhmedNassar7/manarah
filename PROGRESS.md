@@ -323,7 +323,7 @@ From the user's note that the design was static and flat. Principle: **scripture
 - **The hero is a sky that follows the day** (`PrayerHero`): dawn blue→peach, golden morning, midday sky, amber afternoon, sunset purple→coral, night indigo; an eight-point-star lattice texture; a ring that fills as the current prayer period runs out (and turns the right way in Arabic); an icon for the period (sunrise / sun / cloud-sun / sunset / moon-star) that floats; the Gregorian **and** Hijri date; a live countdown. Driven by new pure `prayerProgress` (current period, start, fraction — tested), so colour, icon and ring come from one fact.
 - **Motion:** blocks rise in one after another on each page; cards and Home tiles lift on hover (tiles glow in their section colour); nav icons spring; buttons press; the next prayer row breathes; stars twinkle on the Ramadan card.
 - Dates: the Gregorian date now sits beside the Hijri one on Home and the Prayer page (and in the Calendar hero).
-- Not done / next: a prayer-period tint on the page background itself, a tasbih-style tap burst on azkar completion, animated number changes, page transitions (View Transitions API), and a bottom tab bar on phones.
+- Not done / next: a prayer-period tint on the page background itself, a tasbih-style tap burst on azkar completion, animated number changes, and page transitions (View Transitions API). (The phone bottom tab bar is done — see below.)
 
 ## Ramadan countdown — ✅ done (2026-11-05)
 
@@ -365,6 +365,10 @@ Encouragement the user asked for — points, a competition, a kind word when the
 ## Logo — ✅ done (2026-11-05, on request)
 
 Replaced the old pale-green circle with thin rays by a clearer, more distinctive mark: a **gold minaret with a crescent finial on a deep emerald tile**, with a soft glow around the tip and light rays from the gallery — a *manarah* is a place of light, and the rays also read as the call to prayer carrying outward. One shape, readable down to 16 px (checked). Source `assets/logo.svg`; `favicon.svg`, PWA `icon-192/512.png` and extension `icon-16/48/128.png` are regenerated from it, and the mark now sits beside the name in the app header. The README keeps using `assets/logo.svg`.
+
+## Phone bottom bar — ✅ done (2026-11-05)
+
+Eleven sections no longer fit a phone's top strip comfortably, and the top of the screen is the hardest place to reach with a thumb. On screens under 640px the nav is now a **fixed bottom bar**: Home, Prayer, Quran, Azkar and **More**, which opens a sheet with Qibla, Hadith, Calendar, Zakat, Challenge and Settings. It is the *same set of links* as the sidebar/strip (`.app-nav-more` is `display: contents` on larger screens and the More button is hidden), so tablets and desktops are unchanged apart from the order — the four main sections now come first in the sidebar. The sheet closes on navigation, on Escape and on a tap outside; "More" shows as active while you are on one of its pages; `aria-expanded`/`aria-controls` are set; the bar respects the iPhone home-indicator safe area, and the toast sits above it. Checked on screen at 390px in English and Arabic (RTL), including no horizontal overflow. Not done: the bar has no unit test (the web app has no test setup yet — behaviour was verified in headless Chrome).
 
 ## Testing strategy — ✅ framework in place, coverage ongoing
 
