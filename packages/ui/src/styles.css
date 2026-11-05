@@ -7107,6 +7107,104 @@ label:has(> input[type="checkbox"]) {
   }
 }
 
+/* The invitation to install — a card above the phone's tab bar, in the corner on a computer. */
+.install-banner {
+  position: fixed;
+  z-index: 45;
+  inset-inline: 12px;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  margin-inline: auto;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.38);
+  animation: rise 360ms var(--ease-spring) both;
+}
+
+.install-banner-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.install-banner-logo {
+  flex: none;
+  border-radius: 12px;
+}
+
+.install-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.install-banner-text strong {
+  font-size: 1rem;
+}
+
+.install-banner-text span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.install-banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.install-banner-primary,
+.install-banner-later {
+  min-height: 44px;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.install-banner-primary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.install-banner-primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+}
+
+.install-banner-later {
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+}
+
+.install-banner-later:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+@media (min-width: 640px) {
+  .install-banner {
+    inset-inline: auto 24px;
+    bottom: 24px;
+    width: 380px;
+    margin-inline: 0;
+  }
+}
+
 .install-guide {
   display: flex;
   flex-direction: column;

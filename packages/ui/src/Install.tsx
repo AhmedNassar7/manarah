@@ -94,3 +94,57 @@ export function InstallButton({ platform, canPrompt, installed, onInstall }: Ins
     </>
   );
 }
+
+export interface InstallBannerProps {
+  platform: InstallPlatform;
+  canPrompt: boolean;
+  /** Starts the browser's own install. */
+  onInstall: () => void;
+  /** "Not now", or the person has seen what they needed (the steps were opened and closed). */
+  onDismiss: () => void;
+  /** The app's icon, shown at the left of the card. */
+  logo?: string;
+}
+
+/**
+ * The invitation to install, for someone who has not: a small card that slides up from the
+ * bottom (above the phone's tab bar, in the corner on a computer). It says what they get in one
+ * line, and has two buttons — the main one either starts the browser's install or, where the
+ * browser can't, shows the steps; the quiet one is "Not now". It never takes focus or covers
+ * the page with a backdrop; when to show it is decided by the app (see shouldShowInstallNudge).
+ */
+export function InstallBanner({ platform, canPrompt, onInstall, onDismiss, logo }: InstallBannerProps) {
+  const { t, language } = useTranslation();
+  const [steps, setSteps] = useState(false);
+  const closeSteps = useCallback(() => {
+    setSteps(false);
+    onDismiss();
+  }, [onDismiss]);
+
+  return (
+    <>
+      <section className="install-banner" role="region" aria-label={t("install.title")} dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
+        <div className="install-banner-head">
+          {logo ? <img className="install-banner-logo" src={logo} alt="" width={44} height={44} /> : <Icon name="download" size={24} />}
+          <div className="install-banner-text">
+            <strong>{t("install.title")}</strong>
+            <span>{t("install.banner.body")}</span>
+          </div>
+        </div>
+        <div className="install-banner-actions">
+          <button type="button" className="install-banner-primary" onClick={() => (canPrompt ? onInstall() : setSteps(true))}>
+            <Icon name="download" size={20} /> {canPrompt ? t("install.button") : t("install.banner.how")}
+          </button>
+          <button type="button" className="install-banner-later" onClick={onDismiss}>
+            {t("install.banner.later")}
+          </button>
+        </div>
+      </section>
+      {steps && (
+        <Modal title={t("install.title")} onClose={closeSteps}>
+          <InstallGuide platform={platform} canPrompt={false} installed={false} onInstall={onInstall} />
+        </Modal>
+      )}
+    </>
+  );
+}

@@ -59,11 +59,12 @@ import {
   getVersesForSurah,
 } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { InstallButton, LanguageProvider, LanguageSwitcher, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
+import { InstallBanner, InstallButton, LanguageProvider, LanguageSwitcher, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
 import { useInstall } from "./install.js";
+import { useInstallNudge } from "./install-nudge.js";
 import { appShareUrl } from "./share-url.js";
 import { withViewTransition } from "./view-transition.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
@@ -627,6 +628,8 @@ function AppShell({ children }: { children: ReactNode }) {
   const install = useInstall();
   // Each section has its own colour (see "Joy layer" in styles.css); the router path says which one we're in.
   const section = useLocation().pathname.split("/")[1] || "home";
+  // The invitation to install: not on the tasbih, where the thumb taps the lower half of the screen.
+  const nudge = useInstallNudge(install, section === "tasbih");
 
   // The tab title follows the language too.
   useEffect(() => {
@@ -652,6 +655,18 @@ function AppShell({ children }: { children: ReactNode }) {
         <NotificationPrompt />
         {children}
       </div>
+      {nudge.show && (
+        <InstallBanner
+          platform={install.platform}
+          canPrompt={install.canPrompt}
+          logo="favicon.svg"
+          onInstall={() => {
+            void install.prompt();
+            nudge.dismiss(); // if they back out of the browser's own dialog, it counts as 'not now'
+          }}
+          onDismiss={nudge.dismiss}
+        />
+      )}
     </main>
   );
 }
