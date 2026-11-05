@@ -56,6 +56,7 @@ const PAIRS: Array<[string, string]> = [
   ["accent", "accent-soft"],
   ["accent-ink", "accent"],
   ["gold-ink", "surface"],
+  ["gold-ink", "gold-soft"], // the "Its virtue" button and panel
 ];
 
 describe("colour tokens", () => {

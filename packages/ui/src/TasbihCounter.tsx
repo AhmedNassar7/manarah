@@ -1,7 +1,8 @@
 import { useEffect, useId, useState } from "react";
-import { TASBIH_DHIKR, TASBIH_TARGETS, TASBIH_THEMES, currentDhikr, type TasbihDay, type TasbihState } from "@manarah/core";
+import { TASBIH_DHIKR, TASBIH_ROUND, TASBIH_THEMES, currentDhikr, type AzkarVirtue, type TasbihDay, type TasbihState } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
+import { VirtueDropdown } from "./VirtueDropdown.js";
 
 export interface TasbihCounterProps {
   state: TasbihState;
@@ -11,7 +12,6 @@ export interface TasbihCounterProps {
   onUndo: () => void;
   onReset: () => void;
   onSelectDhikr: (id: string) => void;
-  onTarget: (target: number) => void;
   onVibrateChange?: (vibrate: boolean) => void;
   /** Whether this device can vibrate; the switch is only shown when it can. */
   canVibrate?: boolean;
@@ -19,6 +19,8 @@ export interface TasbihCounterProps {
   onSoundChange?: (sound: boolean) => void;
   /** Chooses what the beads are made of. The picker is shown when this is given. */
   onThemeChange?: (theme: string) => void;
+  /** What the Prophet said about the phrase being counted, if there is a firmly established hadith: shown as an "Its virtue" dropdown. */
+  virtues?: AzkarVirtue[];
   /** Goes up by one each time a round completes, to play the celebration (a number, so the same event twice still shows). */
   celebration?: number;
 }
@@ -45,11 +47,11 @@ export function TasbihCounter({
   onUndo,
   onReset,
   onSelectDhikr,
-  onTarget,
   onVibrateChange,
   canVibrate = false,
   onSoundChange,
   onThemeChange,
+  virtues = [],
   celebration = 0,
 }: TasbihCounterProps) {
   const { t, language } = useTranslation();
@@ -67,9 +69,8 @@ export function TasbihCounter({
   }, [celebration]);
 
   const dhikr = currentDhikr(state);
-  const free = state.target === 0;
   const counted = Math.min(state.count, BEADS);
-  const ariaCount = free ? t("tasbih.countFree", { count: state.count }) : t("tasbih.count", { count: state.count, target: state.target });
+  const ariaCount = t("tasbih.count", { count: state.count, target: TASBIH_ROUND });
   const canUndo = state.last !== null;
   const ringTurn = `rotate(${-ticks * STEP}deg)`;
   const faceTurn = `rotate(${ticks * STEP}deg)`;
@@ -97,6 +98,9 @@ export function TasbihCounter({
       <p className="tasbih-phrase" dir="rtl" lang="ar">
         {dhikr.arabic}
       </p>
+
+      {/* Keyed by the phrase, so it closes when you change dhikr. The English meaning follows the interface language here (there is no translation toggle on this page). */}
+      <VirtueDropdown key={dhikr.id} virtues={virtues} showMeaning={language === "en"} />
 
       <div className="tasbih-stage">
         <button type="button" className="tasbih-ring" onClick={tap} aria-label={`${t("tasbih.tap")} — ${ariaCount}`}>
@@ -159,7 +163,7 @@ export function TasbihCounter({
           </svg>
           <span className="tasbih-count" dir="ltr">
             <strong>{state.count}</strong>
-            <small>{free ? <Icon name="infinity" size={20} /> : `/ ${state.target}`}</small>
+            <small>{`/ ${TASBIH_ROUND}`}</small>
           </span>
           {celebration > 0 && <span key={celebration} className="tasbih-glow" aria-hidden="true" />}
         </button>
@@ -181,15 +185,6 @@ export function TasbihCounter({
             <Icon name={state.sound ? "sound-on" : "sound-off"} size={16} /> {t("tasbih.sound")}
           </button>
         )}
-      </div>
-
-      <div className="tasbih-targets" role="group" aria-label={t("tasbih.target")}>
-        <span>{t("tasbih.target")}</span>
-        {TASBIH_TARGETS.map((target) => (
-          <button key={target} type="button" aria-pressed={target === state.target} onClick={() => onTarget(target)}>
-            {target === 0 ? t("tasbih.target.0") : target}
-          </button>
-        ))}
       </div>
 
       {onThemeChange && (

@@ -1,5 +1,5 @@
 import type { AzkarSchedule } from "@manarah/core";
-import { AZKAR_CATEGORIES, AZKAR_SECTIONS, QURANIC_DUA_CATEGORIES, QURANIC_DUA_SECTION } from "@manarah/data";
+import { AZKAR_CATEGORIES, AZKAR_SECTIONS, QURANIC_DUA_CATEGORIES, QURANIC_DUA_SECTION, virtuesForItem } from "@manarah/data";
 import { AzkarBrowser, AzkarScheduleEditor, useTranslation } from "@manarah/ui";
 
 /** What the browser shows: the Hisn al-Muslim sections plus the Quranic duas. (Scheduling a reminder still applies to the Hisn corpus only.) */
@@ -40,6 +40,7 @@ export function AzkarPage({
         onItemComplete={onAzkarCompleted}
         todaysCounts={todaysCounts}
         onCountsChange={onCountsChange}
+        virtuesFor={virtuesForItem}
       />
 
       {/* 132 rows — collapsed by default so it doesn't bury the azkar themselves. */}

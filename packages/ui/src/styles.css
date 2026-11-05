@@ -6291,7 +6291,6 @@ label:has(> input[type="checkbox"]) {
 }
 
 .tasbih-chips button,
-.tasbih-targets button,
 .tasbih-actions button {
   padding: 8px 14px;
   border: 1px solid var(--line);
@@ -6304,13 +6303,11 @@ label:has(> input[type="checkbox"]) {
 }
 
 .tasbih-chips button:hover,
-.tasbih-targets button:hover:not([aria-pressed="true"]),
 .tasbih-actions button:hover:not(:disabled) {
   border-color: var(--accent);
 }
 
-.tasbih-chips button[aria-pressed="true"],
-.tasbih-targets button[aria-pressed="true"] {
+.tasbih-chips button[aria-pressed="true"] {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-ink);
@@ -6377,19 +6374,6 @@ label:has(> input[type="checkbox"]) {
 .tasbih-actions button:disabled {
   opacity: 0.45;
   cursor: default;
-}
-
-.tasbih-targets {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.tasbih-targets > span {
-  color: var(--muted);
-  font-size: 0.85rem;
 }
 
 .tasbih-stats {
@@ -6922,4 +6906,139 @@ label:has(> input[type="checkbox"]) {
   .tasbih-chips button {
     flex-shrink: 0;
   }
+}
+
+/* ---------- "Its virtue" dropdown, and listening to a dhikr ---------- */
+
+.azkar-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.azkar-list .azkar-item-actions button {
+  align-self: auto;
+}
+
+.azkar-list .azkar-listen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+
+.azkar-list .azkar-listen:hover {
+  border-color: var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.azkar-list .azkar-listen.playing {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.azkar-audio-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.virtue {
+  align-self: stretch;
+}
+
+.azkar-list .virtue-toggle,
+.virtue-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+  min-width: 0;
+  padding: 6px 14px;
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, var(--line));
+  border-radius: var(--radius-round);
+  background: var(--gold-soft);
+  color: var(--gold-ink);
+  font-family: var(--font-body);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.azkar-list .virtue-toggle:hover,
+.virtue-toggle:hover {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  color: var(--gold-ink);
+}
+
+.virtue-chevron {
+  transition: transform var(--dur-base) var(--ease-quiet);
+}
+
+.virtue-toggle[aria-expanded="true"] .virtue-chevron {
+  transform: rotate(180deg);
+}
+
+.virtue-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-page);
+  border-inline-start: 3px solid var(--gold);
+  background: var(--gold-soft);
+  animation: rise 300ms var(--ease-quiet) both;
+}
+
+.virtue-item {
+  margin: 0;
+}
+
+.virtue-item blockquote {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-arabic-quran);
+  font-size: 1.3rem;
+  line-height: 1.95;
+}
+
+.virtue-meaning {
+  margin: 6px 0 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.virtue-item figcaption {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.virtue-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.tasbih .virtue {
+  align-self: center;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+.tasbih .virtue-panel {
+  text-align: start;
 }

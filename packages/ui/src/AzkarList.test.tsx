@@ -1,8 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AzkarCategory } from "@manarah/core";
-import { AzkarList } from "./AzkarList.js";
+import type { AzkarCategory, AzkarVirtue } from "@manarah/core";
+import { AzkarList, secureAudioUrl } from "./AzkarList.js";
 import { LanguageProvider } from "./i18n/index.js";
 
 const category: AzkarCategory = {
@@ -340,5 +340,166 @@ describe("AzkarList — progress", () => {
     );
     expect(screen.getByRole("button", { name: "اذهب إلى الذكر الحالي" })).toHaveTextContent("الذكر 1 من 2");
     expect(screen.getByText("أُنجز 0")).toBeInTheDocument();
+  });
+});
+
+describe("AzkarList — virtue and listening", () => {
+  const withAudio: AzkarCategory = {
+    ...category,
+    items: [
+      { id: "75", arabic: "أَعُوذُ بِاللَّهِ", repeatCount: 3, audioUrl: "http://www.hisnmuslim.com/audio/ar/75.mp3" },
+      { id: "76", arabic: "سُبْحَانَ ٱللَّهِ", repeatCount: 1 },
+    ],
+  };
+  const virtue: AzkarVirtue = {
+    id: "v",
+    collection: "muslim",
+    number: "408",
+    book: 4,
+    bookTitle: "Prayer",
+    bookTitleAr: "كتاب الصلاة",
+    arabic: "مَنْ صَلَّى عَلَىَّ وَاحِدَةً",
+    meaning: "Whoever sends one prayer upon me, Allah sends ten upon him.",
+  };
+
+  describe("its virtue", () => {
+    it("has a dropdown only under a dhikr that has a virtue", () => {
+      render(<AzkarList category={category} virtuesFor={(id) => (id === "76" ? [virtue] : [])} />);
+      expect(screen.getAllByRole("button", { name: /Its virtue/ })).toHaveLength(1);
+      const items = document.querySelectorAll(".azkar-list li");
+      expect(items[0].querySelector(".virtue")).toBeNull();
+      expect(items[1].querySelector(".virtue")).not.toBeNull();
+    });
+
+    it("has none at all when no virtues are given", () => {
+      render(<AzkarList category={category} />);
+      expect(screen.queryByRole("button", { name: /Its virtue/ })).not.toBeInTheDocument();
+    });
+
+    it("opens to the hadith with its source, with the English meaning only when translations are on", async () => {
+      const user = userEvent.setup();
+      const { rerender } = render(<AzkarList category={category} virtuesFor={() => [virtue]} showTranslation={false} />);
+      await user.click(screen.getAllByRole("button", { name: /Its virtue/ })[0]);
+      expect(screen.getByText(/«مَنْ صَلَّى عَلَىَّ وَاحِدَةً»/)).toBeInTheDocument();
+      expect(screen.getByText("Sahih Muslim · Prayer · no. 408")).toBeInTheDocument();
+      expect(screen.queryByText(/Allah sends ten upon him/)).not.toBeInTheDocument();
+      rerender(<AzkarList category={category} virtuesFor={() => [virtue]} showTranslation />);
+      expect(screen.getByText(/Allah sends ten upon him/)).toBeInTheDocument();
+    });
+
+    it("does not count as a tap: opening it leaves the tally alone", async () => {
+      const user = userEvent.setup();
+      render(<AzkarList category={category} virtuesFor={() => [virtue]} />);
+      await user.click(screen.getAllByRole("button", { name: /Its virtue/ })[0]);
+      expect(screen.getByRole("button", { name: "0 / 3" })).toBeInTheDocument();
+    });
+  });
+
+  describe("listening", () => {
+    let players: Array<{ src: string; play: ReturnType<typeof vi.fn>; pause: ReturnType<typeof vi.fn>; fire: (type: string) => void }> = [];
+
+    function stubAudio(play: () => Promise<void> = () => Promise.resolve()) {
+      players = [];
+      class FakeAudio {
+        src: string;
+        listeners: Record<string, Array<() => void>> = {};
+        play = vi.fn(play);
+        pause = vi.fn();
+        constructor(src: string) {
+          this.src = src;
+          players.push(this as never);
+        }
+        addEventListener(type: string, fn: () => void) {
+          (this.listeners[type] ??= []).push(fn);
+        }
+        fire(type: string) {
+          (this.listeners[type] ?? []).forEach((fn) => fn());
+        }
+      }
+      vi.stubGlobal("Audio", FakeAudio);
+    }
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    it("serves the recordings over https — a secure page would block the http addresses in the data", () => {
+      expect(secureAudioUrl("http://www.hisnmuslim.com/audio/ar/75.mp3")).toBe("https://www.hisnmuslim.com/audio/ar/75.mp3");
+      expect(secureAudioUrl("https://example.com/a.mp3")).toBe("https://example.com/a.mp3");
+    });
+
+    it("offers Listen only on a dhikr that has a recording", () => {
+      render(<AzkarList category={withAudio} />);
+      expect(screen.getAllByRole("button", { name: "Listen" })).toHaveLength(1);
+      expect(document.querySelectorAll(".azkar-list li")[1].querySelector(".azkar-listen")).toBeNull();
+    });
+
+    it("plays the recording, shows that it is playing, and pauses on a second tap", async () => {
+      stubAudio();
+      const user = userEvent.setup();
+      render(<AzkarList category={withAudio} />);
+      await user.click(screen.getByRole("button", { name: "Listen" }));
+      expect(players).toHaveLength(1);
+      expect(players[0].src).toBe("https://www.hisnmuslim.com/audio/ar/75.mp3");
+      expect(players[0].play).toHaveBeenCalled();
+      const pause = screen.getByRole("button", { name: "Pause" });
+      expect(pause).toHaveAttribute("aria-pressed", "true");
+      await user.click(pause);
+      expect(players[0].pause).toHaveBeenCalled();
+      expect(screen.getByRole("button", { name: "Listen" })).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("goes back to Listen when the recording ends", async () => {
+      stubAudio();
+      const user = userEvent.setup();
+      render(<AzkarList category={withAudio} />);
+      await user.click(screen.getByRole("button", { name: "Listen" }));
+      act(() => players[0].fire("ended"));
+      expect(screen.getByRole("button", { name: "Listen" })).toBeInTheDocument();
+    });
+
+    it("plays one recording at a time", async () => {
+      stubAudio();
+      const user = userEvent.setup();
+      const two: AzkarCategory = {
+        ...category,
+        items: [
+          { id: "75", arabic: "أَعُوذُ بِاللَّهِ", repeatCount: 3, audioUrl: "https://x/75.mp3" },
+          { id: "76", arabic: "سُبْحَانَ ٱللَّهِ", repeatCount: 1, audioUrl: "https://x/76.mp3" },
+        ],
+      };
+      render(<AzkarList category={two} />);
+      const [first, second] = screen.getAllByRole("button", { name: "Listen" });
+      await user.click(first);
+      await user.click(second);
+      expect(players[0].pause).toHaveBeenCalled();
+      expect(players[1].play).toHaveBeenCalled();
+      expect(screen.getAllByRole("button", { name: /Listen|Pause/ }).map((b) => b.textContent)).toEqual(["Listen", "Pause"]);
+    });
+
+    it("says so, kindly, when a recording cannot be played (for instance offline)", async () => {
+      stubAudio(() => Promise.reject(new Error("offline")));
+      const user = userEvent.setup();
+      render(<AzkarList category={withAudio} />);
+      await user.click(screen.getByRole("button", { name: "Listen" }));
+      expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't play this recording — it needs an internet connection.");
+      expect(screen.getByRole("button", { name: "Listen" })).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("stops the recording when the list is left", async () => {
+      stubAudio();
+      const user = userEvent.setup();
+      const { unmount } = render(<AzkarList category={withAudio} />);
+      await user.click(screen.getByRole("button", { name: "Listen" }));
+      unmount();
+      expect(players[0].pause).toHaveBeenCalled();
+    });
+
+    it("is in Arabic when the interface is", () => {
+      render(
+        <LanguageProvider language="ar" onLanguageChange={() => {}}>
+          <AzkarList category={withAudio} />
+        </LanguageProvider>,
+      );
+      expect(screen.getByRole("button", { name: "استماع" })).toBeInTheDocument();
+    });
   });
 });

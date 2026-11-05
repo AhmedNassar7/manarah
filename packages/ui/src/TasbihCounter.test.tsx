@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AzkarVirtue } from "@manarah/core";
 import { TASBIH_THEMES, emptyTasbih, setSound, setTasbihTheme, tapTasbih, type TasbihState } from "@manarah/core";
 import { LanguageProvider } from "./i18n/index.js";
 import { TasbihCounter, type TasbihCounterProps } from "./TasbihCounter.js";
@@ -14,7 +15,6 @@ function setup(overrides: Partial<TasbihCounterProps> = {}, state: TasbihState =
     onUndo: vi.fn(),
     onReset: vi.fn(),
     onSelectDhikr: vi.fn(),
-    onTarget: vi.fn(),
     onVibrateChange: vi.fn(),
     ...overrides,
   };
@@ -32,7 +32,7 @@ describe("TasbihCounter", () => {
   beforeEach(() => vi.useFakeTimers());
   afterEach(() => vi.useRealTimers());
 
-  it("shows the phrase in Arabic, the count and the round size", () => {
+  it("shows the phrase in Arabic and the count out of 33", () => {
     const { container } = setup();
     expect(screen.getByText("سُبْحَانَ اللَّهِ")).toBeInTheDocument();
     expect(container.querySelector(".tasbih-count strong")).toHaveTextContent("0");
@@ -66,21 +66,6 @@ describe("TasbihCounter", () => {
     fireEvent.click(screen.getByRole("button", { name: "Alhamdulillah" }));
     expect(props.onSelectDhikr).toHaveBeenCalledWith("alhamdulillah");
     expect(screen.getByRole("button", { name: "Subhan'Allah" })).toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("offers the round sizes and a free count, and marks the one in use", () => {
-    const { props } = setup();
-    expect(screen.getByRole("button", { name: "33" })).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(screen.getByRole("button", { name: "99" }));
-    expect(props.onTarget).toHaveBeenCalledWith(99);
-    fireEvent.click(screen.getByRole("button", { name: "Free" }));
-    expect(props.onTarget).toHaveBeenCalledWith(0);
-  });
-
-  it("with no target shows no '/ 33'", () => {
-    setup({}, { ...emptyTasbih(), target: 0 });
-    expect(screen.queryByText(/^\/ /)).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Free" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("can only undo after a tap, and only start a new round once there is something to clear", () => {
@@ -134,13 +119,11 @@ describe("TasbihCounter", () => {
           onUndo={vi.fn()}
           onReset={vi.fn()}
           onSelectDhikr={vi.fn()}
-          onTarget={vi.fn()}
         />
       </LanguageProvider>,
     );
     expect(screen.getByRole("button", { name: "الحمد لله" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "تراجع" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "عدّ حرّ" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Alhamdulillah" })).not.toBeInTheDocument();
   });
 
@@ -218,8 +201,7 @@ describe("TasbihCounter", () => {
             onUndo={vi.fn()}
             onReset={vi.fn()}
             onSelectDhikr={vi.fn()}
-            onTarget={vi.fn()}
-            onThemeChange={vi.fn()}
+              onThemeChange={vi.fn()}
             onSoundChange={vi.fn()}
           />
         </LanguageProvider>,
@@ -248,6 +230,53 @@ describe("TasbihCounter", () => {
     it("has no sound button unless it can act on it", () => {
       setup();
       expect(screen.queryByRole("button", { name: "Sound" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("its virtue", () => {
+    const virtue: AzkarVirtue = {
+      id: "salawat-10",
+      collection: "muslim",
+      number: "408",
+      book: 4,
+      bookTitle: "Prayer",
+      bookTitleAr: "كتاب الصلاة",
+      arabic: "مَنْ صَلَّى عَلَىَّ وَاحِدَةً",
+      meaning: "Whoever sends one prayer upon me, Allah sends ten upon him.",
+    };
+
+    it("has a dropdown under the phrase when it has a virtue, and none when it has not", () => {
+      const { unmount } = setup();
+      expect(screen.queryByRole("button", { name: /Its virtue/ })).not.toBeInTheDocument();
+      unmount();
+      setup({ virtues: [virtue] });
+      expect(screen.getByRole("button", { name: /Its virtue/ })).toBeInTheDocument();
+    });
+
+    it("shows the Arabic and, in an English interface, the meaning", () => {
+      setup({ virtues: [virtue] });
+      fireEvent.click(screen.getByRole("button", { name: /Its virtue/ }));
+      expect(screen.getByText(/«مَنْ صَلَّى عَلَىَّ وَاحِدَةً»/)).toBeInTheDocument();
+      expect(screen.getByText(/Allah sends ten upon him/)).toBeInTheDocument();
+    });
+
+    it("closes when another dhikr is chosen, instead of showing the last one's virtue", () => {
+      const { rerender, props } = setup({ virtues: [virtue] });
+      fireEvent.click(screen.getByRole("button", { name: /Its virtue/ }));
+      expect(screen.getByRole("region")).toBeInTheDocument();
+      rerender(<TasbihCounter {...props} virtues={[virtue]} state={{ ...emptyTasbih(), dhikrId: "alhamdulillah" }} />);
+      expect(screen.queryByRole("region")).not.toBeInTheDocument();
+    });
+
+    it("leaves out the English meaning in an Arabic interface", () => {
+      render(
+        <LanguageProvider language="ar" onLanguageChange={() => {}}>
+          <TasbihCounter state={emptyTasbih()} today={{ taps: 0, rounds: 0 }} onTap={vi.fn()} onUndo={vi.fn()} onReset={vi.fn()} onSelectDhikr={vi.fn()} virtues={[virtue]} />
+        </LanguageProvider>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: /فضل هذا الذكر/ }));
+      expect(screen.getByText(/«مَنْ صَلَّى عَلَىَّ وَاحِدَةً»/)).toBeInTheDocument();
+      expect(screen.queryByText(/Allah sends ten/)).not.toBeInTheDocument();
     });
   });
 });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { listProgress, type AzkarCategory, type AzkarSection } from "@manarah/core";
+import { listProgress, type AzkarCategory, type AzkarSection, type AzkarVirtue } from "@manarah/core";
 import { AzkarList } from "./AzkarList.js";
 import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 import { Icon, isIconName } from "./icons/Icon.js";
@@ -18,6 +18,8 @@ export interface AzkarBrowserProps {
   todaysCounts?: Record<string, Record<string, number>>;
   /** A list's tallies changed (for saving). */
   onCountsChange?: (categoryId: string, counts: Record<string, number>) => void;
+  /** Passed through to the opened list: the virtue of a dhikr, where it has one. */
+  virtuesFor?: (itemId: string) => AzkarVirtue[];
 }
 
 /** Arabic search should match with or without harakat — strip diacritics/tatweel and fold alef/ya/ta-marbuta variants. */
@@ -46,6 +48,7 @@ export function AzkarBrowser({
   onItemComplete,
   todaysCounts,
   onCountsChange,
+  virtuesFor,
 }: AzkarBrowserProps) {
   const { t, language } = useTranslation();
   const [sectionId, setSectionId] = useState(initialSectionId ?? sections[0]?.id);
@@ -161,6 +164,7 @@ export function AzkarBrowser({
             showTranslation={showTranslation}
             onShowTranslationChange={onShowTranslationChange}
             onItemComplete={onItemComplete}
+            virtuesFor={virtuesFor}
             initialCounts={todaysCounts?.[openCategory.id]}
             onCountsChange={onCountsChange ? (counts) => onCountsChange(openCategory.id, counts) : undefined}
           />

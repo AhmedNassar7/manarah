@@ -27,6 +27,7 @@ export * from "./ProgressCard.js";
 export * from "./QuizGame.js";
 export * from "./Toast.js";
 export * from "./TasbihCounter.js";
+export * from "./VirtueDropdown.js";
 export * from "./tasbih-sound.js";
 export * from "./SharePanel.js";
 export * from "./encouragement.js";

@@ -10,6 +10,26 @@ export type AzkarTrigger =
   | "situational"
   | "custom-time";
 
+/**
+ * The virtue (fadl) of a dhikr: the Prophet's own words from Sahih al-Bukhari or Sahih Muslim,
+ * with where they are. See packages/data/src/azkar/virtues.ts for how entries are sourced and why
+ * there are so few.
+ */
+export interface AzkarVirtue {
+  id: string;
+  collection: "bukhari" | "muslim";
+  /** The hadith's number (Muslim: the usual 'Abd al-Baqi number). */
+  number: string;
+  /** Book number within the collection, and its title in English and Arabic. */
+  book: number;
+  bookTitle: string;
+  bookTitleAr: string;
+  /** The Prophet's words, exactly as the Arabic text gives them. */
+  arabic: string;
+  /** A plain English rendering of `arabic` (shown only when translations are on). */
+  meaning: string;
+}
+
 export interface AzkarItem {
   id: string;
   arabic: string;

@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { AYAH_SEPARATOR, listProgress, parseAzkarText, splitAzkarTranslation, type AzkarCategory } from "@manarah/core";
+import { AYAH_SEPARATOR, listProgress, parseAzkarText, splitAzkarTranslation, type AzkarCategory, type AzkarVirtue } from "@manarah/core";
 import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
+import { VirtueDropdown } from "./VirtueDropdown.js";
+
+/** The recordings are served over https; the data lists them as http, which a secure page would block. */
+export function secureAudioUrl(url: string): string {
+  return url.replace(/^http:\/\//i, "https://");
+}
 
 /** A verse's text with each verse-end ornament drawn in gold, like the brackets around it. */
 function withAyahMarks(text: string) {
@@ -28,6 +34,8 @@ export interface AzkarListProps {
   initialCounts?: Record<string, number>;
   /** Called with the full tallies after every change, for saving. */
   onCountsChange?: (counts: Record<string, number>) => void;
+  /** The virtue (what the Prophet said about it) of a dhikr, if it has a firmly established one: drawn as an "Its virtue" dropdown under it. */
+  virtuesFor?: (itemId: string) => AzkarVirtue[];
 }
 
 /**
@@ -46,6 +54,7 @@ export function AzkarList({
   onItemComplete,
   initialCounts,
   onCountsChange,
+  virtuesFor,
 }: AzkarListProps) {
   const { t, language } = useTranslation();
   const [localShowTranslation, setLocalShowTranslation] = useState(false);
@@ -63,13 +72,38 @@ export function AzkarList({
   const [confirmingReset, setConfirmingReset] = useState(false);
   const itemRefs = useRef<Array<HTMLLIElement | null>>([]);
   const timers = useRef<number[]>([]);
+  // The recording being played (one at a time), and the one that failed to.
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [audioFailedId, setAudioFailedId] = useState<string | null>(null);
 
   useEffect(
     () => () => {
       timers.current.forEach((id) => window.clearTimeout(id));
+      audio.current?.pause();
     },
     []
   );
+
+  /** Plays (or pauses) a dhikr's recording. Only one plays at a time. */
+  function toggleListen(itemId: string, url: string) {
+    audio.current?.pause();
+    if (playingId === itemId) {
+      setPlayingId(null);
+      return;
+    }
+    const player = new Audio(secureAudioUrl(url));
+    audio.current = player;
+    const fail = () => {
+      setPlayingId((current) => (current === itemId ? null : current));
+      setAudioFailedId(itemId);
+    };
+    player.addEventListener("ended", () => setPlayingId((current) => (current === itemId ? null : current)));
+    player.addEventListener("error", fail);
+    setAudioFailedId(null);
+    setPlayingId(itemId);
+    void player.play().catch(fail);
+  }
 
   const progress = listProgress(category.items, counts);
 
@@ -214,16 +248,35 @@ export function AzkarList({
                   ))}
                 </div>
               )}
-              <button
-                type="button"
-                // Numbers read left-to-right in every language: without this, an Arabic layout reorders "0 / 1" into "1 / 0".
-                dir="ltr"
-                className={tappedId === item.id ? "tapped" : undefined}
-                onAnimationEnd={() => setTappedId((current) => (current === item.id ? null : current))}
-                onClick={() => tally(item.id, item.repeatCount)}
-              >
-                {done} / {item.repeatCount}
-              </button>
+              <VirtueDropdown virtues={virtuesFor?.(item.id) ?? []} showMeaning={showTranslation} />
+              <div className="azkar-item-actions">
+                <button
+                  type="button"
+                  // Numbers read left-to-right in every language: without this, an Arabic layout reorders "0 / 1" into "1 / 0".
+                  dir="ltr"
+                  className={tappedId === item.id ? "tapped" : undefined}
+                  onAnimationEnd={() => setTappedId((current) => (current === item.id ? null : current))}
+                  onClick={() => tally(item.id, item.repeatCount)}
+                >
+                  {done} / {item.repeatCount}
+                </button>
+                {item.audioUrl && (
+                  <button
+                    type="button"
+                    className={playingId === item.id ? "azkar-listen playing" : "azkar-listen"}
+                    aria-pressed={playingId === item.id}
+                    onClick={() => toggleListen(item.id, item.audioUrl!)}
+                  >
+                    <Icon name={playingId === item.id ? "pause" : "play"} size={16} filled />
+                    <span>{playingId === item.id ? t("azkarAudio.pause") : t("azkarAudio.listen")}</span>
+                  </button>
+                )}
+              </div>
+              {audioFailedId === item.id && (
+                <p className="azkar-audio-error" role="alert">
+                  {t("azkarAudio.error")}
+                </p>
+              )}
             </li>
           );
         })}

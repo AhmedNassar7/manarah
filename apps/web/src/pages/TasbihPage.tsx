@@ -4,7 +4,6 @@ import {
   resetTasbih,
   selectDhikr,
   setSound,
-  setTarget,
   setTasbihTheme,
   setVibrate,
   tapTasbih,
@@ -12,6 +11,7 @@ import {
   undoTasbih,
   type TasbihState,
 } from "@manarah/core";
+import { virtuesForTasbih } from "@manarah/data";
 import { TasbihCounter, createTasbihSound, useTranslation, type TasbihSound } from "@manarah/ui";
 
 export interface TasbihPageProps {
@@ -71,7 +71,6 @@ export function TasbihPage({ state, onChange, onRoundCompleted }: TasbihPageProp
         onUndo={() => onChange(undoTasbih(state, new Date()))}
         onReset={() => onChange(resetTasbih(state))}
         onSelectDhikr={(id) => onChange(selectDhikr(state, id))}
-        onTarget={(target) => onChange(setTarget(state, target))}
         onVibrateChange={(on) => onChange(setVibrate(state, on))}
         canVibrate={canVibrate}
         onSoundChange={(on) => {
@@ -84,6 +83,7 @@ export function TasbihPage({ state, onChange, onRoundCompleted }: TasbihPageProp
           onChange(next);
           if (state.sound) engine().bead(currentTimbre(next));
         }}
+        virtues={virtuesForTasbih(state.dhikrId)}
         celebration={celebration}
       />
     </>

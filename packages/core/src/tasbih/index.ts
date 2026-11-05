@@ -1,8 +1,8 @@
 import { dayKey } from "../progress/index.js";
 
 /**
- * A digital tasbih: tap to count a dhikr, with a target (33, 99, 100 or none),
- * rounds, and daily and lifetime totals. Pure and deterministic — the current
+ * A digital tasbih: tap to count a dhikr, in rounds of 33 (one turn of the ring), with
+ * daily and lifetime totals. Pure and deterministic — the current
  * time is always passed in — and entirely personal: it lives on the device,
  * nothing is ranked or shared.
  */
@@ -48,22 +48,21 @@ export const TASBIH_THEMES: readonly TasbihTheme[] = [
   { id: "onyx", timbre: "stone" },
 ];
 
-/** Round sizes. 0 means no target: just count. */
-export const TASBIH_TARGETS: readonly number[] = [33, 99, 100, 0];
+/** Beads in a round: one full turn of the ring. (There is no choice of round size — it was not worth the clutter.) */
+export const TASBIH_ROUND = 33;
 
 /** How many days of daily totals are kept. */
 const KEEP_DAYS = 60;
 
 export interface TasbihDay {
   taps: number;
-  /** Rounds completed that day (a round is one full target). */
+  /** Rounds completed that day. */
   rounds: number;
 }
 
 export interface TasbihState {
   dhikrId: string;
-  target: number;
-  /** Position within the current round (always below the target when there is one). */
+  /** Position within the current round (always below TASBIH_ROUND). */
   count: number;
   days: Record<string, TasbihDay>;
   lifetime: number;
@@ -78,7 +77,7 @@ export interface TasbihState {
 }
 
 export function emptyTasbih(): TasbihState {
-  return { dhikrId: TASBIH_DHIKR[0].id, target: 33, count: 0, days: {}, lifetime: 0, last: null, vibrate: true, sound: false, theme: TASBIH_THEMES[0].id };
+  return { dhikrId: TASBIH_DHIKR[0].id, count: 0, days: {}, lifetime: 0, last: null, vibrate: true, sound: false, theme: TASBIH_THEMES[0].id };
 }
 
 const isCount = (v: unknown, max = 100_000_000): v is number => typeof v === "number" && Number.isInteger(v) && v >= 0 && v < max;
@@ -89,9 +88,8 @@ export function normalizeTasbih(value: unknown): TasbihState {
   if (typeof value !== "object" || value === null) return fresh;
   const raw = value as Record<string, unknown>;
   const dhikrId = TASBIH_DHIKR.some((d) => d.id === raw.dhikrId) ? (raw.dhikrId as string) : fresh.dhikrId;
-  const target = TASBIH_TARGETS.includes(raw.target as number) ? (raw.target as number) : fresh.target;
   let count = isCount(raw.count, 1_000_000) ? raw.count : 0;
-  if (target > 0 && count >= target) count = 0;
+  if (count >= TASBIH_ROUND) count = 0;
   const days: Record<string, TasbihDay> = {};
   if (typeof raw.days === "object" && raw.days !== null) {
     for (const [key, entry] of Object.entries(raw.days as Record<string, unknown>)) {
@@ -104,7 +102,7 @@ export function normalizeTasbih(value: unknown): TasbihState {
   const vibrate = typeof raw.vibrate === "boolean" ? raw.vibrate : true;
   const sound = typeof raw.sound === "boolean" ? raw.sound : false;
   const theme = TASBIH_THEMES.some((t) => t.id === raw.theme) ? (raw.theme as string) : fresh.theme;
-  return { dhikrId, target, count, days, lifetime: isCount(raw.lifetime) ? raw.lifetime : 0, last, vibrate, sound, theme };
+  return { dhikrId, count, days, lifetime: isCount(raw.lifetime) ? raw.lifetime : 0, last, vibrate, sound, theme };
 }
 
 function prune(days: Record<string, TasbihDay>): Record<string, TasbihDay> {
@@ -120,12 +118,12 @@ export interface TapResult {
   roundCompleted: boolean;
 }
 
-/** One bead. When the count reaches the target the round is complete and the count starts again from zero. */
+/** One bead. When the count reaches a full round (33) the round is complete and the count starts again from zero. */
 export function tapTasbih(state: TasbihState, now: Date): TapResult {
   const key = dayKey(now);
   const today = state.days[key] ?? { taps: 0, rounds: 0 };
   const next = state.count + 1;
-  const roundCompleted = state.target > 0 && next >= state.target;
+  const roundCompleted = next >= TASBIH_ROUND;
   return {
     roundCompleted,
     state: {
@@ -146,7 +144,7 @@ export function undoTasbih(state: TasbihState, now: Date): TasbihState {
   if (!today || today.taps === 0) return state;
   const wasRound = state.last === "round";
   if (wasRound && today.rounds === 0) return state;
-  const count = wasRound ? state.target - 1 : state.count - 1;
+  const count = wasRound ? TASBIH_ROUND - 1 : state.count - 1;
   if (count < 0) return state;
   return {
     ...state,
@@ -166,11 +164,6 @@ export function resetTasbih(state: TasbihState): TasbihState {
 export function selectDhikr(state: TasbihState, dhikrId: string): TasbihState {
   if (!TASBIH_DHIKR.some((d) => d.id === dhikrId) || dhikrId === state.dhikrId) return state;
   return { ...state, dhikrId, count: 0, last: null };
-}
-
-export function setTarget(state: TasbihState, target: number): TasbihState {
-  if (!TASBIH_TARGETS.includes(target) || target === state.target) return state;
-  return { ...state, target, count: target > 0 && state.count >= target ? 0 : state.count, last: null };
 }
 
 export function setVibrate(state: TasbihState, vibrate: boolean): TasbihState {
