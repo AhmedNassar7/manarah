@@ -24,8 +24,10 @@ export interface HadithCollection {
 export interface HadithSection {
   /** The source's section number — 0 is used for introductions in some collections. */
   number: number;
-  /** English title from the source (the dataset has no Arabic book titles). */
+  /** English title, from the hadith-api edition. */
   title: string;
+  /** The book's traditional Arabic title ("كتاب الوضوء"). The hadith-api has only English section names, so these come from a separate dataset — see PROGRESS.md. */
+  titleAr: string;
   /** How many hadiths the book holds, verified against the real files. */
   count: number;
 }

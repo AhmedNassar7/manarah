@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { City } from "@manarah/core";
+import { LanguageProvider } from "./i18n/index.js";
 import { LocationSummary } from "./LocationSummary.js";
 
 const cairo: City = {
@@ -68,7 +69,7 @@ describe("LocationSummary", () => {
     await act(async () => {
       fireEvent.change(screen.getByPlaceholderText("Or search for your city…"), { target: { value: "Cai" } });
     });
-    fireEvent.click(await screen.findByRole("button", { name: "Cairo, EG" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Cairo, Egypt" }));
     expect(onCitySelect).toHaveBeenCalledWith(cairo);
     expect(screen.queryByPlaceholderText("Or search for your city…")).not.toBeInTheDocument();
   });
@@ -101,5 +102,38 @@ describe("LocationSummary", () => {
   it("shows a geolocation error", () => {
     render(<LocationSummary {...baseProps} coordinates={undefined} location={undefined} error="User denied" />);
     expect(screen.getByRole("alert")).toHaveTextContent("User denied");
+  });
+});
+
+describe("LocationSummary in Arabic", () => {
+  it("names the saved city in Arabic, with the country in Arabic", () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <LocationSummary
+          coordinates={{ latitude: 30.06, longitude: 31.25 }}
+          location={{ source: "city", name: "Cairo", nameAr: "القاهرة", countryCode: "EG" }}
+          search={() => []}
+          onCitySelect={vi.fn()}
+          onUseCurrentLocation={vi.fn()}
+        />
+      </LanguageProvider>,
+    );
+    expect(screen.getByText("القاهرة، مصر")).toBeInTheDocument();
+    expect(screen.queryByText(/Cairo/)).not.toBeInTheDocument();
+  });
+
+  it("falls back to the English name when no Arabic name is known (or not looked up yet)", () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <LocationSummary
+          coordinates={{ latitude: 23, longitude: 120.2 }}
+          location={{ source: "city", name: "Tainan", nameAr: "", countryCode: "TW" }}
+          search={() => []}
+          onCitySelect={vi.fn()}
+          onUseCurrentLocation={vi.fn()}
+        />
+      </LanguageProvider>,
+    );
+    expect(screen.getByText(/^Tainan، /)).toBeInTheDocument();
   });
 });

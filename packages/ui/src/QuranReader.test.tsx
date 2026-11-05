@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { setNote, toggleBookmark, type Surah, type Translation, type Verse } from "@manarah/core";
+import { LanguageProvider } from "./i18n/index.js";
 import { QuranReader } from "./QuranReader.js";
 
 const alFatiha: Surah = {
@@ -31,6 +32,16 @@ describe("QuranReader", () => {
     // rather than a getByText regex, which only matches a single text node.
     const metaLine = screen.getByText((_, element) => element?.tagName.toLowerCase() === "p");
     expect(metaLine).toHaveTextContent(/Al-Faatiha.*Meccan.*2 verses/);
+  });
+
+  it("shows no transliterated surah name when the interface is Arabic", () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <QuranReader surah={alFatiha} verses={verses} />
+      </LanguageProvider>,
+    );
+    expect(screen.queryByText(/Al-Faatiha/)).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "سُورَةُ ٱلْفَاتِحَةِ" })).toBeInTheDocument();
   });
 
   it("renders every verse as a numbered list item", () => {

@@ -166,7 +166,7 @@ export function QuranNavigator({
                 <span dir="rtl" lang="ar">
                   {s.nameArabic}
                 </span>
-                <span className="quran-navigator-translit">{s.nameTransliterated}</span>
+                {language !== "ar" && <span className="quran-navigator-translit">{s.nameTransliterated}</span>}
               </button>
             </li>
           ))}

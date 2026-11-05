@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { describe, expect, it, vi } from "vitest";
 import type { HadithCollection, HadithCollectionId, HadithEntry, HadithSection } from "@manarah/core";
 import { HadithBrowser, type HadithBrowserProps } from "./HadithBrowser.js";
+import { LanguageProvider } from "./i18n/index.js";
 
 const collections: HadithCollection[] = [
   { id: "bukhari", arabicEdition: "ara-bukhari", englishEdition: "eng-bukhari" },
@@ -9,10 +10,10 @@ const collections: HadithCollection[] = [
 ];
 const sectionsById: Record<string, HadithSection[]> = {
   bukhari: [
-    { number: 1, title: "Revelation", count: 7 },
-    { number: 2, title: "Belief", count: 51 },
+    { number: 1, title: "Revelation", titleAr: "كتاب بدء الوحى", count: 7 },
+    { number: 2, title: "Belief", titleAr: "كتاب الإيمان", count: 51 },
   ],
-  abudawud: [{ number: 1, title: "Purification (Kitab Al-Taharah)", count: 390 }],
+  abudawud: [{ number: 1, title: "Purification (Kitab Al-Taharah)", titleAr: "كتاب الطهارة", count: 390 }],
 };
 const getSections = (id: HadithCollectionId) => sectionsById[id] ?? [];
 
@@ -184,5 +185,54 @@ describe("HadithBrowser — copying", () => {
     fireEvent.click(screen.getByRole("button", { name: "Copy" }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith("نص عربي 1\n\n(Sahih al-Bukhari 1)"));
     expect(await screen.findByRole("button", { name: "Copied" })).toBeInTheDocument();
+  });
+});
+
+describe("HadithBrowser — book titles follow the language", () => {
+  function renderIn(language: "en" | "ar") {
+    render(
+      <LanguageProvider language={language} onLanguageChange={() => {}}>
+        <HadithBrowser
+          collections={collections}
+          getSections={getSections}
+          load={vi.fn().mockResolvedValue([entry(1)])}
+          showTranslation={false}
+          onShowTranslationChange={vi.fn()}
+        />
+      </LanguageProvider>,
+    );
+  }
+
+  it("shows English book titles in English", () => {
+    renderIn("en");
+    expect(screen.getByText("Revelation")).toBeInTheDocument();
+    expect(screen.queryByText("كتاب بدء الوحى")).not.toBeInTheDocument();
+  });
+
+  it("shows Arabic book titles — and no English ones, and no 'titles are in English' note — in Arabic", () => {
+    renderIn("ar");
+    expect(screen.getByText("كتاب بدء الوحى")).toBeInTheDocument();
+    expect(screen.getByText("كتاب الإيمان")).toBeInTheDocument();
+    expect(screen.queryByText("Revelation")).not.toBeInTheDocument();
+    expect(screen.queryByText("Belief")).not.toBeInTheDocument();
+    expect(document.querySelector(".hadith-note")).toBeNull();
+  });
+
+  it("filters books by their Arabic title, and by the English one too", () => {
+    renderIn("ar");
+    const box = screen.getByRole("searchbox");
+    fireEvent.change(box, { target: { value: "الإيمان" } });
+    expect(screen.getByText("كتاب الإيمان")).toBeInTheDocument();
+    expect(screen.queryByText("كتاب بدء الوحى")).not.toBeInTheDocument();
+    fireEvent.change(box, { target: { value: "revelation" } });
+    expect(screen.getByText("كتاب بدء الوحى")).toBeInTheDocument();
+  });
+
+  it("puts the Arabic title in the open book's heading", async () => {
+    renderIn("ar");
+    fireEvent.click(screen.getByText("كتاب الإيمان"));
+    const heading = await screen.findByRole("heading", { level: 3 });
+    expect(heading).toHaveTextContent("كتاب الإيمان");
+    expect(heading).not.toHaveTextContent("Belief");
   });
 });

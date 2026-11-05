@@ -15,6 +15,7 @@ type Dictionary = Record<string, string>;
  * missing translation degrades gracefully instead of rendering nothing.
  */
 const EN: Dictionary = {
+  "app.name": "Manarah",
   "app.tagline": "Prayer, azkar, Qur'an, and Qibla",
   "app.geolocationUnavailable": "Geolocation is not available in this browser.",
   "app.sectionHome": "Home",
@@ -159,7 +160,6 @@ const EN: Dictionary = {
   "hadith.collection.nasai": "Sunan an-Nasa'i",
   "hadith.collection.ibnmajah": "Sunan Ibn Majah",
   "hadith.filterBooks": "Filter books…",
-  "hadith.titlesNote": "Book titles are shown in English — the source has no Arabic titles.",
   "hadith.noBooks": "No matching books",
   "hadith.count": "{count} hadiths",
   "hadith.allBooks": "All books",
@@ -530,6 +530,7 @@ const EN: Dictionary = {
 };
 
 const AR: Dictionary = {
+  "app.name": "منارة",
   "app.tagline": "الصلاة والأذكار والقرآن والقبلة",
   "app.geolocationUnavailable": "خدمة تحديد الموقع غير متاحة في هذا المتصفح.",
   "app.sectionHome": "الرئيسية",
@@ -674,7 +675,6 @@ const AR: Dictionary = {
   "hadith.collection.nasai": "سنن النسائي",
   "hadith.collection.ibnmajah": "سنن ابن ماجه",
   "hadith.filterBooks": "ابحث في الكتب…",
-  "hadith.titlesNote": "عناوين الكتب بالإنجليزية — لا يتوفر لها مصدر بالعربية.",
   "hadith.noBooks": "لا توجد كتب مطابقة",
   "hadith.count": "{count} حديثًا",
   "hadith.allBooks": "كل الكتب",

@@ -246,7 +246,7 @@ export function App() {
             if (prev.coordinates !== coordinates) return prev;
             const next = {
               ...prev,
-              location: { source: "gps" as const, name: city.name, countryCode: city.countryCode },
+              location: { source: "gps" as const, name: city.name, nameAr: city.nameAr ?? "", countryCode: city.countryCode },
             };
             void store.set(SETTINGS_STORAGE_KEY, next);
             return next;
@@ -260,11 +260,33 @@ export function App() {
     );
   }
 
+  // A location saved before cities had Arabic names carries only the English one: look the Arabic name up once, the first time it is wanted.
+  const legacyName = settings.location?.name;
+  const legacyCountry = settings.location?.countryCode;
+  const needsArabicName = settings.language === "ar" && legacyName !== undefined && settings.location?.nameAr === undefined;
+  useEffect(() => {
+    if (!needsArabicName || !legacyName) return;
+    let cancelled = false;
+    void getAllCities().then((cities) => {
+      if (cancelled) return;
+      const match = cities.find((c) => c.name === legacyName && c.countryCode === legacyCountry);
+      setSettings((prev) => {
+        if (!prev.location || prev.location.name !== legacyName || prev.location.nameAr !== undefined) return prev;
+        const next = { ...prev, location: { ...prev.location, nameAr: match?.nameAr ?? "" } };
+        void store.set(SETTINGS_STORAGE_KEY, next);
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [needsArabicName, legacyName, legacyCountry]);
+
   function handleCitySelect(city: City) {
     setError(null);
     saveLocation(
       { latitude: city.latitude, longitude: city.longitude },
-      { source: "city", name: city.name, countryCode: city.countryCode }
+      { source: "city", name: city.name, nameAr: city.nameAr ?? "", countryCode: city.countryCode }
     );
   }
 
@@ -554,18 +576,23 @@ export function App() {
 
 /** Header + nav, shared by every route. Sits inside LanguageProvider so it (and the routed page inside it) can call useTranslation(). */
 function AppShell({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   // Each section has its own colour (see "Joy layer" in styles.css); the router path says which one we're in.
   const section = useLocation().pathname.split("/")[1] || "home";
+
+  // The tab title follows the language too.
+  useEffect(() => {
+    document.title = t("app.name");
+  }, [t]);
 
   return (
     <main className="app-shell" data-section={section}>
       <header className="app-header">
-        <h1>
+        <h1 lang={language}>
           <img className="app-logo" src="favicon.svg" alt="" width={36} height={36} />
-          Manarah
+          {t("app.name")}
         </h1>
-        <span className="tagline">منارة — {t("app.tagline")}</span>
+        <span className="tagline">{t("app.tagline")}</span>
         <LanguageSwitcher />
       </header>
       <Nav />

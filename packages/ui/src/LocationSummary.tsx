@@ -3,6 +3,7 @@ import type { City, Coordinates, SavedLocation } from "@manarah/core";
 import { CitySearch } from "./CitySearch.js";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
+import { placeLabel } from "./place-names.js";
 
 export interface LocationSummaryProps {
   coordinates: Coordinates | undefined;
@@ -15,15 +16,6 @@ export interface LocationSummaryProps {
   locating?: boolean;
   /** A geolocation failure to show (e.g. permission denied), if any. */
   error?: string | null;
-}
-
-/** Localized country name for an ISO code ("EG" → "Egypt" / "مصر"), falling back to the code itself. */
-function countryName(code: string, language: string): string {
-  try {
-    return new Intl.DisplayNames([language], { type: "region" }).of(code) ?? code;
-  } catch {
-    return code;
-  }
 }
 
 /**
@@ -47,7 +39,7 @@ export function LocationSummary({
 
   let label: string | undefined;
   if (location?.name) {
-    label = location.countryCode ? `${location.name}, ${countryName(location.countryCode, language)}` : location.name;
+    label = placeLabel({ name: location.name, nameAr: location.nameAr, countryCode: location.countryCode }, language);
   } else if (coordinates) {
     label = `${coordinates.latitude.toFixed(2)}°, ${coordinates.longitude.toFixed(2)}°`;
   }

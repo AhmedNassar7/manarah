@@ -5833,3 +5833,11 @@ button,
     gap: 16px;
   }
 }
+
+/* The name in Arabic is set in the UI Arabic face (the display serif has no Arabic), a little larger so it matches the Latin wordmark's weight. */
+.app-header h1[lang="ar"] {
+  font-family: var(--font-arabic-ui);
+  font-weight: 700;
+  font-size: 2.1rem;
+  line-height: 1.2;
+}

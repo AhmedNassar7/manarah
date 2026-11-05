@@ -132,7 +132,12 @@ export function QuranReader({
     >
       <h2>{surah.nameArabic}</h2>
       <p>
-        <span dir="ltr">{surah.nameTransliterated}</span> · {t(`quran.revelation.${surah.revelationType}`)} ·{" "}
+        {language !== "ar" && (
+          <>
+            <span dir="ltr">{surah.nameTransliterated}</span> ·{" "}
+          </>
+        )}
+        {t(`quran.revelation.${surah.revelationType}`)} ·{" "}
         {formatVerseCount(language, surah.verseCount)}
       </p>
       {translations && translations.length > 0 && (

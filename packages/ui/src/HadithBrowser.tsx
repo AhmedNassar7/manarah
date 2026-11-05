@@ -69,7 +69,7 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
   const trimmed = filter.trim().toLowerCase();
   const filteredSections = !trimmed
     ? sections
-    : sections.filter((s) => s.title.toLowerCase().includes(trimmed) || String(s.number) === trimmed);
+    : sections.filter((s) => s.title.toLowerCase().includes(trimmed) || s.titleAr.includes(trimmed) || String(s.number) === trimmed);
 
   return (
     <section className="hadith-browser" dir={language === "ar" ? "rtl" : "ltr"} lang={language}>
@@ -99,7 +99,6 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
           />
-          {language === "ar" && <p className="hadith-note">{t("hadith.titlesNote")}</p>}
           {filteredSections.length === 0 ? (
             <p className="hadith-status">{t("hadith.noBooks")}</p>
           ) : (
@@ -108,8 +107,8 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
                 <li key={s.number}>
                   <button type="button" onClick={() => setSectionNumber(s.number)}>
                     <span className="hadith-book-number">{s.number}</span>
-                    <span className="hadith-book-title" dir="ltr" lang="en">
-                      {s.title}
+                    <span className="hadith-book-title" lang={language}>
+                      {language === "ar" ? s.titleAr : s.title}
                     </span>
                     <span className="hadith-book-count">{t("hadith.count", { count: s.count })}</span>
                   </button>
@@ -133,9 +132,9 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
               {showTranslation ? t("quranReader.hideTranslation") : t("quranReader.showTranslation")}
             </button>
           </div>
-          <h3 className="hadith-book-heading" dir="ltr" lang="en">
+          <h3 className="hadith-book-heading" lang={language}>
             {section.number > 0 ? `${section.number}. ` : ""}
-            {section.title}
+            {language === "ar" ? section.titleAr : section.title}
           </h3>
 
           {state.status === "loading" && (

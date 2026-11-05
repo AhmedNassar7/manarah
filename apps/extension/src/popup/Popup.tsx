@@ -119,12 +119,12 @@ interface PopupBodyProps {
 }
 
 function PopupBody({ times, tomorrowsFajr, coordinates, error, onCitySelect }: PopupBodyProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   return (
     <div className="popup-shell">
       <header className="app-header">
-        <h1>Manarah</h1>
+        <h1 lang={language}>{t("app.name")}</h1>
         <LanguageSwitcher />
       </header>
       {error && (

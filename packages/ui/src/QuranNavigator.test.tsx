@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Surah } from "@manarah/core";
+import { LanguageProvider } from "./i18n/index.js";
 import { QuranNavigator } from "./QuranNavigator.js";
 
 const surahs: Surah[] = [
@@ -45,6 +46,29 @@ describe("QuranNavigator", () => {
 
     expect(onNavigate).toHaveBeenCalledWith({ surah: 2, ayah: 1 });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("lists surahs by their Arabic name only when the interface is Arabic — still searchable by the Latin name", () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <QuranNavigator
+          surahs={surahs}
+          currentSurahNumber={1}
+          currentSurahVerseCount={7}
+          onNavigate={vi.fn()}
+          resolveJuzStart={vi.fn()}
+          resolvePageStart={vi.fn()}
+          juzCount={30}
+          pageCount={604}
+        />
+      </LanguageProvider>,
+    );
+    fireEvent.click(screen.getAllByRole("button")[0]);
+    expect(screen.getByText("سُورَةُ ٱلْبَقَرَةِ")).toBeInTheDocument();
+    expect(screen.queryByText("Al-Baqara")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "Baqara" } });
+    expect(screen.getByText("سُورَةُ ٱلْبَقَرَةِ")).toBeInTheDocument();
+    expect(screen.queryByText("سُورَةُ ٱلْفَاتِحَةِ")).not.toBeInTheDocument();
   });
 
   it("filters the surah list by search query", () => {

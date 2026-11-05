@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { City } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
+import { placeLabel } from "./place-names.js";
 
 export interface CitySearchProps {
   search: (query: string) => City[] | Promise<City[]>;
@@ -19,7 +20,7 @@ export interface CitySearchProps {
  * up-to-date results.
  */
 export function CitySearch({ search, onSelect, placeholder }: CitySearchProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<City[]>([]);
 
@@ -62,7 +63,7 @@ export function CitySearch({ search, onSelect, placeholder }: CitySearchProps) {
           {results.map((city) => (
             <li key={`${city.asciiName}-${city.countryCode}-${city.latitude}`}>
               <button type="button" onClick={() => handleSelect(city)}>
-                {city.name}, {city.countryCode}
+                {placeLabel(city, language)}
               </button>
             </li>
           ))}

@@ -13,6 +13,8 @@ export interface SavedLocation {
   source: "gps" | "city";
   /** City name — for a GPS fix, the nearest known city (absent if none is close). */
   name?: string;
+  /** The Arabic name of that city; "" once looked up and none exists, undefined if not looked up yet (older saves). */
+  nameAr?: string;
   /** ISO 3166-1 alpha-2, e.g. "EG". */
   countryCode?: string;
 }

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import type { City } from "@manarah/core";
 import { CitySearch } from "./CitySearch.js";
+import { LanguageProvider } from "./i18n/index.js";
 
 const makkah: City = {
   name: "Makkah",
@@ -35,7 +36,7 @@ describe("CitySearch", () => {
 
     await user.type(screen.getByRole("searchbox"), "Mecca");
 
-    expect(await screen.findByRole("button", { name: "Makkah, SA" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Makkah, Saudi Arabia" })).toBeInTheDocument();
   });
 
   it("shows matching results once an async search resolves — the real @manarah/data shape", async () => {
@@ -44,7 +45,7 @@ describe("CitySearch", () => {
 
     await user.type(screen.getByRole("searchbox"), "Mecca");
 
-    expect(await screen.findByRole("button", { name: "Makkah, SA" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Makkah, Saudi Arabia" })).toBeInTheDocument();
   });
 
   it("shows a 'no results' message when nothing matches", async () => {
@@ -62,9 +63,25 @@ describe("CitySearch", () => {
     render(<CitySearch search={fakeSearch} onSelect={onSelect} />);
 
     await user.type(screen.getByRole("searchbox"), "Mecca");
-    await user.click(await screen.findByRole("button", { name: "Makkah, SA" }));
+    await user.click(await screen.findByRole("button", { name: "Makkah, Saudi Arabia" }));
 
     expect(onSelect).toHaveBeenCalledWith(makkah);
     expect(screen.getByRole("searchbox")).toHaveValue("");
+  });
+});
+
+describe("CitySearch in Arabic", () => {
+  it("labels results in Arabic — the city's Arabic name and the country's — and falls back to the English name when there is none", async () => {
+    const user = userEvent.setup();
+    const cairo: City = { ...makkah, name: "Cairo", asciiName: "Cairo", nameAr: "القاهرة", countryCode: "EG" };
+    const tainan: City = { ...makkah, name: "Tainan", asciiName: "Tainan", countryCode: "TW", nameAr: undefined };
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <CitySearch search={() => [cairo, tainan]} onSelect={vi.fn()} />
+      </LanguageProvider>,
+    );
+    await user.type(screen.getByRole("searchbox"), "x");
+    expect(await screen.findByRole("button", { name: "القاهرة، مصر" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Tainan، / })).toBeInTheDocument();
   });
 });

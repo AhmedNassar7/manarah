@@ -40,3 +40,32 @@ describe("cities data integrity", () => {
     }
   });
 });
+
+describe("Arabic city names", () => {
+  it("gives a good share of cities an Arabic name, in Arabic letters only", async () => {
+    const cities = await getAllCities();
+    const named = cities.filter((c) => c.nameAr);
+    // GeoNames has Arabic names for roughly 40% of these cities; a collapse would mean the merge broke.
+    expect(named.length).toBeGreaterThan(2000);
+    for (const c of named) {
+      expect(c.nameAr, `${c.name} (${c.countryCode})`).toMatch(/^[ء-يٱ-ۓ '-]+$/);
+    }
+  });
+
+  it("names the well-known cities correctly", async () => {
+    const cities = await getAllCities();
+    const ar = (name: string, cc: string) => cities.find((c) => c.name === name && c.countryCode === cc)?.nameAr;
+    expect(ar("Cairo", "EG")).toBe("القاهرة");
+    expect(ar("Makkah", "SA")).toBe("مكة المكرمة");
+    expect(ar("Madinah", "SA")).toBe("المدينة المنورة");
+    expect(ar("Riyadh", "SA")).toBe("الرياض");
+    expect(ar("Alexandria", "EG")).toBe("الإسكندرية");
+    expect(ar("Jeddah", "SA")).toBe("جدة");
+    expect(ar("Dubai", "AE")).toBe("دبي");
+  });
+
+  it("finds a city by typing its Arabic name", async () => {
+    expect((await findCities("القاهرة"))[0]?.asciiName).toBe("Cairo");
+    expect((await findCities("مكه"))[0]?.asciiName).toBe("Makkah");
+  });
+});

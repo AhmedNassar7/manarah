@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Surah, Verse } from "@manarah/core";
+import { LanguageProvider } from "./i18n/index.js";
 import { VerseOfTheDay } from "./VerseOfTheDay.js";
 
 const surah: Surah = {
@@ -22,6 +23,16 @@ describe("VerseOfTheDay", () => {
   it("renders the surah:ayah reference", () => {
     render(<VerseOfTheDay verse={verse} surah={surah} />);
     expect(screen.getByText("Al-Ikhlas 112:1")).toBeInTheDocument();
+  });
+
+  it("names the surah in Arabic — not transliterated — when the language is Arabic", () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <VerseOfTheDay verse={verse} surah={surah} />
+      </LanguageProvider>,
+    );
+    expect(screen.getByText(/سُورَةُ ٱلْإِخْلَاص 112:1/)).toBeInTheDocument();
+    expect(screen.queryByText(/Al-Ikhlas/)).not.toBeInTheDocument();
   });
 
   it("marks the verse right-to-left for Arabic", () => {
