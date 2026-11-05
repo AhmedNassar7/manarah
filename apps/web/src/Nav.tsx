@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar", end: false, hue: "calendar" },
   { to: "/zakat", icon: "zakat", labelKey: "app.sectionZakat", end: false, hue: "zakat" },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", end: false, hue: "azkar" },
+  { to: "/challenge", icon: "trophy", labelKey: "app.sectionChallenge", end: false, hue: "challenge" },
   { to: "/settings", icon: "gear", labelKey: "app.sectionSettings", end: false, hue: "home" },
 ] as const;
 

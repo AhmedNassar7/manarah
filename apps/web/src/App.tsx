@@ -1,7 +1,11 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import {
+  applyEvent,
   clampHijriAdjustment,
+  emptyProgress,
+  normalizeProgress,
+  PROGRESS_STORAGE_KEY,
   clampReaderFontStep,
   computePrayerTimes,
   nearestCity,
@@ -22,6 +26,9 @@ import {
   type DailyPrayerTimes,
   type Language,
   type PrayerTimesSettings,
+  type ProgressEvent,
+  type ProgressPrayer,
+  type ProgressState,
   type ReciterStyle,
   type SavedLocation,
   type Translation,
@@ -42,7 +49,7 @@ import {
   getVersesForSurah,
 } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { LanguageProvider, LanguageSwitcher, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
+import { LanguageProvider, LanguageSwitcher, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
@@ -51,6 +58,7 @@ import { Home } from "./pages/Home.js";
 import { PrayerPage } from "./pages/PrayerPage.js";
 import { QiblaPage } from "./pages/QiblaPage.js";
 import { CalendarPage } from "./pages/CalendarPage.js";
+import { ChallengePage } from "./pages/ChallengePage.js";
 import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 import { SettingsPage } from "./pages/SettingsPage.js";
@@ -88,6 +96,11 @@ export function App() {
   const [selectedSurahTranslation, setSelectedSurahTranslation] = useState<Translation[] | null>(null);
   const [verseAnnotations, setVerseAnnotations] = useState<VerseAnnotations>({});
   const [zakatForm, setZakatForm] = useState<ZakatForm>(() => withDefaultZakatForm(undefined));
+  const [progress, setProgress] = useState<ProgressState>(emptyProgress);
+  // The latest progress, readable synchronously: two awards in the same tick must build on each other, not on a stale render.
+  const progressRef = useRef<ProgressState>(progress);
+  const [toast, setToast] = useState<{ message: string; id: number } | undefined>(undefined);
+  const dismissToast = useCallback(() => setToast(undefined), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +109,10 @@ export function App() {
       const stored = withDefaultSettings(await store.get<UserSettings>(SETTINGS_STORAGE_KEY));
       const storedAnnotations = await store.get<VerseAnnotations>(VERSE_ANNOTATIONS_STORAGE_KEY);
       const storedZakat = await store.get<Partial<ZakatForm>>(ZAKAT_STORAGE_KEY);
+      const storedProgress = normalizeProgress(await store.get<unknown>(PROGRESS_STORAGE_KEY));
       if (cancelled) return;
+      progressRef.current = storedProgress;
+      setProgress(storedProgress);
       setSettings(stored);
       setZakatForm(withDefaultZakatForm(storedZakat));
       setVerseAnnotations(storedAnnotations ?? {});
@@ -372,6 +388,24 @@ export function App() {
     });
   }
 
+  /**
+   * Records one good deed: updates points/streak/badges, saves them, and shows
+   * the encouragement for it. Returns the points it earned (the quiz totals them).
+   */
+  function award(event: ProgressEvent): number {
+    const result = applyEvent(progressRef.current, event, new Date());
+    progressRef.current = result.state;
+    setProgress(result.state);
+    void store.set(PROGRESS_STORAGE_KEY, result.state);
+    const message = encouragementText(result, (key, vars) => translate(settings.language, key, vars));
+    if (message) setToast((prev) => ({ message, id: (prev?.id ?? 0) + 1 }));
+    return result.pointsDelta;
+  }
+
+  function handlePrayerToggle(prayer: ProgressPrayer, done: boolean) {
+    award({ type: "prayer", prayer, done });
+  }
+
   function handleToggleBookmark(surah: number, ayah: number) {
     updateVerseAnnotations((prev) => toggleBookmark(prev, surah, ayah, new Date()));
   }
@@ -397,6 +431,8 @@ export function App() {
                   tomorrowsFajr={tomorrowsFajr}
                   heading={heading}
                   hijriAdjustment={settings.hijriAdjustment}
+                  progress={progress}
+                  onPrayerToggle={handlePrayerToggle}
                 />
               }
             />
@@ -500,10 +536,16 @@ export function App() {
                   onSchedulesChange={handleSchedulesChange}
                   showTranslation={settings.showTranslation}
                   onShowTranslationChange={handleShowTranslationChange}
+                  onAzkarCompleted={() => award({ type: "azkar-completed" })}
                 />
               }
             />
+            <Route
+              path="/challenge"
+              element={<ChallengePage progress={progress} onQuizAnswer={(correct) => award({ type: "quiz-answer", correct })} />}
+            />
           </Routes>
+          <Toast message={toast?.message} id={toast?.id ?? 0} onDismiss={dismissToast} />
         </AppShell>
       </HashRouter>
     </LanguageProvider>
@@ -519,7 +561,10 @@ function AppShell({ children }: { children: ReactNode }) {
   return (
     <main className="app-shell">
       <header className="app-header">
-        <h1>Manarah</h1>
+        <h1>
+          <img className="app-logo" src="favicon.svg" alt="" width={36} height={36} />
+          Manarah
+        </h1>
         <span className="tagline">منارة — {t("app.tagline")}</span>
         <LanguageSwitcher />
       </header>

@@ -133,8 +133,18 @@ button {
 }
 
 .app-header h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 1.9rem;
   color: var(--accent);
+}
+
+.app-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  box-shadow: 0 6px 14px -8px rgba(14, 70, 56, 0.7);
 }
 
 .app-header .tagline {
@@ -4934,4 +4944,495 @@ button,
 
 .history-today {
   animation: rise 420ms var(--ease-quiet) both;
+}
+
+/* ==========================================================================
+   Progress, prayer tracker, quiz and toasts — encouragement without pressure
+   ========================================================================== */
+
+:root {
+  --hue-challenge: #d2682a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --hue-challenge: #f4a273;
+  }
+}
+
+:root[data-theme="dark"] {
+  --hue-challenge: #f4a273;
+}
+
+[data-hue="challenge"],
+[data-section="challenge"] {
+  --hue: var(--hue-challenge);
+}
+
+/* ---------- Prayer tracker: five buttons you tick as you pray ---------- */
+
+.prayer-tracker-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.prayer-tracker-head h3 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.prayer-tracker-count {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+}
+
+.prayer-tracker-hint {
+  margin: 2px 0 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.prayer-tracker ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.prayer-tracker button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition:
+    transform 180ms var(--ease-spring),
+    background-color 200ms var(--ease-quiet),
+    border-color 200ms var(--ease-quiet);
+}
+
+.prayer-tracker button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.prayer-tracker button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.prayer-tracker button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.prayer-tracker-tick {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  color: var(--accent-ink);
+  transition:
+    background-color 220ms var(--ease-quiet),
+    border-color 220ms var(--ease-quiet),
+    transform 320ms var(--ease-spring);
+}
+
+.prayer-tracker button.done {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.prayer-tracker button.done .prayer-tracker-tick {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.12);
+}
+
+/* ---------- Progress card ---------- */
+
+.progress-card {
+  padding: 16px 18px;
+  border-radius: 14px;
+  color: #fff8ec;
+  background: linear-gradient(135deg, #c4561f 0%, #e68a3c 60%, #f2b45a 130%);
+  box-shadow: 0 16px 34px -22px #c4561f;
+}
+
+.progress-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-level {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  animation: float-y 5s ease-in-out infinite;
+}
+
+.progress-level-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.progress-level-text p {
+  margin: 0;
+}
+
+.progress-level-name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.progress-points {
+  font-size: 0.85rem;
+  opacity: 0.92;
+}
+
+.progress-streak {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-round);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.8rem;
+}
+
+.progress-streak.on {
+  background: rgba(255, 255, 255, 0.28);
+  font-weight: 700;
+}
+
+.progress-streak.on .icon {
+  color: #fff0b8;
+  filter: drop-shadow(0 0 6px rgba(255, 220, 120, 0.8));
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+
+.progress-bar {
+  height: 9px;
+  margin: 12px 0 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #fff3cc, #ffd777);
+  transition: width 700ms var(--ease-quiet);
+}
+
+.progress-next {
+  margin: 0;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.progress-week {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.progress-week li {
+  display: grid;
+  place-items: center;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #c4561f;
+}
+
+.progress-week li.active {
+  background: #fff8ec;
+}
+
+.progress-week li.today {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 1px;
+}
+
+.progress-card h4 {
+  margin: 16px 0 8px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+}
+
+.progress-badges {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.progress-badges li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.progress-badges li.locked {
+  opacity: 0.78;
+}
+
+.progress-badges li.earned {
+  background: rgba(255, 255, 255, 0.28);
+  animation: rise 420ms var(--ease-quiet) both;
+}
+
+.badge-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.badge-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.badge-text strong {
+  font-size: 0.85rem;
+}
+
+.badge-text small {
+  font-size: 0.72rem;
+  opacity: 0.88;
+}
+
+/* ---------- Quiz ---------- */
+
+.quiz {
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--hue-challenge);
+  border-radius: var(--radius-page);
+}
+
+.quiz h3 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.quiz p {
+  margin: 8px 0;
+}
+
+.quiz-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.quiz .progress-bar {
+  background: var(--accent-soft);
+  margin: 10px 0 14px;
+}
+
+.quiz .progress-bar span {
+  background: linear-gradient(90deg, var(--hue-challenge), #f2b45a);
+}
+
+.quiz-prompt {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.quiz-options {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.quiz-options button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  text-align: start;
+  cursor: pointer;
+  transition:
+    transform 180ms var(--ease-spring),
+    border-color 160ms var(--ease-quiet),
+    background-color 200ms var(--ease-quiet);
+}
+
+.quiz-options button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--hue-challenge);
+}
+
+.quiz-options button:disabled {
+  cursor: default;
+}
+
+.quiz-options button.correct {
+  border-color: #2e9e5c;
+  background: color-mix(in srgb, #2e9e5c 18%, var(--surface));
+  animation: rise 300ms var(--ease-spring) both;
+}
+
+.quiz-options button.wrong {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.quiz-options button.dim {
+  opacity: 0.5;
+}
+
+.quiz-feedback {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  animation: rise 320ms var(--ease-quiet) both;
+}
+
+.quiz-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 9px 20px;
+  border: none;
+  border-radius: var(--radius-round);
+  background: var(--hue-challenge);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms var(--ease-spring);
+}
+
+.quiz-primary:hover {
+  transform: translateY(-2px);
+}
+
+.quiz-primary:active {
+  transform: scale(0.95);
+}
+
+.quiz-done {
+  text-align: center;
+}
+
+.quiz-score {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--hue-challenge);
+}
+
+.quiz-points {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.challenge-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 1200px) {
+  .challenge-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: start;
+  }
+}
+
+.challenge-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* ---------- Toast ---------- */
+
+.toast {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: min(92vw, 440px);
+  margin-inline: auto;
+  padding: 12px 20px;
+  border-radius: var(--radius-round);
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 0.92rem;
+  box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.45);
+  animation: toast-in 380ms var(--ease-spring) both;
+}
+
+.toast .icon {
+  flex-shrink: 0;
+  color: #ffd777;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

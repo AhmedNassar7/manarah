@@ -11,9 +11,11 @@ export interface AzkarPageProps {
   onSchedulesChange: (schedules: AzkarSchedule[]) => void;
   showTranslation: boolean;
   onShowTranslationChange: (show: boolean) => void;
+  /** A dhikr was completed — for progress. */
+  onAzkarCompleted?: () => void;
 }
 
-export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, onShowTranslationChange }: AzkarPageProps) {
+export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, onShowTranslationChange, onAzkarCompleted }: AzkarPageProps) {
   const { t } = useTranslation();
 
   return (
@@ -24,6 +26,7 @@ export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, 
         categories={BROWSER_CATEGORIES}
         showTranslation={showTranslation}
         onShowTranslationChange={onShowTranslationChange}
+        onItemComplete={onAzkarCompleted}
       />
 
       {/* 132 rows — collapsed by default so it doesn't bury the azkar themselves. */}

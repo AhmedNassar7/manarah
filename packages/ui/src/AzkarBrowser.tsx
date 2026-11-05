@@ -12,6 +12,8 @@ export interface AzkarBrowserProps {
   /** Passed through to the opened category's AzkarList; see its props. */
   showTranslation?: boolean;
   onShowTranslationChange?: (show: boolean) => void;
+  /** Passed through to the opened category's AzkarList. */
+  onItemComplete?: (itemId: string) => void;
 }
 
 /** Arabic search should match with or without harakat — strip diacritics/tatweel and fold alef/ya/ta-marbuta variants. */
@@ -37,6 +39,7 @@ export function AzkarBrowser({
   initialSectionId,
   showTranslation,
   onShowTranslationChange,
+  onItemComplete,
 }: AzkarBrowserProps) {
   const { t, language } = useTranslation();
   const [sectionId, setSectionId] = useState(initialSectionId ?? sections[0]?.id);
@@ -139,6 +142,7 @@ export function AzkarBrowser({
             category={openCategory}
             showTranslation={showTranslation}
             onShowTranslationChange={onShowTranslationChange}
+            onItemComplete={onItemComplete}
           />
         </div>
       ) : (

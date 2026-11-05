@@ -113,7 +113,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 - [x] Bundle size: verse text and city list lazy `import()`-loaded per-surah/on-search, keeping PWA precache under Workbox's default 2MB-per-file limit (verified by direct bundle inspection)
 - [x] CI: `ci.yml` (typecheck + test + both builds on every push/PR), `deploy-web.yml` (tests gate the Pages deploy)
 
-**Test count**: 658 tests passing across all 4 packages (`core` 259, `storage` 17, `data` 74, `ui` 308), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
+**Test count**: 834 tests passing across all 4 packages (`core` 359, `storage` 17, `data` 84, `ui` 374), as of the last full run. Both `pnpm --filter web build` and `pnpm --filter extension build` succeed cleanly.
 
 ### Prayer / Qibla / Azkar polish — ✅ done (2026-09-30, on request)
 
@@ -270,7 +270,7 @@ Known limits: no Laylat al-Qadr marking (its date is a matter of scholarly diffe
 New `/zakat` route (nav + Home tile). `ZakatCalculator` (`packages/ui`) takes what you own (cash/savings, gold by weight and karat, silver by weight, investments, business goods, money owed to you, other), what you owe that's due now, today's gold and silver prices, and a nisab basis; it shows the nisab, net wealth, whether zakat is due, and 2.5% of net wealth if so — with the working beneath the verdict. Pure arithmetic in `packages/core/zakat`; the form is saved on-device only under `manarah:zakat` (covered by JSON export, which dumps the whole store) and "Clear amounts" resets it while keeping currency and basis.
 
 Decisions worth knowing:
-- **No price feed.** A live gold/silver API would break the zero-cost/no-server rule, and a bundled price would be silently wrong within weeks — so the user enters today's per-gram prices and the nisab is derived from them. If a needed price is missing the result says which one instead of guessing.
+- **Prices: superseded by v2 below** (live prices, automatic by default). The original decision was manual entry only — a bundled price would be silently wrong within weeks — and manual entry is still there as a mode.
 - **Nisab basis is the user's choice, never silently picked** — default silver (595 g, the lower threshold) or gold (85 g); the UI says scholars differ. A note mentions the slightly higher Hanafi weights (87.48 g / 612.36 g).
 - **Jewelry** is not decided for the user: a note states the Hanafi view (counted) and the Shafi'i/Maliki/Hanbali view (exempt) and says to enter its weight only if you follow a view that counts it.
 - **Combined wealth reaches the nisab together** (e.g. 5 g gold + cash), as the rule intends; zakat is 2.5% of *all* net wealth once over, not of the excess; exactly at the nisab counts as due. Gold is valued as pure gold (weight × karat ÷ 24).
@@ -332,6 +332,39 @@ From the user's note that the design was static and flat. Principle: **scripture
 ## Quranic duas — ✅ done (2026-11-05)
 
 The plan covered prophetic duas (Hisn al-Muslim: 132 chapters, 266 entries) but not the duas that are *verses of the Qur'an*. New section **"Duas from the Qur'an"** in the Azkar page: 38 duas in 7 themes (forgiveness and mercy; good in this life and the next; family and children; parents; knowledge and ease; trust and protection; the Hereafter and the Fire). **Not hand-typed:** each was generated from the bundled Uthmani text and Saheeh translation for its `reference` (surah:ayah or range), and `quranic-duas.test.ts` re-checks every Arabic text and translation against the Quran data on every run, plus that each parses as exactly one verse block. A verse is given whole (including any introducing words such as "They said, …"). Shown in the Quran face with gold brackets and a "Qur'an 2:201" reference line; `AzkarItem` gained an optional `reference`. Kept apart from the Hisn corpus so that stays a faithful copy of its source. Not schedulable for reminders (the schedule editor still lists the Hisn corpus only).
+
+## Settings, themes and feedback — ✅ done (2026-11-05, on request — ideas from the mobile app "المصلي")
+
+New `/settings` page (nav item, gear icon): appearance (language, **theme**), prayer calculation, Quran and recitation (the same reading controls as the reader), Hijri adjustment and holiday reminders, notifications, **backup** (export / import of the whole store as JSON) and **rate / feedback**.
+- **Themes:** `THEME_IDS` = auto (follows the device), Parchment, Emerald, Ocean, Rose, Midnight and AMOLED black (`themeAttributes`, `resolveTheme` in `core/settings`). A theme sets `data-theme` (light or dark) and `data-palette` on `<html>`; a palette is a set of CSS custom properties, so every component follows it with no per-component work.
+- **Rating and feedback:** `FeedbackForm` (a 1-5 rating plus a message). There is no server, so nothing is sent anywhere by the app: the form builds a prefilled GitHub issue (`githubIssueUrl`) for the user to review and submit themselves. The rating is also kept in `UserSettings.appRating`. The text says "Rating: 4/5" (no star glyph — the no-emoji guard).
+
+## Zakat v2 — automatic prices, five kinds of wealth — ✅ done (2026-11-05)
+
+Rewrote the calculator around what the user asked: simple, many kinds, no price errors.
+- **Kinds:** cash and savings, gold, silver, trade goods, shares/investments (plus money owed to you, and debts due). The result shows the **share each kind contributes** to the zakat.
+- **Automatic prices (default).** `core/metal-prices`: gold and silver spot (XAU/XAG per troy ounce, USD) from gold-api.com, and exchange rates from the currency-api on jsDelivr (open.er-api fallback) — all keyless, free, called directly from the client. Converted to the user's currency (chosen from the saved location's country, `currencyForCountry`) and to per-gram prices for the karat chosen. Snapshots are saved on-device and refreshed after 60 minutes (`shouldRefreshSnapshot`), so it works offline with the last prices and says how old they are. Live-checked against real endpoints (EGP 24k about 7,230 per gram on the day).
+- **Honest caveat shown on the page:** this is the *international spot price*; a local jeweller's price differs (premium, making charges). A **manual** mode remains for anyone who wants their local price — the user chooses, never silently switched.
+- Everything else (nisab choice, combined wealth, 2.5% of all net wealth, parsing of Arabic digits) is unchanged from v1.
+
+## On this day — ✅ done (2026-11-05)
+
+`OnThisDay` on Home and beside the Hijri calendar: events that happened on today's Hijri date, and what is coming up. 15 events in `packages/data/history`, each labelled **Established** or **Traditional date** where scholars differ (e.g. the Prophet's birth).
+- **Pinned by Hijri date only.** Early events carry no Gregorian date on purpose: before 1582 the Julian calendar was in use, and converting a Hijri date to a Gregorian date by the modern rule lands 7-9 days off (found while testing). A test pins that no pre-1582 event carries a Gregorian field.
+- Follows the user's Hijri adjustment; pure logic in `core/history` (`eventsOnDate`, `nextHistoricalEvents`).
+
+## Progress, prayer tracker and Quran quiz — ✅ done (2026-11-05, on request)
+
+Encouragement the user asked for — points, a competition, a kind word when they do something good — built **personal and pressure-free**: kept on the device, no leaderboard, no ranking, no "you lost your streak" shaming.
+- **What earns points** (`core/progress`, pure and tested): a prayer marked as prayed (10; +20 for all five in a day), a dhikr completed (2, capped at 20 a day), a correct quiz answer (5, capped at 20 a day). Caps reward steady practice, not tapping one dhikr for an hour. Un-ticking a prayer takes its points back, so it can't be farmed. **Levels** (`25 x (n-1) x n` points) and 10 **badges** (first prayer, all five, 3/7/30-day streak, 10/100 adhkar, 10 quiz answers, 100/500 points). The state is validated on load (`normalizeProgress`) so a hand-edited import can't break the app.
+- **Encouragement** (`encouragementText`): a short message in the user's language as a toast — three wordings per kind so it doesn't repeat itself; streak messages at 3, 7 and 30 days (including the hadith that the most beloved deeds are the most regular, even if small); a wrong quiz answer is gentle ("Close! Learning is the point."). Arabic streak lines avoid number-noun agreement ("سلسلة متواصلة: 30") rather than risking wrong grammar.
+- **Prayer tracker** on Home: five buttons, each enabled only once that prayer's time has started (you can't tick Isha at noon); tap again to undo. **Progress card:** level, bar to the next, streak, last 7 days; badges on the Challenge page.
+- **Quran quiz** (`core/quiz`, `QuizGame`, route `/challenge`): ten questions — which surah is number N, the number of a surah, its verse count, Meccan or Medinan, which surah follows — with the answer key computed from the app's own surah data. `quiz.test.ts` in `packages/data` generates 2,000 questions across all 114 surahs and checks every key. No timer: it is for learning. (Questions about the *content* of verses were left out on purpose — each would need hand-checking for correctness and for scholarly differences.)
+- Saved under `manarah:progress`, covered by the JSON backup.
+
+## Logo — ✅ done (2026-11-05, on request)
+
+Replaced the old pale-green circle with thin rays by a clearer, more distinctive mark: a **gold minaret with a crescent finial on a deep emerald tile**, with a soft glow around the tip and light rays from the gallery — a *manarah* is a place of light, and the rays also read as the call to prayer carrying outward. One shape, readable down to 16 px (checked). Source `assets/logo.svg`; `favicon.svg`, PWA `icon-192/512.png` and extension `icon-16/48/128.png` are regenerated from it, and the mark now sits beside the name in the app header. The README keeps using `assets/logo.svg`.
 
 ## Testing strategy — ✅ framework in place, coverage ongoing
 

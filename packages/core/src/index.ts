@@ -18,3 +18,4 @@ export * from "./feedback/index.js";
 export * from "./metal-prices/index.js";
 export * from "./history/index.js";
 export * from "./progress/index.js";
+export * from "./quiz/index.js";

@@ -237,11 +237,11 @@ export function applyEvent(previous: ProgressState, event: ProgressEvent, now: D
   const newBadges = earned.filter((id) => !state.badges.includes(id));
   if (newBadges.length > 0) state = { ...state, badges: [...state.badges, ...newBadges] };
 
-  // A milestone outranks the ordinary message: the first good deed of a day that reaches a streak milestone, or a new badge.
+  // A milestone outranks the ordinary message: a streak milestone first, then "all five prayers", then a new badge.
   const streak = currentStreak(state, now);
   const result: EventResult = { state, pointsDelta, newBadges, encouragement, variant: 0, streak };
   if (streak > streakBefore && STREAK_MILESTONES.includes(streak)) result.encouragement = "streak";
-  if (newBadges.length > 0 && result.encouragement !== "streak") result.encouragement = "badge";
+  if (newBadges.length > 0 && result.encouragement !== "streak" && result.encouragement !== "all-five") result.encouragement = "badge";
   result.variant = (total(state, (d) => d.prayers.length + d.azkar + d.quizAnswered) + state.points) % MESSAGE_VARIANTS;
   return result;
 }

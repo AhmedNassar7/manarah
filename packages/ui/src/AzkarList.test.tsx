@@ -153,6 +153,27 @@ describe("AzkarList", () => {
     expect(screen.getByRole("button", { name: "3 / 3" })).toBeInTheDocument();
   });
 
+  it("reports a completion exactly once, when the tally reaches the repeat count", async () => {
+    const user = userEvent.setup();
+    const onItemComplete = vi.fn();
+    render(<AzkarList category={category} onItemComplete={onItemComplete} />);
+
+    await user.click(screen.getByRole("button", { name: "0 / 3" }));
+    await user.click(screen.getByRole("button", { name: "1 / 3" }));
+    expect(onItemComplete).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "2 / 3" }));
+    expect(onItemComplete).toHaveBeenCalledTimes(1);
+    expect(onItemComplete).toHaveBeenCalledWith("75");
+
+    // Tapping a finished item again earns nothing more.
+    await user.click(screen.getByRole("button", { name: "3 / 3" }));
+    expect(onItemComplete).toHaveBeenCalledTimes(1);
+
+    // A single-repeat item completes on its first tap.
+    await user.click(screen.getByRole("button", { name: "0 / 1" }));
+    expect(onItemComplete).toHaveBeenCalledTimes(2);
+  });
+
   it("tracks each item's tally independently", async () => {
     const user = userEvent.setup();
     render(<AzkarList category={category} />);

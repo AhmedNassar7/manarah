@@ -21,6 +21,8 @@ export interface AzkarListProps {
   /** Whether the English translation is shown under each dhikr. When omitted the list keeps this itself — hidden by default, so the Arabic is what you read. */
   showTranslation?: boolean;
   onShowTranslationChange?: (show: boolean) => void;
+  /** Called the moment an item's tally reaches its repeat count (once per completion). */
+  onItemComplete?: (itemId: string) => void;
 }
 
 /**
@@ -29,7 +31,7 @@ export interface AzkarListProps {
  * has one), the same Arabic-first rule as the Quran reader, so it doesn't
  * compete with the text being recited. Shared across web/extension/desktop/mobile.
  */
-export function AzkarList({ category, showTranslation: showTranslationProp, onShowTranslationChange }: AzkarListProps) {
+export function AzkarList({ category, showTranslation: showTranslationProp, onShowTranslationChange, onItemComplete }: AzkarListProps) {
   const { t, language } = useTranslation();
   const [localShowTranslation, setLocalShowTranslation] = useState(false);
   const showTranslation = showTranslationProp ?? localShowTranslation;
@@ -45,6 +47,8 @@ export function AzkarList({ category, showTranslation: showTranslationProp, onSh
   const [tappedId, setTappedId] = useState<string | null>(null);
 
   function tally(itemId: string, repeatCount: number) {
+    // The completion is reported from the click, not from inside the state updater (which React may run twice).
+    if ((counts[itemId] ?? 0) < repeatCount && (counts[itemId] ?? 0) + 1 >= repeatCount) onItemComplete?.(itemId);
     setCounts((prev) => {
       const next = Math.min((prev[itemId] ?? 0) + 1, repeatCount);
       return { ...prev, [itemId]: next };

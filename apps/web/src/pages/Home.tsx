@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import {
   currentHijriDate,
+  todaysRecord,
   qiblaBearing,
   qiblaDistanceKm,
   toCalendarDate,
   type Coordinates,
   type DailyPrayerTimes,
+  type ProgressPrayer,
+  type ProgressState,
 } from "@manarah/core";
 import { HISTORICAL_EVENTS } from "@manarah/data";
 import { todaysMaghrib } from "./CalendarPage.js";
@@ -16,6 +19,8 @@ import {
   OnThisDay,
   PrayerHero,
   PrayerTimesList,
+  PrayerTracker,
+  ProgressCard,
   QiblaCompass,
   RamadanCountdown,
   useTranslation,
@@ -29,6 +34,8 @@ export interface HomeProps {
   tomorrowsFajr: Date | null;
   heading: number | undefined;
   hijriAdjustment: number;
+  progress: ProgressState;
+  onPrayerToggle: (prayer: ProgressPrayer, done: boolean) => void;
 }
 
 const QUICK_LINKS = [
@@ -39,6 +46,7 @@ const QUICK_LINKS = [
   { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar", hue: "calendar" },
   { to: "/zakat", icon: "zakat", labelKey: "app.sectionZakat", hue: "zakat" },
   { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", hue: "azkar" },
+  { to: "/challenge", icon: "trophy", labelKey: "app.sectionChallenge", hue: "challenge" },
 ] as const;
 
 /**
@@ -46,7 +54,7 @@ const QUICK_LINKS = [
  * the Ramadan countdown and the Qibla — then a way into every other section
  * (the tiles show on phones; on desktop the sidebar already does that job).
  */
-export function Home({ locationSummary, coordinates, times, tomorrowsFajr, heading, hijriAdjustment }: HomeProps) {
+export function Home({ locationSummary, coordinates, times, tomorrowsFajr, heading, hijriAdjustment, progress, onPrayerToggle }: HomeProps) {
   const { t } = useTranslation();
   const now = new Date();
   const hijri = currentHijriDate(now, { maghrib: todaysMaghrib(times, now), adjustment: hijriAdjustment });
@@ -66,6 +74,8 @@ export function Home({ locationSummary, coordinates, times, tomorrowsFajr, headi
         {times && <PrayerHero todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} hijri={hijri} />}
         {times && <PrayerTimesList todaysTimes={times} />}
         <div className="home-side">
+          {times && <PrayerTracker todaysTimes={times} done={todaysRecord(progress, now).prayers} onToggle={onPrayerToggle} />}
+          <ProgressCard progress={progress} today={now} />
           <RamadanCountdown todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />
           <OnThisDay events={HISTORICAL_EVENTS} todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />
           {coordinates && (

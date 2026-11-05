@@ -1,16 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <title>Manarah</title>
-  <circle cx="32" cy="32" r="32" fill="#d9e6de"/>
-  <g fill="#1f6f5c">
-    <line x1="20" y1="18" x2="14" y2="12" stroke="#1f6f5c" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
-    <line x1="44" y1="18" x2="50" y2="12" stroke="#1f6f5c" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
-    <line x1="17" y1="24" x2="10" y2="22" stroke="#1f6f5c" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-    <line x1="47" y1="24" x2="54" y2="22" stroke="#1f6f5c" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-    <rect x="25" y="46" width="14" height="9" rx="1"/>
-    <polygon points="23.5,46 40.5,46 36,21 28,21"/>
-    <rect x="26.5" y="18.5" width="11" height="3.2" rx="1"/>
-    <rect x="30.3" y="9.5" width="3.4" height="9.5"/>
-    <rect x="31.2" y="3" width="1.6" height="7"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#23806a"/>
+      <stop offset="1" stop-color="#0e4638"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe19a"/>
+      <stop offset="1" stop-color="#e5a93f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe19a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ffe19a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <!-- The tile: a deep emerald square with softly rounded corners. -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- A manarah is a place of light: a glow around the tip, and rays reaching out from the gallery. -->
+  <circle cx="256" cy="104" r="150" fill="url(#glow)"/>
+  <g fill="none" stroke="#ffe19a" stroke-linecap="round" stroke-width="12">
+    <path d="M150 250 Q112 232 98 192" opacity="0.5"/>
+    <path d="M362 250 Q400 232 414 192" opacity="0.5"/>
+    <path d="M128 288 Q76 262 58 206" opacity="0.28"/>
+    <path d="M384 288 Q436 262 454 206" opacity="0.28"/>
   </g>
-  <circle cx="32" cy="3" r="2.6" fill="#b3843a"/>
+  <!-- The minaret: shaft, gallery, upper shaft, pointed cap. -->
+  <g fill="url(#gold)">
+    <path d="M198 452 L314 452 L292 262 L220 262 Z"/>
+    <rect x="192" y="240" width="128" height="26" rx="13"/>
+    <path d="M226 240 L286 240 L282 176 L230 176 Z"/>
+    <path d="M226 176 C226 142 256 126 256 94 C256 126 286 142 286 176 Z"/>
+    <!-- Crescent finial. -->
+    <path d="M266 38 A30 30 0 1 0 266 94 A24 24 0 1 1 266 38 Z"/>
+  </g>
+  <!-- A doorway and a window, cut out of the shaft. -->
+  <g fill="#0e4638">
+    <path d="M236 452 L236 410 A20 20 0 0 1 276 410 L276 452 Z"/>
+    <path d="M247 214 L247 196 A9 9 0 0 1 265 196 L265 214 Z"/>
+  </g>
 </svg>
