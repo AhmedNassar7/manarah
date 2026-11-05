@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { emptyTasbih, tapTasbih, type TasbihState } from "@manarah/core";
+import { TASBIH_THEMES, emptyTasbih, setSound, setTasbihTheme, tapTasbih, type TasbihState } from "@manarah/core";
 import { LanguageProvider } from "./i18n/index.js";
 import { TasbihCounter, type TasbihCounterProps } from "./TasbihCounter.js";
 
@@ -142,5 +142,112 @@ describe("TasbihCounter", () => {
     expect(screen.getByRole("button", { name: "تراجع" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "عدّ حرّ" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Alhamdulillah" })).not.toBeInTheDocument();
+  });
+
+  describe("real beads", () => {
+    it("draws shaded beads on a cord, with a guide bead, spacer beads and a tassel", () => {
+      const { container } = setup();
+      expect(container.querySelectorAll(".tasbih-bead-body")).toHaveLength(33);
+      expect(container.querySelectorAll(".tasbih-bead-spec").length).toBeGreaterThanOrEqual(33); // a highlight on each bead (and the guide)
+      expect(container.querySelector(".tasbih-imam")).not.toBeNull();
+      expect(container.querySelectorAll(".tasbih-spacer")).toHaveLength(2);
+      expect(container.querySelector(".tasbih-knot")).not.toBeNull();
+      expect(container.querySelectorAll(".tasbih-fringe path").length).toBeGreaterThanOrEqual(6);
+      expect(container.querySelector("circle.tasbih-cord")).not.toBeNull();
+    });
+
+    it("lights every bead from the same side: each face turns back by as much as the ring turns", () => {
+      const { container } = setup({}, stateAfter(1));
+      const angle = (el: Element | null) => Number(/(-?[\d.]+)deg/.exec((el as HTMLElement).style.transform)?.[1]);
+      const ring = () => angle(container.querySelector(".tasbih-beads"));
+      const face = () => angle(container.querySelector(".tasbih-bead-face"));
+      expect(ring() + face()).toBeCloseTo(0, 5);
+      fireEvent.click(screen.getByRole("button", { name: /Tap to count/ }));
+      expect(ring() + face()).toBeCloseTo(0, 5);
+      expect(ring()).not.toBe(0);
+    });
+
+    it("gives the beads their own gradients (one per instance, so two tasbihs never share a light)", () => {
+      const { container } = setup();
+      const gradients = container.querySelectorAll("radialGradient");
+      expect(gradients).toHaveLength(2);
+      const ids = [...gradients].map((g) => g.id);
+      expect(new Set(ids).size).toBe(2);
+      expect(container.querySelector(".tasbih-bead-body")?.getAttribute("fill")).toBe(`url(#${ids[0]})`);
+      expect(ids[0]).not.toMatch(/:/);
+    });
+  });
+
+  describe("material", () => {
+    it("takes its look from the chosen material", () => {
+      const { container } = setup({}, setTasbihTheme(emptyTasbih(), "pearl"));
+      expect(container.querySelector(".tasbih")).toHaveAttribute("data-tasbih-theme", "pearl");
+    });
+
+    it("offers every material, names them, marks the one in use, and reports a choice", () => {
+      const onThemeChange = vi.fn();
+      setup({ onThemeChange });
+      const radios = screen.getAllByRole("radio");
+      expect(radios).toHaveLength(TASBIH_THEMES.length);
+      expect(screen.getByRole("radio", { name: "Olive wood" })).toHaveAttribute("aria-checked", "true");
+      expect(screen.getByRole("radio", { name: "Pearl" })).toHaveAttribute("aria-checked", "false");
+      fireEvent.click(screen.getByRole("radio", { name: "Onyx" }));
+      expect(onThemeChange).toHaveBeenCalledWith("onyx");
+    });
+
+    it("shows each material as a bead of its own colours", () => {
+      setup({ onThemeChange: vi.fn() });
+      for (const radio of screen.getAllByRole("radio")) {
+        expect(radio.getAttribute("data-tasbih-theme")).toMatch(/^(wood|amber|pearl|emerald|turquoise|onyx)$/);
+        expect(radio.querySelector(".tasbih-swatch")).not.toBeNull();
+      }
+    });
+
+    it("has no picker unless it can act on a choice", () => {
+      setup();
+      expect(screen.queryByRole("radiogroup")).not.toBeInTheDocument();
+    });
+
+    it("names the materials in Arabic", () => {
+      render(
+        <LanguageProvider language="ar" onLanguageChange={() => {}}>
+          <TasbihCounter
+            state={emptyTasbih()}
+            today={{ taps: 0, rounds: 0 }}
+            onTap={vi.fn()}
+            onUndo={vi.fn()}
+            onReset={vi.fn()}
+            onSelectDhikr={vi.fn()}
+            onTarget={vi.fn()}
+            onThemeChange={vi.fn()}
+            onSoundChange={vi.fn()}
+          />
+        </LanguageProvider>,
+      );
+      expect(screen.getByRole("radio", { name: "خشب الزيتون" })).toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: "لؤلؤ" })).toBeInTheDocument();
+      expect(screen.getByRole("radio", { name: "عقيق أسود" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "الصوت" })).toBeInTheDocument();
+    });
+  });
+
+  describe("sound", () => {
+    it("has a sound button that shows whether it is on, and reports a change", () => {
+      const onSoundChange = vi.fn();
+      const { rerender, props } = setup({ onSoundChange });
+      const off = screen.getByRole("button", { name: "Sound" });
+      expect(off).toHaveAttribute("aria-pressed", "false"); // silent until chosen
+      fireEvent.click(off);
+      expect(onSoundChange).toHaveBeenLastCalledWith(true);
+      rerender(<TasbihCounter {...props} state={setSound(emptyTasbih(), true)} />);
+      expect(screen.getByRole("button", { name: "Sound" })).toHaveAttribute("aria-pressed", "true");
+      fireEvent.click(screen.getByRole("button", { name: "Sound" }));
+      expect(onSoundChange).toHaveBeenLastCalledWith(false);
+    });
+
+    it("has no sound button unless it can act on it", () => {
+      setup();
+      expect(screen.queryByRole("button", { name: "Sound" })).not.toBeInTheDocument();
+    });
   });
 });

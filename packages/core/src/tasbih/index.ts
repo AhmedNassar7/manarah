@@ -26,6 +26,28 @@ export const TASBIH_DHIKR: readonly TasbihDhikr[] = [
   { id: "salawat", arabic: "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ" },
 ];
 
+/**
+ * What the beads are made of. The material decides the look (in the stylesheet) and the
+ * sound of a bead — wood knocks, glass ticks, stone clacks, amber is soft — so a tasbih
+ * looks and sounds like one thing. Display names live in the UI dictionaries
+ * (`tasbih.theme.<id>`).
+ */
+export type TasbihTimbre = "wood" | "glass" | "stone" | "soft";
+
+export interface TasbihTheme {
+  id: string;
+  timbre: TasbihTimbre;
+}
+
+export const TASBIH_THEMES: readonly TasbihTheme[] = [
+  { id: "wood", timbre: "wood" },
+  { id: "amber", timbre: "soft" },
+  { id: "pearl", timbre: "glass" },
+  { id: "emerald", timbre: "stone" },
+  { id: "turquoise", timbre: "glass" },
+  { id: "onyx", timbre: "stone" },
+];
+
 /** Round sizes. 0 means no target: just count. */
 export const TASBIH_TARGETS: readonly number[] = [33, 99, 100, 0];
 
@@ -49,10 +71,14 @@ export interface TasbihState {
   last: "tap" | "round" | null;
   /** Whether a tap gives a small vibration where the device can (always optional; off is respected). */
   vibrate: boolean;
+  /** Whether a tap makes a sound. Off by default: a tasbih is often used where quiet matters. */
+  sound: boolean;
+  /** What the beads are made of (see TASBIH_THEMES). */
+  theme: string;
 }
 
 export function emptyTasbih(): TasbihState {
-  return { dhikrId: TASBIH_DHIKR[0].id, target: 33, count: 0, days: {}, lifetime: 0, last: null, vibrate: true };
+  return { dhikrId: TASBIH_DHIKR[0].id, target: 33, count: 0, days: {}, lifetime: 0, last: null, vibrate: true, sound: false, theme: TASBIH_THEMES[0].id };
 }
 
 const isCount = (v: unknown, max = 100_000_000): v is number => typeof v === "number" && Number.isInteger(v) && v >= 0 && v < max;
@@ -76,7 +102,9 @@ export function normalizeTasbih(value: unknown): TasbihState {
   }
   const last = raw.last === "tap" || raw.last === "round" ? raw.last : null;
   const vibrate = typeof raw.vibrate === "boolean" ? raw.vibrate : true;
-  return { dhikrId, target, count, days, lifetime: isCount(raw.lifetime) ? raw.lifetime : 0, last, vibrate };
+  const sound = typeof raw.sound === "boolean" ? raw.sound : false;
+  const theme = TASBIH_THEMES.some((t) => t.id === raw.theme) ? (raw.theme as string) : fresh.theme;
+  return { dhikrId, target, count, days, lifetime: isCount(raw.lifetime) ? raw.lifetime : 0, last, vibrate, sound, theme };
 }
 
 function prune(days: Record<string, TasbihDay>): Record<string, TasbihDay> {
@@ -147,6 +175,19 @@ export function setTarget(state: TasbihState, target: number): TasbihState {
 
 export function setVibrate(state: TasbihState, vibrate: boolean): TasbihState {
   return state.vibrate === vibrate ? state : { ...state, vibrate };
+}
+
+export function setSound(state: TasbihState, sound: boolean): TasbihState {
+  return state.sound === sound ? state : { ...state, sound };
+}
+
+export function setTasbihTheme(state: TasbihState, theme: string): TasbihState {
+  return state.theme === theme || !TASBIH_THEMES.some((t) => t.id === theme) ? state : { ...state, theme };
+}
+
+/** The sound of the current beads. */
+export function currentTimbre(state: TasbihState): TasbihTimbre {
+  return (TASBIH_THEMES.find((t) => t.id === state.theme) ?? TASBIH_THEMES[0]).timbre;
 }
 
 export function todaysTasbih(state: TasbihState, now: Date): TasbihDay {

@@ -6326,101 +6326,7 @@ label:has(> input[type="checkbox"]) {
   text-align: center;
 }
 
-.tasbih-stage {
-  width: min(80vw, 340px);
-  aspect-ratio: 1;
-  margin-top: 6px;
-}
-
-.tasbih-ring {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 0;
-  color: var(--ink);
-  border: none;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 38%, var(--surface), var(--surface-sunken));
-  box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line);
-  cursor: pointer;
-  touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform var(--dur-fast) var(--ease-spring);
-}
-
-.tasbih-ring:active {
-  transform: scale(0.975);
-}
-
-.tasbih-ring svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.tasbih-thread {
-  fill: none;
-  stroke: var(--line);
-  stroke-width: 2;
-}
-
-.tasbih-beads {
-  transform-origin: 0 0;
-  transition: transform 340ms var(--ease-spring);
-}
-
-.tasbih-bead {
-  fill: var(--surface);
-  stroke: color-mix(in srgb, var(--ink) 25%, transparent);
-  stroke-width: 1;
-  transition: fill 240ms var(--ease-quiet), stroke 240ms var(--ease-quiet);
-}
-
-.tasbih-bead.counted {
-  fill: var(--accent);
-  stroke: color-mix(in srgb, var(--accent) 65%, #000);
-}
-
 /* The larger guide bead and tassel at the top stay still while the ring turns. */
-.tasbih-guide line {
-  stroke: var(--gold-ink);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.tasbih-guide circle {
-  fill: var(--gold);
-  stroke: var(--gold-ink);
-  stroke-width: 1.5;
-}
-
-.tasbih-count {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  text-align: center;
-  pointer-events: none;
-}
-
-.tasbih-count strong {
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 14vw, 4.6rem);
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.tasbih-count small {
-  color: var(--muted);
-  font-size: 1.05rem;
-}
-
 /* A ring of gold that opens and fades when a round is complete. */
 .tasbih-glow {
   position: absolute;
@@ -6717,5 +6623,303 @@ label:has(> input[type="checkbox"]) {
     max-height: 88dvh;
     border-radius: 20px 20px 0 0;
     padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ---------- The tasbih: real beads on a cord, in a material you choose ---------- */
+
+/* Each material: the beads' light and dark, the guide bead and tassel, and the surface they lie on.
+   The surface and its text are fixed per material (not the site theme): a tasbih is an object, and
+   pearls need dark velvet to be seen. Text on every surface is checked for contrast in the tests. */
+[data-tasbih-theme="wood"] {
+  --bead-hi: #e0ad72;
+  --bead-mid: #a8672f;
+  --bead-lo: #5a3114;
+  --bead-edge: #3f2209;
+  --bead-spec: 0.5;
+  --guide-hi: #f6dc94;
+  --guide-mid: #c99a3c;
+  --guide-lo: #78561a;
+  --cord: #4a3320;
+  --tassel: #8a5a2b;
+  --disc-a: #f5ebd8;
+  --disc-b: #e3d1b1;
+  --disc-ink: #2b1d10;
+  --disc-muted: #5f4c37;
+}
+
+[data-tasbih-theme="amber"] {
+  --bead-hi: #ffe28f;
+  --bead-mid: #f0a02a;
+  --bead-lo: #9a4f0a;
+  --bead-edge: #6f3406;
+  --bead-spec: 0.7;
+  --guide-hi: #fff3c4;
+  --guide-mid: #e3b04b;
+  --guide-lo: #8c6414;
+  --cord: #e9c27a;
+  --tassel: #d89a3a;
+  --disc-a: #3d2613;
+  --disc-b: #22140a;
+  --disc-ink: #fbe9c6;
+  --disc-muted: #dcbf8c;
+}
+
+[data-tasbih-theme="pearl"] {
+  --bead-hi: #ffffff;
+  --bead-mid: #efe6dc;
+  --bead-lo: #b4a89c;
+  --bead-edge: #9c9186;
+  --bead-spec: 0.9;
+  --guide-hi: #fff0c2;
+  --guide-mid: #d9b45c;
+  --guide-lo: #8a6a1c;
+  --cord: #cfc8bd;
+  --tassel: #b4a283;
+  --disc-a: #20294a;
+  --disc-b: #0e1428;
+  --disc-ink: #f4efe6;
+  --disc-muted: #bcc4da;
+}
+
+[data-tasbih-theme="emerald"] {
+  --bead-hi: #82e8b4;
+  --bead-mid: #1f9d66;
+  --bead-lo: #0a4a2e;
+  --bead-edge: #073b24;
+  --bead-spec: 0.6;
+  --guide-hi: #f6dc94;
+  --guide-mid: #c99a3c;
+  --guide-lo: #78561a;
+  --cord: #2a4a38;
+  --tassel: #1f7a52;
+  --disc-a: #f7f2e4;
+  --disc-b: #e5dcc5;
+  --disc-ink: #14301f;
+  --disc-muted: #4b6855;
+}
+
+[data-tasbih-theme="turquoise"] {
+  --bead-hi: #94eef3;
+  --bead-mid: #1c8ea8;
+  --bead-lo: #0b5970;
+  --bead-edge: #0a4a5e;
+  --bead-spec: 0.65;
+  --guide-hi: #f6dc94;
+  --guide-mid: #c99a3c;
+  --guide-lo: #78561a;
+  --cord: #2b5565;
+  --tassel: #1c8aa6;
+  --disc-a: #f4e9d3;
+  --disc-b: #e3d2ae;
+  --disc-ink: #0f2a36;
+  --disc-muted: #44606b;
+}
+
+[data-tasbih-theme="onyx"] {
+  --bead-hi: #77777f;
+  --bead-mid: #212127;
+  --bead-lo: #050507;
+  --bead-edge: #000;
+  --bead-spec: 0.85;
+  --guide-hi: #f6dc94;
+  --guide-mid: #c99a3c;
+  --guide-lo: #78561a;
+  --cord: #2a2a2a;
+  --tassel: #232328;
+  --disc-a: #f0ebe1;
+  --disc-b: #dcd4c4;
+  --disc-ink: #1b1b1b;
+  --disc-muted: #58534a;
+}
+
+.tasbih-stage {
+  --stage: min(80vw, 340px);
+  width: var(--stage);
+  aspect-ratio: 1;
+  /* Room above the ring for the tassel, which hangs outside the circle. */
+  margin-top: calc(var(--stage) * 0.2);
+}
+
+.tasbih-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  color: var(--disc-ink);
+  background: radial-gradient(circle at 50% 38%, var(--disc-a), var(--disc-b));
+  box-shadow: var(--shadow-1), inset 0 0 0 1px color-mix(in srgb, var(--disc-ink) 14%, transparent), inset 0 -10px 26px -14px color-mix(in srgb, var(--disc-ink) 35%, transparent);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+.tasbih-ring:active {
+  transform: scale(0.975);
+}
+
+.tasbih-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tasbih-cord {
+  fill: none;
+  stroke: var(--cord);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.tasbih-beads {
+  transform-origin: 0 0;
+  transition: transform 340ms var(--ease-spring);
+}
+
+/* A bead's face turns back by as much as the ring turns, on the same curve, so the light stays put. */
+.tasbih-bead-face {
+  transform-origin: 0 0;
+  transition: transform 340ms var(--ease-spring);
+}
+
+.tasbih-bead {
+  opacity: 0.55;
+  transition: opacity 260ms var(--ease-quiet);
+}
+
+.tasbih-bead.counted {
+  opacity: 1;
+}
+
+.tasbih-bead-body,
+.tasbih-spacer,
+.tasbih-imam {
+  stroke: var(--bead-edge);
+  stroke-width: 0.8;
+}
+
+.tasbih-imam {
+  stroke: var(--guide-lo);
+}
+
+.tasbih-bead-shadow {
+  fill: rgba(0, 0, 0, 0.28);
+}
+
+.tasbih-bead-spec {
+  fill: #fff;
+  opacity: var(--bead-spec);
+}
+
+.tasbih-knot {
+  fill: var(--tassel);
+  stroke: var(--cord);
+  stroke-width: 1;
+}
+
+.tasbih-fringe path {
+  fill: none;
+  stroke: var(--tassel);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+}
+
+.tasbih-count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tasbih-count strong {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 14vw, 4.6rem);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tasbih-count small {
+  color: var(--disc-muted);
+  font-size: 1.05rem;
+}
+
+.tasbih-actions .tasbih-sound[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* The material picker: a bead of each, named. */
+.tasbih-themes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tasbih-themes button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 70px;
+  padding: 8px 8px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.tasbih-themes button:hover {
+  border-color: var(--accent);
+}
+
+.tasbih-themes button[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+
+.tasbih-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, var(--bead-hi), var(--bead-mid) 52%, var(--bead-lo));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px var(--bead-edge);
+}
+
+/* Phones: the dhikr are one swipeable row, so the ring stays on the first screen instead of sitting under four rows of chips. */
+@media (max-width: 639px) {
+  .tasbih-chips {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: 100%;
+    margin-inline: -4px;
+    padding: 2px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tasbih-chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tasbih-chips button {
+    flex-shrink: 0;
   }
 }

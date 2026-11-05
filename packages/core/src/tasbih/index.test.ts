@@ -8,7 +8,11 @@ import {
   resetTasbih,
   selectDhikr,
   setTarget,
+  setSound,
+  setTasbihTheme,
   setVibrate,
+  currentTimbre,
+  TASBIH_THEMES,
   tapTasbih,
   todaysTasbih,
   undoTasbih,
@@ -146,6 +150,35 @@ describe("choices", () => {
     expect(normalizeTasbih(JSON.parse(JSON.stringify(off))).vibrate).toBe(false);
     expect(normalizeTasbih({ vibrate: "yes" }).vibrate).toBe(true);
     expect(tapTasbih(off, noon).state.vibrate).toBe(false);
+  });
+
+  it("is silent until sound is turned on, and remembers the choice", () => {
+    expect(emptyTasbih().sound).toBe(false);
+    const on = setSound(emptyTasbih(), true);
+    expect(on.sound).toBe(true);
+    expect(normalizeTasbih(JSON.parse(JSON.stringify(on))).sound).toBe(true);
+    expect(normalizeTasbih({ sound: "loud" }).sound).toBe(false);
+    expect(tapTasbih(on, noon).state.sound).toBe(true);
+    expect(setSound(on, true)).toBe(on);
+  });
+
+  it("starts with olive-wood beads, can change material, and ignores a material that does not exist", () => {
+    expect(emptyTasbih().theme).toBe("wood");
+    const pearl = setTasbihTheme(emptyTasbih(), "pearl");
+    expect(pearl.theme).toBe("pearl");
+    expect(setTasbihTheme(pearl, "gold-plated")).toBe(pearl);
+    expect(normalizeTasbih(JSON.parse(JSON.stringify(pearl))).theme).toBe("pearl");
+    expect(normalizeTasbih({ theme: "nonsense" }).theme).toBe("wood");
+    expect(tapTasbih(pearl, noon).state.theme).toBe("pearl");
+  });
+
+  it("gives every material a sound that suits it: wood knocks, glass ticks, stone clacks", () => {
+    const timbre = (theme: string) => currentTimbre(setTasbihTheme(emptyTasbih(), theme));
+    expect(timbre("wood")).toBe("wood");
+    expect(timbre("pearl")).toBe("glass");
+    expect(timbre("onyx")).toBe("stone");
+    expect(timbre("amber")).toBe("soft");
+    expect(new Set(TASBIH_THEMES.map((t) => t.id)).size).toBe(TASBIH_THEMES.length);
   });
 
   it("offers the traditional rounds and a free count", () => {

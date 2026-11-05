@@ -93,5 +93,33 @@ describe("colour tokens", () => {
         .join("");
     for (const t of [0, 0.2, 0.4, 0.6]) expect(contrast(ink, mix(t)), `${period} at ${t * 100}%`).toBeGreaterThanOrEqual(4.5);
   });
-});
 
+  // The tasbih's surface and its text are fixed per material (a tasbih is an object, not part of the site theme),
+  // so nothing else would notice a material whose number turned unreadable.
+  describe.each(["wood", "amber", "pearl", "emerald", "turquoise", "onyx"])("tasbih surface: %s", (id) => {
+    const start = css.indexOf(`[data-tasbih-theme="${id}"] {`);
+    const body = start >= 0 ? css.slice(start, css.indexOf("}", start)) : "";
+    const token = (name: string) => body.match(new RegExp(`--${name}: (#[0-9a-fA-F]{6})`))?.[1] ?? "";
+
+    it("is defined, with every colour it needs", () => {
+      expect(start).toBeGreaterThan(-1);
+      for (const name of ["bead-hi", "bead-mid", "bead-lo", "guide-hi", "guide-mid", "guide-lo", "cord", "tassel", "disc-a", "disc-b", "disc-ink", "disc-muted"]) {
+        expect(token(name), name).toMatch(/^#[0-9a-fA-F]{6}$/);
+      }
+    });
+
+    it("keeps the count and the round size readable over the whole surface", () => {
+      for (const disc of [token("disc-a"), token("disc-b")]) {
+        expect(contrast(token("disc-ink"), disc), `count on ${disc}`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(token("disc-muted"), disc), `round size on ${disc}`).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
+    it("lets the beads and the cord stand out from the surface they lie on", () => {
+      for (const disc of [token("disc-a"), token("disc-b")]) {
+        expect(contrast(token("bead-mid"), disc), `beads on ${disc}`).toBeGreaterThanOrEqual(2);
+        expect(contrast(token("cord"), disc), `cord on ${disc}`).toBeGreaterThanOrEqual(1.8);
+      }
+    });
+  });
+});
