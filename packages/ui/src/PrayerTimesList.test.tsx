@@ -1,4 +1,4 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { DailyPrayerTimes } from "@manarah/core";
 import { LanguageProvider } from "./i18n/index.js";
@@ -62,5 +62,57 @@ describe("PrayerTimesList", () => {
     expect(screen.getByText("الفجر")).toBeInTheDocument();
     expect(document.querySelector("time")).toHaveAttribute("dir", "ltr");
     expect(document.querySelector(".prayer-times-list")).toHaveAttribute("dir", "rtl");
+  });
+
+  describe("tracking", () => {
+    it("shows no ticks unless tracking is given", () => {
+      vi.setSystemTime(new Date("2026-11-05T13:00:00"));
+      render(<PrayerTimesList todaysTimes={times} />);
+      expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    it("ticks a prayer whose time has come and reports it", () => {
+      vi.setSystemTime(new Date("2026-11-05T13:00:00"));
+      const onToggle = vi.fn();
+      render(<PrayerTimesList todaysTimes={times} tracking={{ done: [], onToggle }} />);
+      fireEvent.click(screen.getByRole("button", { name: "Mark Dhuhr as prayed" }));
+      expect(onToggle).toHaveBeenCalledWith("dhuhr", true);
+    });
+
+    it("has five ticks — sunrise is a time, not a prayer — and keeps later prayers disabled until their time", () => {
+      vi.setSystemTime(new Date("2026-11-05T13:00:00"));
+      render(<PrayerTimesList todaysTimes={times} tracking={{ done: [], onToggle: () => {} }} />);
+      expect(screen.getAllByRole("button")).toHaveLength(5);
+      expect(screen.getByRole("button", { name: "Mark Maghrib as prayed" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Mark Fajr as prayed" })).toBeEnabled();
+    });
+
+    it("shows done prayers as pressed, counts them, and lets one be undone", () => {
+      vi.setSystemTime(new Date("2026-11-05T13:00:00"));
+      const onToggle = vi.fn();
+      render(<PrayerTimesList todaysTimes={times} tracking={{ done: ["fajr"], onToggle }} />);
+      const fajr = screen.getByRole("button", { name: "Mark Fajr as prayed" });
+      expect(fajr).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getByText("1 of 5 today")).toBeInTheDocument();
+      fireEvent.click(fajr);
+      expect(onToggle).toHaveBeenCalledWith("fajr", false);
+    });
+
+    it("keeps a done prayer clickable even if the clock is before its time", () => {
+      vi.setSystemTime(new Date("2026-11-05T03:00:00"));
+      render(<PrayerTimesList todaysTimes={times} tracking={{ done: ["isha"], onToggle: () => {} }} />);
+      expect(screen.getByRole("button", { name: "Mark Isha as prayed" })).toBeEnabled();
+    });
+
+    it("says it in Arabic", () => {
+      vi.setSystemTime(new Date("2026-11-05T13:00:00"));
+      render(
+        <LanguageProvider language="ar" onLanguageChange={() => {}}>
+          <PrayerTimesList todaysTimes={times} tracking={{ done: [], onToggle: () => {} }} />
+        </LanguageProvider>,
+      );
+      expect(screen.getByRole("button", { name: /الظهر/ })).toBeInTheDocument();
+      expect(screen.getByText("0 من 5 اليوم")).toBeInTheDocument();
+    });
   });
 });

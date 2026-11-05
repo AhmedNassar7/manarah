@@ -19,7 +19,6 @@ import {
   OnThisDay,
   PrayerHero,
   PrayerTimesList,
-  PrayerTracker,
   ProgressCard,
   QiblaCompass,
   RamadanCountdown,
@@ -70,14 +69,13 @@ export function Home({ locationSummary, coordinates, times, tomorrowsFajr, headi
         </p>
       )}
 
-      <div className="home-grid">
+      <div className={times ? "home-grid home-grid-full" : "home-grid"}>
         {times && <PrayerHero todaysTimes={times} tomorrowsFajr={tomorrowsFajr ?? undefined} hijri={hijri} />}
-        {times && <PrayerTimesList todaysTimes={times} />}
+        {times && <PrayerTimesList todaysTimes={times} tracking={{ done: todaysRecord(progress, now).prayers, onToggle: onPrayerToggle }} />}
         <div className="home-side">
-          {times && <PrayerTracker todaysTimes={times} done={todaysRecord(progress, now).prayers} onToggle={onPrayerToggle} />}
           <ProgressCard progress={progress} today={now} />
           <RamadanCountdown todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />
-          <OnThisDay events={HISTORICAL_EVENTS} todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} />
+          <OnThisDay events={HISTORICAL_EVENTS} todayCivil={toCalendarDate(now)} adjustment={hijriAdjustment} upcomingCount={1} />
           {coordinates && (
             <QiblaCompass
               bearing={qiblaBearing(coordinates)}

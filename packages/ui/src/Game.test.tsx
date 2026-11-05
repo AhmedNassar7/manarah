@@ -4,68 +4,18 @@ import {
   applyEvent,
   emptyProgress,
   seededRandom,
-  type DailyPrayerTimes,
   type EventResult,
   type ProgressState,
   type Surah,
 } from "@manarah/core";
 import { LanguageProvider } from "./i18n/index.js";
 import { encouragementText } from "./encouragement.js";
-import { PrayerTracker } from "./PrayerTracker.js";
 import { ProgressCard } from "./ProgressCard.js";
 import { QuizGame } from "./QuizGame.js";
 import { Toast } from "./Toast.js";
 import { translate } from "./i18n/translations.js";
 
 afterEach(() => vi.useRealTimers());
-
-const at = (h: number, m = 0) => new Date(2026, 5, 10, h, m);
-const times: DailyPrayerTimes = {
-  fajr: at(4, 0),
-  sunrise: at(5, 30),
-  dhuhr: at(12, 0),
-  asr: at(15, 30),
-  maghrib: at(19, 0),
-  isha: at(20, 30),
-};
-
-describe("PrayerTracker", () => {
-  it("ticks a prayer whose time has come and reports it", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(at(13, 0));
-    const onToggle = vi.fn();
-    render(<PrayerTracker todaysTimes={times} done={[]} onToggle={onToggle} />);
-    fireEvent.click(screen.getByRole("button", { name: /Dhuhr/ }));
-    expect(onToggle).toHaveBeenCalledWith("dhuhr", true);
-  });
-
-  it("keeps a prayer disabled until its time", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(at(13, 0));
-    render(<PrayerTracker todaysTimes={times} done={[]} onToggle={() => {}} />);
-    expect(screen.getByRole("button", { name: /Maghrib/ })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /Fajr/ })).toBeEnabled();
-  });
-
-  it("shows done prayers as pressed, lets them be undone, and counts them", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(at(13, 0));
-    const onToggle = vi.fn();
-    render(<PrayerTracker todaysTimes={times} done={["fajr"]} onToggle={onToggle} />);
-    const fajr = screen.getByRole("button", { name: /Fajr/ });
-    expect(fajr).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("1 of 5 today")).toBeInTheDocument();
-    fireEvent.click(fajr);
-    expect(onToggle).toHaveBeenCalledWith("fajr", false);
-  });
-
-  it("opens a done prayer even if the clock is somehow before its time", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(at(3, 0));
-    render(<PrayerTracker todaysTimes={times} done={["isha"]} onToggle={() => {}} />);
-    expect(screen.getByRole("button", { name: /Isha/ })).toBeEnabled();
-  });
-});
 
 describe("ProgressCard", () => {
   const today = new Date(2026, 5, 10, 12);

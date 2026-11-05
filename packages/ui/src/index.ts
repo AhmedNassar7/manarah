@@ -23,7 +23,6 @@ export * from "./PrayerHero.js";
 export * from "./RamadanCountdown.js";
 export * from "./ThemePicker.js";
 export * from "./FeedbackForm.js";
-export * from "./PrayerTracker.js";
 export * from "./ProgressCard.js";
 export * from "./QuizGame.js";
 export * from "./Toast.js";

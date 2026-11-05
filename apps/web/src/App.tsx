@@ -559,7 +559,7 @@ function AppShell({ children }: { children: ReactNode }) {
   const section = useLocation().pathname.split("/")[1] || "home";
 
   return (
-    <main className="app-shell">
+    <main className="app-shell" data-section={section}>
       <header className="app-header">
         <h1>
           <img className="app-logo" src="favicon.svg" alt="" width={36} height={36} />
