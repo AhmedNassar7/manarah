@@ -7,11 +7,12 @@ const PRIMARY_ITEMS = [
   { to: "/", icon: "home", labelKey: "app.sectionHome", end: true, hue: "home" },
   { to: "/prayer", icon: "mosque", labelKey: "app.sectionPrayer", end: false, hue: "prayer" },
   { to: "/quran", icon: "quran", labelKey: "app.sectionQuran", end: false, hue: "quran" },
-  { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", end: false, hue: "azkar" },
+  { to: "/azkar", icon: "azkar", labelKey: "app.sectionAzkar", end: false, hue: "azkar" },
 ] as const;
 
 /** On a phone these sit behind a "More" button; on larger screens every item is shown in the nav. */
 const SECONDARY_ITEMS = [
+  { to: "/tasbih", icon: "tasbih", labelKey: "app.sectionTasbih", end: false, hue: "tasbih" },
   { to: "/qibla", icon: "qibla", labelKey: "app.sectionQibla", end: false, hue: "qibla" },
   { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith", end: false, hue: "hadith" },
   { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar", end: false, hue: "calendar" },

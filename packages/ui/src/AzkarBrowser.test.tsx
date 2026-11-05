@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { AzkarCategory, AzkarSection } from "@manarah/core";
 import { AzkarBrowser } from "./AzkarBrowser.js";
 import { LanguageProvider } from "./i18n/index.js";
@@ -80,5 +80,40 @@ describe("AzkarBrowser", () => {
     );
     expect(screen.getByRole("tab", { name: /السفر/ })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("button", { name: /دعاء السفر/ })).toBeInTheDocument();
+  });
+});
+
+describe("AzkarBrowser — today's progress", () => {
+  it("ticks the tab of a list that is finished today, and only that one", () => {
+    render(<AzkarBrowser sections={sections} categories={categories} todaysCounts={{ "27": { "27-1": 1 } }} />);
+    const [morning, travel] = screen.getAllByRole("tab");
+    expect(within(morning).getByText("Done today")).toBeInTheDocument();
+    expect(within(travel).queryByText("Done today")).not.toBeInTheDocument();
+  });
+
+  it("does not tick a list that is only part-way through", () => {
+    render(<AzkarBrowser sections={sections} categories={categories} todaysCounts={{ "27": {} }} />);
+    expect(screen.queryByText("Done today")).not.toBeInTheDocument();
+  });
+
+  it("opens a list from where today's tallies left it", () => {
+    render(<AzkarBrowser sections={sections} categories={categories} todaysCounts={{ "27": { "27-1": 1 } }} />);
+    expect(screen.getByRole("button", { name: "1 / 1" })).toBeInTheDocument();
+  });
+
+  it("reports a list's tallies against that list, for saving", () => {
+    const onCountsChange = vi.fn();
+    render(<AzkarBrowser sections={sections} categories={categories} onCountsChange={onCountsChange} />);
+    fireEvent.click(screen.getByRole("button", { name: "0 / 1" }));
+    expect(onCountsChange).toHaveBeenCalledWith("27", { "27-1": 1 });
+  });
+
+  it("marks finished categories inside a section list", () => {
+    render(<AzkarBrowser sections={sections} categories={categories} todaysCounts={{ "95": { "95-1": 1 } }} />);
+    fireEvent.click(screen.getByRole("tab", { name: /Travel/ }));
+    const panel = screen.getByRole("tabpanel");
+    const [riding, traveling] = within(panel).getAllByRole("button");
+    expect(riding.querySelector(".icon")).not.toBeNull();
+    expect(traveling.querySelector(".icon")).toBeNull();
   });
 });

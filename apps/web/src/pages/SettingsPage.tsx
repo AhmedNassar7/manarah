@@ -7,6 +7,7 @@ import {
 } from "@manarah/core";
 import { CALCULATION_METHODS, RECITERS } from "@manarah/data";
 import { exportStore, importStore, type Store } from "@manarah/storage";
+import { appShareUrl } from "../share-url.js";
 import {
   FeedbackForm,
   Icon,
@@ -14,6 +15,7 @@ import {
   LocationSummary,
   PrayerSettingsEditor,
   ReadingSettings,
+  SharePanel,
   ThemePicker,
   useTranslation,
   type LocationSummaryProps,
@@ -162,6 +164,10 @@ export function SettingsPage({ settings, onSettingsChange, onPrayerSettingsChang
               {backupMessage}
             </p>
           )}
+        </Section>
+
+        <Section title={t("share.title")}>
+          <SharePanel url={appShareUrl()} />
         </Section>
 
         <Section title={t("settings.about")}>

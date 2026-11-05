@@ -45,7 +45,8 @@ const QUICK_LINKS = [
   { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith", hue: "hadith" },
   { to: "/calendar", icon: "calendar", labelKey: "app.sectionCalendar", hue: "calendar" },
   { to: "/zakat", icon: "zakat", labelKey: "app.sectionZakat", hue: "zakat" },
-  { to: "/azkar", icon: "tasbih", labelKey: "app.sectionAzkar", hue: "azkar" },
+  { to: "/azkar", icon: "azkar", labelKey: "app.sectionAzkar", hue: "azkar" },
+  { to: "/tasbih", icon: "tasbih", labelKey: "app.sectionTasbih", hue: "tasbih" },
   { to: "/challenge", icon: "trophy", labelKey: "app.sectionChallenge", hue: "challenge" },
 ] as const;
 

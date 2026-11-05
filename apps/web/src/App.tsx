@@ -2,6 +2,14 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { HashRouter, Route, Routes, useLocation } from "react-router-dom";
 import {
   applyEvent,
+  AZKAR_PROGRESS_STORAGE_KEY,
+  TASBIH_STORAGE_KEY,
+  dayKey,
+  emptyAzkarProgress,
+  emptyTasbih,
+  normalizeAzkarProgress,
+  normalizeTasbih,
+  setCounts as setAzkarCounts,
   clampHijriAdjustment,
   emptyProgress,
   normalizeProgress,
@@ -20,6 +28,7 @@ import {
   SETTINGS_STORAGE_KEY,
   VERSE_ANNOTATIONS_STORAGE_KEY,
   ZAKAT_STORAGE_KEY,
+  type AzkarProgressState,
   type AzkarSchedule,
   type City,
   type Coordinates,
@@ -31,6 +40,7 @@ import {
   type ProgressState,
   type ReciterStyle,
   type SavedLocation,
+  type TasbihState,
   type Translation,
   type UserSettings,
   type Verse,
@@ -49,10 +59,11 @@ import {
   getVersesForSurah,
 } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { LanguageProvider, LanguageSwitcher, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
+import { LanguageProvider, LanguageSwitcher, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
+import { appShareUrl } from "./share-url.js";
 import { withViewTransition } from "./view-transition.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
 import { Home } from "./pages/Home.js";
@@ -63,6 +74,7 @@ import { ChallengePage } from "./pages/ChallengePage.js";
 import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 import { SettingsPage } from "./pages/SettingsPage.js";
+import { TasbihPage } from "./pages/TasbihPage.js";
 import { ZakatPage } from "./pages/ZakatPage.js";
 
 const store = new IndexedDbStore();
@@ -102,6 +114,8 @@ export function App() {
   const progressRef = useRef<ProgressState>(progress);
   const [toast, setToast] = useState<{ message: string; id: number } | undefined>(undefined);
   const dismissToast = useCallback(() => setToast(undefined), []);
+  const [tasbih, setTasbih] = useState<TasbihState>(emptyTasbih);
+  const [azkarProgress, setAzkarProgress] = useState<AzkarProgressState>(() => emptyAzkarProgress(new Date()));
 
   useEffect(() => {
     let cancelled = false;
@@ -111,9 +125,13 @@ export function App() {
       const storedAnnotations = await store.get<VerseAnnotations>(VERSE_ANNOTATIONS_STORAGE_KEY);
       const storedZakat = await store.get<Partial<ZakatForm>>(ZAKAT_STORAGE_KEY);
       const storedProgress = normalizeProgress(await store.get<unknown>(PROGRESS_STORAGE_KEY));
+      const storedTasbih = await store.get<unknown>(TASBIH_STORAGE_KEY);
+      const storedAzkar = await store.get<unknown>(AZKAR_PROGRESS_STORAGE_KEY);
       if (cancelled) return;
       progressRef.current = storedProgress;
       setProgress(storedProgress);
+      setTasbih(normalizeTasbih(storedTasbih));
+      setAzkarProgress(normalizeAzkarProgress(storedAzkar, new Date()));
       setSettings(stored);
       setZakatForm(withDefaultZakatForm(storedZakat));
       setVerseAnnotations(storedAnnotations ?? {});
@@ -432,6 +450,20 @@ export function App() {
     return result.pointsDelta;
   }
 
+  function handleTasbihChange(next: TasbihState) {
+    setTasbih(next);
+    void store.set(TASBIH_STORAGE_KEY, next);
+  }
+
+  /** Saves one azkar list's tallies for today (a new day starts every list from zero). */
+  function handleAzkarCounts(categoryId: string, counts: Record<string, number>) {
+    setAzkarProgress((prev) => {
+      const next = setAzkarCounts(prev, categoryId, counts, new Date());
+      void store.set(AZKAR_PROGRESS_STORAGE_KEY, next);
+      return next;
+    });
+  }
+
   function handlePrayerToggle(prayer: ProgressPrayer, done: boolean) {
     award({ type: "prayer", prayer, done });
   }
@@ -567,8 +599,14 @@ export function App() {
                   showTranslation={settings.showTranslation}
                   onShowTranslationChange={handleShowTranslationChange}
                   onAzkarCompleted={() => award({ type: "azkar-completed" })}
+                  todaysCounts={azkarProgress.date === dayKey(new Date()) ? azkarProgress.categories : {}}
+                  onCountsChange={handleAzkarCounts}
                 />
               }
+            />
+            <Route
+              path="/tasbih"
+              element={<TasbihPage state={tasbih} onChange={handleTasbihChange} onRoundCompleted={() => award({ type: "tasbih-round" })} />}
             />
             <Route
               path="/challenge"
@@ -601,7 +639,10 @@ function AppShell({ children }: { children: ReactNode }) {
           {t("app.name")}
         </h1>
         <span className="tagline">{t("app.tagline")}</span>
-        <LanguageSwitcher />
+        <div className="app-header-actions">
+          <ShareButton url={appShareUrl()} />
+          <LanguageSwitcher />
+        </div>
       </header>
       <Nav />
       <div className="app-content" data-section={section}>

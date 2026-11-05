@@ -13,9 +13,20 @@ export interface AzkarPageProps {
   onShowTranslationChange: (show: boolean) => void;
   /** A dhikr was completed — for progress. */
   onAzkarCompleted?: () => void;
+  /** Today's tallies for every list, and a way to save a list's tallies — so progress survives leaving the page. */
+  todaysCounts?: Record<string, Record<string, number>>;
+  onCountsChange?: (categoryId: string, counts: Record<string, number>) => void;
 }
 
-export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, onShowTranslationChange, onAzkarCompleted }: AzkarPageProps) {
+export function AzkarPage({
+  azkarSchedules,
+  onSchedulesChange,
+  showTranslation,
+  onShowTranslationChange,
+  onAzkarCompleted,
+  todaysCounts,
+  onCountsChange,
+}: AzkarPageProps) {
   const { t } = useTranslation();
 
   return (
@@ -27,6 +38,8 @@ export function AzkarPage({ azkarSchedules, onSchedulesChange, showTranslation, 
         showTranslation={showTranslation}
         onShowTranslationChange={onShowTranslationChange}
         onItemComplete={onAzkarCompleted}
+        todaysCounts={todaysCounts}
+        onCountsChange={onCountsChange}
       />
 
       {/* 132 rows — collapsed by default so it doesn't bury the azkar themselves. */}

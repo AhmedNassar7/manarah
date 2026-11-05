@@ -26,6 +26,8 @@ export * from "./FeedbackForm.js";
 export * from "./ProgressCard.js";
 export * from "./QuizGame.js";
 export * from "./Toast.js";
+export * from "./TasbihCounter.js";
+export * from "./SharePanel.js";
 export * from "./encouragement.js";
 export * from "./ZakatCalculator.js";
 export { Icon, IconInSvg, ICONS, isIconName, type IconName, type IconProps, type IconSize } from "./icons/Icon.js";

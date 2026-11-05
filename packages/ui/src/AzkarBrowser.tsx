@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AzkarCategory, AzkarSection } from "@manarah/core";
+import { listProgress, type AzkarCategory, type AzkarSection } from "@manarah/core";
 import { AzkarList } from "./AzkarList.js";
 import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 import { Icon, isIconName } from "./icons/Icon.js";
@@ -14,6 +14,10 @@ export interface AzkarBrowserProps {
   onShowTranslationChange?: (show: boolean) => void;
   /** Passed through to the opened category's AzkarList. */
   onItemComplete?: (itemId: string) => void;
+  /** Today's tallies for every list (category id -> item id -> times said). Opened lists start from theirs, and finished lists are ticked in the tabs. */
+  todaysCounts?: Record<string, Record<string, number>>;
+  /** A list's tallies changed (for saving). */
+  onCountsChange?: (categoryId: string, counts: Record<string, number>) => void;
 }
 
 /** Arabic search should match with or without harakat — strip diacritics/tatweel and fold alef/ya/ta-marbuta variants. */
@@ -40,6 +44,8 @@ export function AzkarBrowser({
   showTranslation,
   onShowTranslationChange,
   onItemComplete,
+  todaysCounts,
+  onCountsChange,
 }: AzkarBrowserProps) {
   const { t, language } = useTranslation();
   const [sectionId, setSectionId] = useState(initialSectionId ?? sections[0]?.id);
@@ -49,6 +55,12 @@ export function AzkarBrowser({
   const categoryById = new Map(categories.map((c) => [c.id, c]));
   const categoriesOf = (section: AzkarSection) =>
     section.categoryIds.map((id) => categoryById.get(id)).filter((c): c is AzkarCategory => !!c && c.items.length > 0);
+
+  const isFinishedToday = (category: AzkarCategory) => listProgress(category.items, todaysCounts?.[category.id] ?? {}).allDone;
+  const sectionFinished = (s: AzkarSection) => {
+    const cats = categoriesOf(s);
+    return cats.length > 0 && cats.every(isFinishedToday);
+  };
 
   const section = sections.find((s) => s.id === sectionId) ?? sections[0];
   const sectionCategories = section ? categoriesOf(section) : [];
@@ -103,6 +115,12 @@ export function AzkarBrowser({
             >
               <SectionIcon name={s.icon} />
               <span>{t(`azkarSection.${s.id}`)}</span>
+              {sectionFinished(s) && (
+                <span className="azkar-browser-tab-done" title={t("azkarProgress.completedToday")}>
+                  <Icon name="check" size={16} />
+                  <span className="sr-only">{t("azkarProgress.completedToday")}</span>
+                </span>
+              )}
             </button>
           );
         })}
@@ -143,6 +161,8 @@ export function AzkarBrowser({
             showTranslation={showTranslation}
             onShowTranslationChange={onShowTranslationChange}
             onItemComplete={onItemComplete}
+            initialCounts={todaysCounts?.[openCategory.id]}
+            onCountsChange={onCountsChange ? (counts) => onCountsChange(openCategory.id, counts) : undefined}
           />
         </div>
       ) : (
@@ -152,7 +172,10 @@ export function AzkarBrowser({
               {sectionCategories.map((category) => (
                 <li key={category.id}>
                   <button type="button" onClick={() => setOpenCategoryId(category.id)}>
-                    <span className="azkar-browser-category-name">{azkarCategoryName(category, language)}</span>
+                    <span className="azkar-browser-category-name">
+                      {azkarCategoryName(category, language)}
+                      {isFinishedToday(category) && <Icon name="check" size={16} />}
+                    </span>
                     <span className="azkar-browser-category-meta">
                       {t("azkarBrowser.itemCount", { count: category.items.length })}
                     </span>

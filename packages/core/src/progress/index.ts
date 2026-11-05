@@ -20,10 +20,11 @@ export const POINTS = {
   allFiveBonus: 20,
   azkar: 2,
   quizCorrect: 5,
+  tasbihRound: 3,
 } as const;
 
 /** Per-day limits on the repeatable ones, so points reward steady practice rather than tapping the same dhikr for hours. */
-export const DAILY_CAPS = { azkar: 20, quizCorrect: 20 } as const;
+export const DAILY_CAPS = { azkar: 20, quizCorrect: 20, tasbihRound: 10 } as const;
 
 export interface DayRecord {
   prayers: ProgressPrayer[];
@@ -31,6 +32,8 @@ export interface DayRecord {
   azkar: number;
   quizCorrect: number;
   quizAnswered: number;
+  /** Tasbih rounds completed. */
+  tasbih: number;
 }
 
 export interface ProgressState {
@@ -45,7 +48,7 @@ export function emptyProgress(): ProgressState {
   return { points: 0, days: {}, badges: [] };
 }
 
-const emptyDay = (): DayRecord => ({ prayers: [], azkar: 0, quizCorrect: 0, quizAnswered: 0 });
+const emptyDay = (): DayRecord => ({ prayers: [], azkar: 0, quizCorrect: 0, quizAnswered: 0, tasbih: 0 });
 
 /** The local calendar day of `date`, as "YYYY-MM-DD". */
 export function dayKey(date: Date): string {
@@ -76,6 +79,7 @@ export function normalizeProgress(value: unknown): ProgressState {
         azkar: isCount(e.azkar) ? e.azkar : 0,
         quizCorrect: isCount(e.quizCorrect) ? e.quizCorrect : 0,
         quizAnswered: isCount(e.quizAnswered) ? e.quizAnswered : 0,
+        tasbih: isCount(e.tasbih) ? e.tasbih : 0,
       };
     }
   }
@@ -85,7 +89,7 @@ export function normalizeProgress(value: unknown): ProgressState {
 
 /** A day counts towards the streak if anything good was done on it. */
 export function isActiveDay(day: DayRecord | undefined): boolean {
-  return !!day && (day.prayers.length > 0 || day.azkar > 0 || day.quizCorrect > 0);
+  return !!day && (day.prayers.length > 0 || day.azkar > 0 || day.quizCorrect > 0 || day.tasbih > 0);
 }
 
 /**
@@ -158,6 +162,7 @@ export const BADGES: ReadonlyArray<{ id: string; earned: (state: ProgressState) 
   { id: "azkar-10", earned: (s) => total(s, (d) => d.azkar) >= 10 },
   { id: "azkar-100", earned: (s) => total(s, (d) => d.azkar) >= 100 },
   { id: "quiz-10", earned: (s) => total(s, (d) => d.quizCorrect) >= 10 },
+  { id: "tasbih-10", earned: (s) => total(s, (d) => d.tasbih) >= 10 },
   { id: "points-100", earned: (s) => s.points >= 100 },
   { id: "points-500", earned: (s) => s.points >= 500 },
 ];
@@ -168,10 +173,11 @@ const BADGE_IDS = BADGES.map((b) => b.id);
 export type ProgressEvent =
   | { type: "prayer"; prayer: ProgressPrayer; done: boolean }
   | { type: "azkar-completed" }
-  | { type: "quiz-answer"; correct: boolean };
+  | { type: "quiz-answer"; correct: boolean }
+  | { type: "tasbih-round" };
 
 /** What to say after an event — the UI turns it into a message in the user's language. */
-export type EncouragementKind = "prayer" | "all-five" | "azkar" | "quiz-correct" | "quiz-wrong" | "streak" | "badge" | "none";
+export type EncouragementKind = "prayer" | "all-five" | "azkar" | "tasbih" | "quiz-correct" | "quiz-wrong" | "streak" | "badge" | "none";
 
 export interface EventResult {
   state: ProgressState;
@@ -221,6 +227,12 @@ export function applyEvent(previous: ProgressState, event: ProgressEvent, now: D
       pointsDelta = POINTS.azkar;
       encouragement = "azkar";
     }
+  } else if (event.type === "tasbih-round") {
+    state = withDay(state, key, (d) => ({ ...d, tasbih: d.tasbih + 1 }));
+    if (before.tasbih < DAILY_CAPS.tasbihRound) {
+      pointsDelta = POINTS.tasbihRound;
+      encouragement = "tasbih";
+    }
   } else {
     state = withDay(state, key, (d) => ({
       ...d,
@@ -242,7 +254,7 @@ export function applyEvent(previous: ProgressState, event: ProgressEvent, now: D
   const result: EventResult = { state, pointsDelta, newBadges, encouragement, variant: 0, streak };
   if (streak > streakBefore && STREAK_MILESTONES.includes(streak)) result.encouragement = "streak";
   if (newBadges.length > 0 && result.encouragement !== "streak" && result.encouragement !== "all-five") result.encouragement = "badge";
-  result.variant = (total(state, (d) => d.prayers.length + d.azkar + d.quizAnswered) + state.points) % MESSAGE_VARIANTS;
+  result.variant = (total(state, (d) => d.prayers.length + d.azkar + d.quizAnswered + d.tasbih) + state.points) % MESSAGE_VARIANTS;
   return result;
 }
 

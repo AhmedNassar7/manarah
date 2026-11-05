@@ -1,8 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AzkarCategory } from "@manarah/core";
 import { AzkarList } from "./AzkarList.js";
+import { LanguageProvider } from "./i18n/index.js";
 
 const category: AzkarCategory = {
   id: "27",
@@ -224,5 +225,120 @@ describe("AzkarList", () => {
       await user.click(screen.getByRole("button", { name: "0 / 3" }));
       expect(screen.getByRole("button", { name: "1 / 3" }).closest("li")).not.toHaveClass("completed");
     });
+  });
+});
+
+describe("AzkarList — progress", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    delete (Element.prototype as unknown as Record<string, unknown>).scrollIntoView;
+  });
+
+  const currentIndex = () => [...document.querySelectorAll(".azkar-list li")].findIndex((li) => li.classList.contains("current"));
+
+  it("starts with the first dhikr as the one to say, and an empty bar", () => {
+    render(<AzkarList category={category} />);
+    expect(screen.getByRole("button", { name: "Go to the current dhikr" })).toHaveTextContent("Dhikr 1 of 2");
+    expect(screen.getByText("0 done")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuemax", "2");
+    expect(currentIndex()).toBe(0);
+    expect(document.querySelectorAll(".azkar-list li")[0]).toHaveAttribute("aria-current", "step");
+  });
+
+  it("moves on to the next dhikr once one reaches its repeat count — and not before", async () => {
+    const user = userEvent.setup();
+    render(<AzkarList category={category} />);
+    await user.click(screen.getByRole("button", { name: "0 / 3" }));
+    await user.click(screen.getByRole("button", { name: "1 / 3" }));
+    expect(screen.getByRole("button", { name: "Go to the current dhikr" })).toHaveTextContent("Dhikr 1 of 2");
+    await user.click(screen.getByRole("button", { name: "2 / 3" }));
+    expect(screen.getByRole("button", { name: "Go to the current dhikr" })).toHaveTextContent("Dhikr 2 of 2");
+    expect(screen.getByText("1 done")).toBeInTheDocument();
+    expect(currentIndex()).toBe(1);
+  });
+
+  it("fills the bar as dhikr are finished, partly for one in progress", async () => {
+    const user = userEvent.setup();
+    render(<AzkarList category={category} />);
+    const fill = () => document.querySelector<HTMLElement>(".azkar-progress-bar span")!.style.transform;
+    expect(fill()).toBe("scaleX(0)");
+    await user.click(screen.getByRole("button", { name: "0 / 3" }));
+    expect(fill()).toMatch(/scaleX\(0\.1666/); // a third of the first of two dhikr
+    await user.click(screen.getByRole("button", { name: "1 / 3" }));
+    await user.click(screen.getByRole("button", { name: "2 / 3" }));
+    expect(fill()).toBe("scaleX(0.5)");
+  });
+
+  it("says so when everything is done", async () => {
+    const user = userEvent.setup();
+    render(<AzkarList category={category} />);
+    for (const name of ["0 / 3", "1 / 3", "2 / 3", "0 / 1"]) await user.click(screen.getByRole("button", { name }));
+    expect(screen.getByRole("status")).toHaveTextContent("All done — may Allah accept it");
+    expect(screen.queryByRole("button", { name: "Go to the current dhikr" })).not.toBeInTheDocument();
+    expect(currentIndex()).toBe(-1);
+    expect(document.querySelector(".azkar-progress")).toHaveClass("done");
+  });
+
+  it("starts from the tallies it is given, and reports every change in full", async () => {
+    const user = userEvent.setup();
+    const onCountsChange = vi.fn();
+    render(<AzkarList category={category} initialCounts={{ "75": 3 }} onCountsChange={onCountsChange} />);
+    expect(screen.getByRole("button", { name: "Go to the current dhikr" })).toHaveTextContent("Dhikr 2 of 2");
+    expect(screen.getByRole("button", { name: "3 / 3" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "0 / 1" }));
+    expect(onCountsChange).toHaveBeenLastCalledWith({ "75": 3, "76": 1 });
+  });
+
+  it("clears the count only on a second tap — one tap asks, so progress is not lost by accident", async () => {
+    const user = userEvent.setup();
+    const onCountsChange = vi.fn();
+    render(<AzkarList category={category} initialCounts={{ "75": 2 }} onCountsChange={onCountsChange} />);
+    await user.click(screen.getByRole("button", { name: "Start again" }));
+    expect(screen.getByRole("button", { name: "Tap again to clear today's count" })).toBeInTheDocument();
+    expect(onCountsChange).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Tap again to clear today's count" }));
+    expect(onCountsChange).toHaveBeenCalledWith({});
+    expect(screen.getByRole("button", { name: "0 / 3" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Start again" })).not.toBeInTheDocument(); // nothing left to clear
+  });
+
+  it("goes back to asking if the second tap does not come", async () => {
+    vi.useFakeTimers();
+    render(<AzkarList category={category} initialCounts={{ "75": 2 }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Start again" }));
+    expect(screen.getByRole("button", { name: "Tap again to clear today's count" })).toBeInTheDocument();
+    await vi.advanceTimersByTimeAsync(3600);
+    expect(screen.getByRole("button", { name: "Start again" })).toBeInTheDocument();
+  });
+
+  it("brings the next dhikr into view after one is finished, and on request", async () => {
+    vi.useFakeTimers();
+    const scrollIntoView = vi.fn();
+    (Element.prototype as unknown as Record<string, unknown>).scrollIntoView = scrollIntoView;
+    render(<AzkarList category={category} />);
+    for (const name of ["0 / 3", "1 / 3", "2 / 3"]) fireEvent.click(screen.getByRole("button", { name }));
+    expect(scrollIntoView).not.toHaveBeenCalled(); // after the completion bloom, not during it
+    await vi.advanceTimersByTimeAsync(500);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(document.querySelectorAll(".azkar-list li")[1]);
+    fireEvent.click(screen.getByRole("button", { name: "Go to the current dhikr" }));
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows no progress bar for a list of one", () => {
+    render(<AzkarList category={{ ...category, items: [category.items[0]] }} />);
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(document.querySelector(".azkar-list li.current")).toBeNull();
+  });
+
+  it("speaks Arabic", () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <AzkarList category={category} />
+      </LanguageProvider>,
+    );
+    expect(screen.getByRole("button", { name: "اذهب إلى الذكر الحالي" })).toHaveTextContent("الذكر 1 من 2");
+    expect(screen.getByText("أُنجز 0")).toBeInTheDocument();
   });
 });

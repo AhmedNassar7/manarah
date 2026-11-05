@@ -6130,3 +6130,592 @@ label:has(> input[type="checkbox"]) {
   gap: 10px;
   cursor: pointer;
 }
+
+/* ==========================================================================
+   Azkar progress, the tasbih, and sharing
+   ========================================================================== */
+
+:root {
+  --hue-tasbih: #b8862a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --hue-tasbih: #e5c06a;
+  }
+}
+
+:root[data-theme="dark"] {
+  --hue-tasbih: #e5c06a;
+}
+
+[data-hue="tasbih"],
+[data-section="tasbih"] {
+  --hue: var(--hue-tasbih);
+}
+
+/* ---------- Azkar: the bar that stays in view while you go down the list ---------- */
+
+.azkar-progress {
+  position: sticky;
+  top: 8px;
+  z-index: 6;
+  margin: 12px 0 16px;
+  padding: 10px 14px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-1);
+}
+
+.azkar-progress-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.88rem;
+}
+
+.azkar-list .azkar-progress button {
+  width: auto;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.azkar-list .azkar-progress .azkar-progress-current {
+  padding: 2px 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.azkar-progress-done {
+  color: var(--muted);
+}
+
+.azkar-list .azkar-progress .azkar-progress-reset {
+  margin-inline-start: auto;
+  padding: 2px 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.azkar-list .azkar-progress .azkar-progress-reset.confirming {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.azkar-progress-bar {
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  overflow: hidden;
+}
+
+.azkar-progress-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--gold)));
+  transform-origin: left center;
+  transition: transform 420ms var(--ease-quiet);
+}
+
+.azkar-progress-bar span:dir(rtl) {
+  transform-origin: right center;
+}
+
+.azkar-progress.done {
+  border-color: color-mix(in srgb, var(--gold) 60%, var(--line));
+}
+
+.azkar-progress.done .azkar-progress-bar span {
+  background: var(--gold);
+}
+
+.azkar-progress-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold-ink);
+  font-weight: 700;
+  animation: tick-pop 420ms var(--ease-spring);
+}
+
+/* The dhikr to say now. */
+.azkar-list li.current {
+  outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: 6px;
+}
+
+.azkar-browser-tab-done {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.azkar-browser-category-name .icon {
+  margin-inline-start: 6px;
+  color: var(--accent);
+  vertical-align: -3px;
+}
+
+/* ---------- The tasbih ---------- */
+
+.tasbih {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 560px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.tasbih-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tasbih-chips button,
+.tasbih-targets button,
+.tasbih-actions button {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.tasbih-chips button:hover,
+.tasbih-targets button:hover:not([aria-pressed="true"]),
+.tasbih-actions button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.tasbih-chips button[aria-pressed="true"],
+.tasbih-targets button[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.tasbih-phrase {
+  min-height: 2.8em;
+  margin: 0;
+  font-family: var(--font-arabic-quran);
+  font-size: clamp(1.6rem, 5.5vw, 2.3rem);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.tasbih-stage {
+  width: min(80vw, 340px);
+  aspect-ratio: 1;
+  margin-top: 6px;
+}
+
+.tasbih-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  color: var(--ink);
+  border: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, var(--surface), var(--surface-sunken));
+  box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-fast) var(--ease-spring);
+}
+
+.tasbih-ring:active {
+  transform: scale(0.975);
+}
+
+.tasbih-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.tasbih-thread {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.tasbih-beads {
+  transform-origin: 0 0;
+  transition: transform 340ms var(--ease-spring);
+}
+
+.tasbih-bead {
+  fill: var(--surface);
+  stroke: color-mix(in srgb, var(--ink) 25%, transparent);
+  stroke-width: 1;
+  transition: fill 240ms var(--ease-quiet), stroke 240ms var(--ease-quiet);
+}
+
+.tasbih-bead.counted {
+  fill: var(--accent);
+  stroke: color-mix(in srgb, var(--accent) 65%, #000);
+}
+
+/* The larger guide bead and tassel at the top stay still while the ring turns. */
+.tasbih-guide line {
+  stroke: var(--gold-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.tasbih-guide circle {
+  fill: var(--gold);
+  stroke: var(--gold-ink);
+  stroke-width: 1.5;
+}
+
+.tasbih-count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tasbih-count strong {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 14vw, 4.6rem);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.tasbih-count small {
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+/* A ring of gold that opens and fades when a round is complete. */
+.tasbih-glow {
+  position: absolute;
+  inset: 0;
+  border: 4px solid var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: tasbih-glow 900ms var(--ease-quiet) both;
+}
+
+@keyframes tasbih-glow {
+  from {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+.tasbih-done {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--gold-ink);
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--dur-base) var(--ease-quiet), transform var(--dur-base) var(--ease-quiet);
+}
+
+.tasbih-done.show {
+  opacity: 1;
+  transform: none;
+}
+
+.tasbih-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.tasbih-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tasbih-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tasbih-targets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tasbih-targets > span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.tasbih-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin: 4px 0 0;
+}
+
+.tasbih-stats > div {
+  padding: 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-page);
+  background: var(--surface);
+  text-align: center;
+  box-shadow: var(--shadow-1);
+}
+
+.tasbih-stats dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.tasbih-stats dd {
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tasbih-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* ---------- Sharing ---------- */
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+
+.app-header-actions .language-switcher {
+  margin-inline-start: 0;
+}
+
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-round);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.share-button:hover {
+  border-color: var(--accent);
+}
+
+@media (max-width: 639px) {
+  /* Phones: the icon alone; the word stays for screen readers. */
+  .share-button {
+    padding: 9px;
+  }
+
+  .share-button span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.share-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.share-intro,
+.share-note {
+  margin: 0;
+}
+
+.share-note {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.share-hadith {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--radius-page);
+  background: var(--gold-soft);
+}
+
+.share-hadith p {
+  margin: 0 0 4px;
+}
+
+.share-hadith p[lang="ar"] {
+  font-family: var(--font-arabic-quran);
+  font-size: 1.3rem;
+  line-height: 1.7;
+}
+
+.share-hadith footer {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.share-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.share-option:hover {
+  border-color: var(--accent);
+}
+
+.share-option.primary {
+  grid-column: 1 / -1;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.share-option.copied {
+  border-color: var(--gold);
+  color: var(--gold-ink);
+  font-weight: 700;
+}
+
+.share-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(10, 14, 24, 0.5);
+  animation: fade-in var(--dur-base) var(--ease-quiet) both;
+}
+
+.share-dialog {
+  width: min(440px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.5);
+  animation: rise 320ms var(--ease-spring) both;
+}
+
+.share-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.share-dialog-head h3 {
+  margin: 0;
+}
+
+.share-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 639px) {
+  /* A phone's dialog rises from the bottom, where the thumb is. */
+  .share-backdrop {
+    place-items: end center;
+    padding: 0;
+  }
+
+  .share-dialog {
+    width: 100%;
+    max-height: 88dvh;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+}

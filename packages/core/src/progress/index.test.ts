@@ -9,6 +9,7 @@ import {
   currentStreak,
   dayKey,
   emptyProgress,
+  isActiveDay,
   levelFor,
   longestStreak,
   normalizeProgress,
@@ -274,6 +275,46 @@ describe("normalizeProgress", () => {
     });
     expect(cleaned.points).toBe(0);
     expect(cleaned.badges).toEqual(["first-prayer"]);
-    expect(cleaned.days).toEqual({ "2026-11-01": { prayers: ["fajr"], azkar: 3, quizCorrect: 0, quizAnswered: 0 } });
+    expect(cleaned.days).toEqual({ "2026-11-01": { prayers: ["fajr"], azkar: 3, quizCorrect: 0, quizAnswered: 0, tasbih: 0 } });
+  });
+});
+
+describe("tasbih rounds", () => {
+  const noon = new Date(2026, 10, 5, 12);
+  const round = (state: ProgressState, now = noon) => applyEvent(state, { type: "tasbih-round" }, now);
+
+  it("earns a few points and an encouraging word for a completed round", () => {
+    const r = round(emptyProgress());
+    expect(r.pointsDelta).toBe(POINTS.tasbihRound);
+    expect(r.encouragement === "tasbih" || r.encouragement === "badge" || r.encouragement === "streak").toBe(true);
+    expect(todaysRecord(r.state, noon).tasbih).toBe(1);
+    expect(r.state.points).toBe(POINTS.tasbihRound);
+  });
+
+  it("stops earning points after the daily cap, but still counts the rounds", () => {
+    let state = emptyProgress();
+    for (let i = 0; i < DAILY_CAPS.tasbihRound; i++) state = round(state).state;
+    const over = round(state);
+    expect(over.pointsDelta).toBe(0);
+    expect(over.state.points).toBe(DAILY_CAPS.tasbihRound * POINTS.tasbihRound);
+    expect(todaysRecord(over.state, noon).tasbih).toBe(DAILY_CAPS.tasbihRound + 1);
+  });
+
+  it("makes the day count towards the streak", () => {
+    const r = round(emptyProgress());
+    expect(isActiveDay(todaysRecord(r.state, noon))).toBe(true);
+    expect(currentStreak(r.state, noon)).toBe(1);
+  });
+
+  it("earns a badge after ten rounds", () => {
+    let state = emptyProgress();
+    for (let i = 0; i < 9; i++) state = round(state).state;
+    expect(state.badges).not.toContain("tasbih-10");
+    expect(round(state).state.badges).toContain("tasbih-10");
+  });
+
+  it("is kept when saved progress is loaded", () => {
+    const state = round(emptyProgress()).state;
+    expect(normalizeProgress(JSON.parse(JSON.stringify(state))).days["2026-11-05"].tasbih).toBe(1);
   });
 });
