@@ -1,6 +1,7 @@
 /**
  * Hadith library — the six canonical collections (Bukhari, Muslim, Abu Dawud,
- * Tirmidhi, Nasa'i, Ibn Majah), pure parsing/formatting only.
+ * Tirmidhi, Nasa'i, Ibn Majah) and two short, essential ones (Imam al-Nawawi's
+ * Forty Hadith and the Forty Hadith Qudsi), pure parsing/formatting only.
  *
  * Source: fawazahmed0/hadith-api (Unlicense), served by the jsDelivr CDN and
  * GitHub raw — free, CORS `*`, no key, no server of ours. Verified 2026-11-04.
@@ -11,7 +12,7 @@
  * app can't keep secret — hence this source.)
  */
 
-export type HadithCollectionId = "bukhari" | "muslim" | "abudawud" | "tirmidhi" | "nasai" | "ibnmajah";
+export type HadithCollectionId = "bukhari" | "muslim" | "abudawud" | "tirmidhi" | "nasai" | "ibnmajah" | "nawawi" | "qudsi";
 
 export interface HadithCollection {
   id: HadithCollectionId;
@@ -107,6 +108,19 @@ function asNumber(value: unknown): number | undefined {
 }
 
 /**
+ * Some editions carry HTML line breaks inside the text (the Forty Hadith Qudsi puts its source
+ * line after a <br>). Shown as they are they would print "<br>", so a break becomes a real line
+ * break and any other tag is dropped; the words themselves are untouched.
+ */
+export function cleanHadithText(text: string): string {
+  return text
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/[ \t]*\n[ \t]*/g, "\n")
+    .trim();
+}
+
+/**
  * Parses one book's response into texts. Throws on an unexpected shape so a
  * broken/changed API surfaces as a retryable error instead of an empty page;
  * individual malformed entries are skipped, not fatal.
@@ -119,7 +133,7 @@ export function parseHadithSectionResponse(json: unknown): HadithText[] {
   for (const raw of root.hadiths) {
     const item = asRecord(raw);
     const number = asNumber(item?.hadithnumber);
-    const text = typeof item?.text === "string" ? item.text.trim() : "";
+    const text = cleanHadithText(typeof item?.text === "string" ? item.text : "");
     if (!item || number === undefined || text === "") continue;
 
     const grades: HadithGrade[] = [];

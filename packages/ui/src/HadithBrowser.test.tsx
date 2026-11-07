@@ -7,13 +7,18 @@ import { LanguageProvider } from "./i18n/index.js";
 const collections: HadithCollection[] = [
   { id: "bukhari", arabicEdition: "ara-bukhari", englishEdition: "eng-bukhari" },
   { id: "abudawud", arabicEdition: "ara-abudawud", englishEdition: "eng-abudawud" },
+  { id: "nawawi", arabicEdition: "ara-nawawi", englishEdition: "eng-nawawi" },
 ];
 const sectionsById: Record<string, HadithSection[]> = {
   bukhari: [
     { number: 1, title: "Revelation", titleAr: "كتاب بدء الوحى", count: 7 },
     { number: 2, title: "Belief", titleAr: "كتاب الإيمان", count: 51 },
   ],
-  abudawud: [{ number: 1, title: "Purification (Kitab Al-Taharah)", titleAr: "كتاب الطهارة", count: 390 }],
+  abudawud: [
+    { number: 1, title: "Purification (Kitab Al-Taharah)", titleAr: "كتاب الطهارة", count: 390 },
+    { number: 2, title: "Prayer (Kitab Al-Salat)", titleAr: "كتاب الصلاة", count: 100 },
+  ],
+  nawawi: [{ number: 1, title: "Forty Hadith of an-Nawawi", titleAr: "الأربعون النووية", count: 42 }],
 };
 const getSections = (id: HadithCollectionId) => sectionsById[id] ?? [];
 
@@ -256,3 +261,32 @@ describe("HadithBrowser — while a book loads", () => {
   });
 });
 
+
+describe("HadithBrowser — a collection of one book", () => {
+  it("opens straight onto its hadith, with a line about it and no list of one or 'All books' button", async () => {
+    const props = setup();
+    fireEvent.click(screen.getByRole("tab", { name: "Forty Hadith of an-Nawawi" }));
+    await screen.findByText("نص عربي 1");
+    expect(props.load).toHaveBeenCalledWith(collections[2], 1);
+    expect(screen.getByText(/42 comprehensive hadith gathered by Imam al-Nawawi/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /All books/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+  });
+
+  it("a collection with many books has no such line, and keeps its list", () => {
+    setup();
+    expect(document.querySelector(".hadith-about")).toBeNull();
+    expect(screen.getByRole("button", { name: /Revelation/ })).toBeInTheDocument();
+  });
+
+  it("says it in Arabic too", async () => {
+    render(
+      <LanguageProvider language="ar" onLanguageChange={() => {}}>
+        <HadithBrowser collections={collections} getSections={getSections} load={vi.fn().mockResolvedValue([entry(1)])} showTranslation={false} onShowTranslationChange={() => {}} />
+      </LanguageProvider>,
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "الأربعون النووية" }));
+    await screen.findByText("نص عربي 1");
+    expect(screen.getByText(/اثنان وأربعون حديثًا جامعًا جمعها الإمام النووي/)).toBeInTheDocument();
+  });
+});

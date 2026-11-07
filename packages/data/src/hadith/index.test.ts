@@ -9,11 +9,13 @@ const EXPECTED = {
   tirmidhi: { sections: 49, hadiths: 3998 },
   nasai: { sections: 51, hadiths: 5683 },
   ibnmajah: { sections: 38, hadiths: 4343 },
+  nawawi: { sections: 1, hadiths: 42 },
+  qudsi: { sections: 1, hadiths: 40 },
 } as const;
 
 describe("hadith data integrity", () => {
-  it("has the six canonical collections, each with an Arabic and an English edition", () => {
-    expect(HADITH_COLLECTIONS.map((c) => c.id)).toEqual(["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah"]);
+  it("has the six canonical collections and the two short ones, each with an Arabic and an English edition", () => {
+    expect(HADITH_COLLECTIONS.map((c) => c.id)).toEqual(["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah", "nawawi", "qudsi"]);
     for (const c of HADITH_COLLECTIONS) {
       expect(c.arabicEdition).toBe(`ara-${c.id}`);
       expect(c.englishEdition).toBe(`eng-${c.id}`);

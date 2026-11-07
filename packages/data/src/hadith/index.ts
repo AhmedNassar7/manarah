@@ -2,7 +2,7 @@ import type { HadithCollection, HadithCollectionId, HadithSection } from "@manar
 import sectionsData from "./sections.json";
 
 /**
- * The six canonical collections ("the Six Books"), in their customary order.
+ * The six canonical collections ("the Six Books"), in their customary order, then the two short ones.
  * Edition ids are the source API's own (fawazahmed0/hadith-api), each checked
  * to exist in both Arabic and English on 2026-11-04. Display names live in
  * the UI dictionaries (`hadith.collection.<id>`).
@@ -14,6 +14,11 @@ export const HADITH_COLLECTIONS: HadithCollection[] = [
   { id: "tirmidhi", arabicEdition: "ara-tirmidhi", englishEdition: "eng-tirmidhi" },
   { id: "nasai", arabicEdition: "ara-nasai", englishEdition: "eng-nasai" },
   { id: "ibnmajah", arabicEdition: "ara-ibnmajah", englishEdition: "eng-ibnmajah" },
+  // Two short, essential collections: the Forty Hadith of Imam al-Nawawi (42 — all name their source
+  // in the text, checked) and the Forty Hadith Qudsi (40 — 39 name their source). One book each
+  // (section 1 of the edition); counts taken from the real Arabic and English files on 2026-11-07.
+  { id: "nawawi", arabicEdition: "ara-nawawi", englishEdition: "eng-nawawi" },
+  { id: "qudsi", arabicEdition: "ara-qudsi", englishEdition: "eng-qudsi" },
 ];
 
 /**

@@ -3,6 +3,7 @@ import {
   fetchJsonWithFallback,
   formatHadithForSharing,
   hadithSectionUrls,
+  cleanHadithText,
   mergeHadithEditions,
   parseHadithSectionResponse,
   type HadithText,
@@ -185,5 +186,24 @@ describe("fetchJsonWithFallback", () => {
 
   it("rejects when given nothing to try", async () => {
     await expect(fetchJsonWithFallback([], vi.fn())).rejects.toThrow();
+  });
+});
+
+describe("cleanHadithText", () => {
+  it("turns the source's HTML line break into a real one, so the source line stands on its own", () => {
+    expect(cleanHadithText('... مُؤْمِنٌ بِالْكَوْكَبِ"<br>رواه البخاري (وكذلك مالك والنسائي)')).toBe(
+      '... مُؤْمِنٌ بِالْكَوْكَبِ"\nرواه البخاري (وكذلك مالك والنسائي)',
+    );
+    expect(cleanHadithText("a<br/>b<BR />c")).toBe("a\nb\nc");
+  });
+
+  it("drops any other tag, keeps the words, and trims", () => {
+    expect(cleanHadithText("  <p>Actions are <b>by intentions</b></p> \n")).toBe("Actions are by intentions");
+    expect(cleanHadithText("plain text, no tags — إنما الأعمال بالنيات")).toBe("plain text, no tags — إنما الأعمال بالنيات");
+  });
+
+  it("is applied when a book is parsed", () => {
+    const [h] = parseHadithSectionResponse({ hadiths: [{ hadithnumber: 1, text: "قال<br>رواه مسلم" }] });
+    expect(h.text).toBe("قال\nرواه مسلم");
   });
 });

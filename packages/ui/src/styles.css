@@ -7807,3 +7807,17 @@ select {
     display: flex;
   }
 }
+
+/* A line about the collection: what it is, and where each hadith's source is to be found. */
+.hadith-about {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+/* A hadith whose source line sits on a line of its own (the Forty Hadith Qudsi). */
+.hadith-arabic,
+.hadith-english {
+  white-space: pre-line;
+}

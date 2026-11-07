@@ -42,15 +42,20 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
 
   const collection = collections.find((c) => c.id === collectionId) ?? collections[0];
   const sections = getSections(collection.id);
-  const section = sectionNumber === null ? undefined : sections.find((s) => s.number === sectionNumber);
+  // A collection of one book (the two short ones) opens straight onto its hadith — no list of one.
+  const onlyBook = sections.length === 1;
+  const activeNumber = onlyBook ? sections[0].number : sectionNumber;
+  const section = activeNumber === null ? undefined : sections.find((s) => s.number === activeNumber);
+  const aboutKey = `hadith.about.${collection.id}`;
+  const about = t(aboutKey) === aboutKey ? undefined : t(aboutKey);
   const collectionName = t(`hadith.collection.${collection.id}`);
 
   useEffect(() => {
-    if (sectionNumber === null) return;
+    if (activeNumber === null) return;
     const request = ++latestRequest.current;
     setState({ status: "loading" });
     setVisibleCount(BATCH_SIZE);
-    load(collection, sectionNumber).then(
+    load(collection, activeNumber).then(
       (entries) => {
         if (request === latestRequest.current) setState({ status: "done", entries });
       },
@@ -58,7 +63,7 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
         if (request === latestRequest.current) setState({ status: "error" });
       }
     );
-  }, [collection, sectionNumber, attempt, load]);
+  }, [collection, activeNumber, attempt, load]);
 
   function selectCollection(id: HadithCollectionId) {
     setCollectionId(id);
@@ -87,6 +92,8 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
           </button>
         ))}
       </div>
+
+      {about && <p className="hadith-about">{about}</p>}
 
       {section === undefined ? (
         <div className="hadith-books">
@@ -120,9 +127,11 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
       ) : (
         <div className="hadith-reader">
           <div className="hadith-reader-bar">
-            <button type="button" className="hadith-back" onClick={() => setSectionNumber(null)}>
-              <Icon name="arrow-left" size={16} /> {t("hadith.allBooks")}
-            </button>
+            {!onlyBook && (
+              <button type="button" className="hadith-back" onClick={() => setSectionNumber(null)}>
+                <Icon name="arrow-left" size={16} /> {t("hadith.allBooks")}
+              </button>
+            )}
             <button
               type="button"
               className="hadith-translation-toggle"
@@ -133,7 +142,7 @@ export function HadithBrowser({ collections, getSections, load, showTranslation,
             </button>
           </div>
           <h3 className="hadith-book-heading" lang={language}>
-            {section.number > 0 ? `${section.number}. ` : ""}
+            {section.number > 0 && !onlyBook ? `${section.number}. ` : ""}
             {language === "ar" ? section.titleAr : section.title}
           </h3>
 
