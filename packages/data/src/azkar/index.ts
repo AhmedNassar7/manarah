@@ -5,6 +5,7 @@ import { MORNING_CATEGORY_ID, splitMorningEvening } from "./morning-evening.js";
 export * from "./sections.js";
 export * from "./morning-evening.js";
 export * from "./virtues.js";
+export * from "./voices.js";
 export * from "./quranic-duas.js";
 
 /**

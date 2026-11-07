@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { listProgress, type AzkarCategory, type AzkarSection, type AzkarVirtue } from "@manarah/core";
 import { AzkarList } from "./AzkarList.js";
+import { AzkarVoicePlayer, type AzkarVoiceChoice } from "./AzkarVoicePlayer.js";
 import { azkarCategoryName, useTranslation } from "./i18n/index.js";
 import { Icon, isIconName } from "./icons/Icon.js";
 
@@ -20,6 +21,11 @@ export interface AzkarBrowserProps {
   onCountsChange?: (categoryId: string, counts: Record<string, number>) => void;
   /** Passed through to the opened list: the virtue of a dhikr, where it has one. */
   virtuesFor?: (itemId: string) => AzkarVirtue[];
+  /** The reciters who have recorded a whole list (the morning or evening azkar) — shown above that list. */
+  voicesFor?: (categoryId: string) => AzkarVoiceChoice[];
+  /** Which reciter was chosen last time, and a way to remember a new choice. */
+  voiceId?: string;
+  onVoiceChoose?: (id: string) => void;
 }
 
 /** Arabic search should match with or without harakat — strip diacritics/tatweel and fold alef/ya/ta-marbuta variants. */
@@ -49,6 +55,9 @@ export function AzkarBrowser({
   todaysCounts,
   onCountsChange,
   virtuesFor,
+  voicesFor,
+  voiceId,
+  onVoiceChoose,
 }: AzkarBrowserProps) {
   const { t, language } = useTranslation();
   const [sectionId, setSectionId] = useState(initialSectionId ?? sections[0]?.id);
@@ -157,6 +166,7 @@ export function AzkarBrowser({
               {t("azkarBrowser.backTo", { section: t(`azkarSection.${openCategorySection.id}`) })}
             </button>
           )}
+          {voicesFor && <AzkarVoicePlayer key={`voice-${openCategory.id}`} choices={voicesFor(openCategory.id)} initialId={voiceId} onChoose={onVoiceChoose} />}
           {/* Keyed so tally counts reset when switching to a different category. */}
           <AzkarList
             key={openCategory.id}
