@@ -1,0 +1,1221 @@
+[
+ {
+  "id": 109082,
+  "nameAr": "إذاعة القرآن الكريم - السعودية",
+  "nameEn": "Holy Quran Radio (Saudi Arabia)",
+  "url": "https://stream.radiojar.com/0tpy1h0kxtzuv",
+  "group": "general"
+ },
+ {
+  "id": 108,
+  "nameAr": "العامة - متنوعة لمختلف القراء",
+  "nameEn": "General — many reciters",
+  "url": "https://backup.qurango.net/radio/mix",
+  "group": "general"
+ },
+ {
+  "id": 109,
+  "nameAr": "تلاوات خاشعة",
+  "nameEn": "Humble recitations",
+  "url": "https://backup.qurango.net/radio/salma",
+  "group": "general"
+ },
+ {
+  "id": 110,
+  "nameAr": "تكبيرات العيد",
+  "nameEn": "Eid Takbeer",
+  "url": "https://backup.qurango.net/radio/eid",
+  "group": "general"
+ },
+ {
+  "id": 115,
+  "nameAr": "سورة البقرة - لعدد من القراء",
+  "nameEn": "Surah Al-Baqarah — many reciters",
+  "url": "https://backup.qurango.net/radio/albaqarah",
+  "group": "general"
+ },
+ {
+  "id": 123,
+  "nameAr": "تراتيل قصيرة متميزة",
+  "nameEn": "Short recitations",
+  "url": "https://backup.qurango.net/radio/tarateel",
+  "group": "general"
+ },
+ {
+  "id": 10902,
+  "nameAr": "آيات السكينة",
+  "nameEn": "Verses of serenity",
+  "url": "https://backup.qurango.net/radio/sakeenah",
+  "group": "general"
+ },
+ {
+  "id": 109060,
+  "nameAr": "سورة الملك",
+  "nameEn": "Al-Mulk Surah",
+  "url": "https://backup.qurango.net/radio/Surah_Al-Mulk",
+  "group": "general"
+ },
+ {
+  "id": 1,
+  "nameAr": "إبراهيم الأخضر",
+  "nameEn": "Ibrahim Al-Akdar",
+  "url": "https://backup.qurango.net/radio/ibrahim_alakdar",
+  "group": "reciter"
+ },
+ {
+  "id": 2,
+  "nameAr": "شيخ أبو بكر الشاطري",
+  "nameEn": "Shaik Abu Bakr Al Shatri",
+  "url": "https://backup.qurango.net/radio/shaik_abu_bakr_al_shatri",
+  "group": "reciter"
+ },
+ {
+  "id": 3,
+  "nameAr": "أحمد العجمي",
+  "nameEn": "Ahmad Al-Ajmy",
+  "url": "https://backup.qurango.net/radio/ahmad_alajmy",
+  "group": "reciter"
+ },
+ {
+  "id": 4,
+  "nameAr": "أحمد الحواشي",
+  "nameEn": "Ahmad Al-Hawashi",
+  "url": "https://backup.qurango.net/radio/ahmad_alhawashi",
+  "group": "reciter"
+ },
+ {
+  "id": 5,
+  "nameAr": "أحمد صابر",
+  "nameEn": "Ahmad Saber",
+  "url": "https://backup.qurango.net/radio/ahmad_saber",
+  "group": "reciter"
+ },
+ {
+  "id": 6,
+  "nameAr": "أحمد نعينع",
+  "nameEn": "Ahmad Nauina",
+  "url": "https://backup.qurango.net/radio/ahmad_nauina",
+  "group": "reciter"
+ },
+ {
+  "id": 7,
+  "nameAr": "أكرم العلاقمي",
+  "nameEn": "Akram Alalaqmi",
+  "url": "https://backup.qurango.net/radio/akram_alalaqmi",
+  "group": "reciter"
+ },
+ {
+  "id": 8,
+  "nameAr": "إدريس أبكر",
+  "nameEn": "Idrees Abkr",
+  "url": "https://backup.qurango.net/radio/idrees_abkr",
+  "group": "reciter"
+ },
+ {
+  "id": 9,
+  "nameAr": "الزين محمد أحمد",
+  "nameEn": "Alzain Mohammad Ahmad",
+  "url": "https://backup.qurango.net/radio/alzain_mohammad_ahmad",
+  "group": "reciter"
+ },
+ {
+  "id": 10,
+  "nameAr": "القارئ ياسين",
+  "nameEn": "Al-Qaria Yassen",
+  "url": "https://backup.qurango.net/radio/alqaria_yassen",
+  "group": "reciter"
+ },
+ {
+  "id": 11,
+  "nameAr": "العيون الكوشي",
+  "nameEn": "Aloyoon Al-Koshi",
+  "url": "https://backup.qurango.net/radio/aloyoon_alkoshi",
+  "group": "reciter"
+ },
+ {
+  "id": 12,
+  "nameAr": "توفيق الصايغ",
+  "nameEn": "Tawfeeq As-Sayegh",
+  "url": "https://backup.qurango.net/radio/tawfeeq_assayegh",
+  "group": "reciter"
+ },
+ {
+  "id": 13,
+  "nameAr": "جمال شاكر عبدالله",
+  "nameEn": "Jamal Shaker Abdullah",
+  "url": "https://backup.qurango.net/radio/jamal_shaker_abdullah",
+  "group": "reciter"
+ },
+ {
+  "id": 14,
+  "nameAr": "خالد القحطاني",
+  "nameEn": "Khaled Al-Qahtani",
+  "url": "https://backup.qurango.net/radio/khaled_alqahtani",
+  "group": "reciter"
+ },
+ {
+  "id": 15,
+  "nameAr": "خالد عبدالكافي",
+  "nameEn": "Khalid Abdulkafi",
+  "url": "https://backup.qurango.net/radio/khalid_abdulkafi",
+  "group": "reciter"
+ },
+ {
+  "id": 16,
+  "nameAr": "خليفة الطنيجي",
+  "nameEn": "Khalifa Altunaiji",
+  "url": "https://backup.qurango.net/radio/khalifa_altunaiji",
+  "group": "reciter"
+ },
+ {
+  "id": 17,
+  "nameAr": "سعد الغامدي",
+  "nameEn": "Saad Al-Ghamdi",
+  "url": "https://backup.qurango.net/radio/saad_alghamdi",
+  "group": "reciter"
+ },
+ {
+  "id": 18,
+  "nameAr": "سعود الشريم",
+  "nameEn": "Saud Al-Shuraim",
+  "url": "https://backup.qurango.net/radio/saud_alshuraim",
+  "group": "reciter"
+ },
+ {
+  "id": 19,
+  "nameAr": "سهل ياسين",
+  "nameEn": "Sahl Yassin",
+  "url": "https://backup.qurango.net/radio/sahl_yassin",
+  "group": "reciter"
+ },
+ {
+  "id": 20,
+  "nameAr": "زكي داغستاني",
+  "nameEn": "Zaki Daghistani",
+  "url": "https://backup.qurango.net/radio/zaki_daghistani",
+  "group": "reciter"
+ },
+ {
+  "id": 21,
+  "nameAr": "سيد رمضان",
+  "nameEn": "Sayeed Ramadan",
+  "url": "https://backup.qurango.net/radio/sayeed_ramadan",
+  "group": "reciter"
+ },
+ {
+  "id": 22,
+  "nameAr": "شيرزاد عبدالرحمن طاهر",
+  "nameEn": "Shirazad Taher",
+  "url": "https://backup.qurango.net/radio/shirazad_taher",
+  "group": "reciter"
+ },
+ {
+  "id": 23,
+  "nameAr": "صابر عبدالحكم",
+  "nameEn": "Saber Abdulhakm",
+  "url": "https://backup.qurango.net/radio/saber_abdulhakm",
+  "group": "reciter"
+ },
+ {
+  "id": 24,
+  "nameAr": "صلاح البدير",
+  "nameEn": "Salah Albudair",
+  "url": "https://backup.qurango.net/radio/salah_albudair",
+  "group": "reciter"
+ },
+ {
+  "id": 25,
+  "nameAr": "صلاح الهاشم",
+  "nameEn": "Salah Alhashim",
+  "url": "https://backup.qurango.net/radio/salah_alhashim",
+  "group": "reciter"
+ },
+ {
+  "id": 26,
+  "nameAr": "صلاح بو خاطر",
+  "nameEn": "Slaah Bukhatir",
+  "url": "https://backup.qurango.net/radio/slaah_bukhatir",
+  "group": "reciter"
+ },
+ {
+  "id": 27,
+  "nameAr": "عادل ريان",
+  "nameEn": "Adel Ryyan",
+  "url": "https://backup.qurango.net/radio/adel_ryyan",
+  "group": "reciter"
+ },
+ {
+  "id": 28,
+  "nameAr": "عبدالبارئ الثبيتي",
+  "nameEn": "Abdelbari Al-Thoubayti",
+  "url": "https://backup.qurango.net/radio/abdelbari_altoubayti",
+  "group": "reciter"
+ },
+ {
+  "id": 29,
+  "nameAr": "عبدالبارئ محمد",
+  "nameEn": "Abdulbari Mohammad",
+  "url": "https://backup.qurango.net/radio/abdulbari_mohammad",
+  "group": "reciter"
+ },
+ {
+  "id": 30,
+  "nameAr": "عبدالباسط عبدالصمد",
+  "nameEn": "Abdulbasit Abdulsamad",
+  "url": "https://backup.qurango.net/radio/abdulbasit_abdulsamad_mojawwad",
+  "group": "reciter",
+  "variant": "mujawwad"
+ },
+ {
+  "id": 31,
+  "nameAr": "عبدالباسط عبدالصمد",
+  "nameEn": "Abdulbasit Abdulsamad",
+  "url": "https://backup.qurango.net/radio/abdulbasit_abdulsamad_warsh",
+  "group": "reciter",
+  "variant": "warsh"
+ },
+ {
+  "id": 32,
+  "nameAr": "عبدالباسط عبدالصمد",
+  "nameEn": "Abdulbasit Abdulsamad",
+  "url": "https://backup.qurango.net/radio/abdulbasit_abdulsamad",
+  "group": "reciter"
+ },
+ {
+  "id": 33,
+  "nameAr": "عبدالرحمن السديس",
+  "nameEn": "Abdulrahman Alsudaes",
+  "url": "https://backup.qurango.net/radio/abdulrahman_alsudaes",
+  "group": "reciter"
+ },
+ {
+  "id": 34,
+  "nameAr": "عبدالعزيز الأحمد",
+  "nameEn": "Abdul Aziz Al-Ahmad",
+  "url": "https://backup.qurango.net/radio/abdul_aziz_alahmad",
+  "group": "reciter"
+ },
+ {
+  "id": 35,
+  "nameAr": "عبدالله المطرود",
+  "nameEn": "Abdullah Al-Mattrod",
+  "url": "https://backup.qurango.net/radio/abdullah_almattrod",
+  "group": "reciter"
+ },
+ {
+  "id": 36,
+  "nameAr": "عبدالله بصفر",
+  "nameEn": "Abdullah Basfer",
+  "url": "https://backup.qurango.net/radio/abdullah_basfer",
+  "group": "reciter"
+ },
+ {
+  "id": 37,
+  "nameAr": "عبدالله خياط",
+  "nameEn": "Abdullah Khayyat",
+  "url": "https://backup.qurango.net/radio/abdullah_khayyat",
+  "group": "reciter"
+ },
+ {
+  "id": 38,
+  "nameAr": "عبدالله عواد الجهني",
+  "nameEn": "Abdullah Al-Johany",
+  "url": "https://backup.qurango.net/radio/abdullah_aljohany",
+  "group": "reciter"
+ },
+ {
+  "id": 39,
+  "nameAr": "عبدالرشيد صوفي",
+  "nameEn": "Abdulrasheed Soufi",
+  "url": "https://backup.qurango.net/radio/abdulrasheed_soufi_khalaf",
+  "group": "reciter",
+  "variant": "khalaf"
+ },
+ {
+  "id": 40,
+  "nameAr": "عبدالرشيد صوفي",
+  "nameEn": "Abdulrasheed Soufi",
+  "url": "https://backup.qurango.net/radio/abdulrasheed_soufi_assosi",
+  "group": "reciter",
+  "variant": "soosi"
+ },
+ {
+  "id": 41,
+  "nameAr": "عبدالمحسن الحارثي",
+  "nameEn": "Abdulmohsin Al-Harthy",
+  "url": "https://backup.qurango.net/radio/abdulmohsin_alharthy",
+  "group": "reciter"
+ },
+ {
+  "id": 42,
+  "nameAr": "عبدالمحسن القاسم",
+  "nameEn": "Abdulmohsen Al-Qasim",
+  "url": "https://backup.qurango.net/radio/abdulmohsen_alqasim",
+  "group": "reciter"
+ },
+ {
+  "id": 43,
+  "nameAr": "عبدالمحسن العبيكان",
+  "nameEn": "Abdulmohsin Al-Obaikan",
+  "url": "https://backup.qurango.net/radio/abdulmohsin_alobaikan",
+  "group": "reciter"
+ },
+ {
+  "id": 44,
+  "nameAr": "عبدالهادي أحمد كناكري",
+  "nameEn": "Abdulhadi Kanakeri",
+  "url": "https://backup.qurango.net/radio/abdulhadi_kanakeri",
+  "group": "reciter"
+ },
+ {
+  "id": 45,
+  "nameAr": "عبدالودود حنيف",
+  "nameEn": "Abdulwadood Haneef",
+  "url": "https://backup.qurango.net/radio/abdulwadood_haneef",
+  "group": "reciter"
+ },
+ {
+  "id": 46,
+  "nameAr": "علي بن عبدالرحمن الحذيفي",
+  "nameEn": "Ali Alhuthaifi",
+  "url": "https://backup.qurango.net/radio/ali_alhuthaifi",
+  "group": "reciter"
+ },
+ {
+  "id": 47,
+  "nameAr": "علي الحذيفي",
+  "nameEn": "Ali Alhuthaifi",
+  "url": "https://backup.qurango.net/radio/ali_alhuthaifi_qalon",
+  "group": "reciter",
+  "variant": "qalon"
+ },
+ {
+  "id": 48,
+  "nameAr": "علي جابر",
+  "nameEn": "Ali Jaber",
+  "url": "https://backup.qurango.net/radio/ali_jaber",
+  "group": "reciter"
+ },
+ {
+  "id": 49,
+  "nameAr": "علي حجاج السويسي",
+  "nameEn": "Ali Hajjaj Alsouasi",
+  "url": "https://backup.qurango.net/radio/ali_hajjaj_alsouasi",
+  "group": "reciter"
+ },
+ {
+  "id": 50,
+  "nameAr": "عماد زهير حافظ",
+  "nameEn": "Emad Hafez",
+  "url": "https://backup.qurango.net/radio/emad_hafez",
+  "group": "reciter"
+ },
+ {
+  "id": 51,
+  "nameAr": "عمر القزابري",
+  "nameEn": "Omar Al-Qazabri",
+  "url": "https://backup.qurango.net/radio/omar_alqazabri",
+  "group": "reciter"
+ },
+ {
+  "id": 52,
+  "nameAr": "فارس عباد",
+  "nameEn": "Fares Abbad",
+  "url": "https://backup.qurango.net/radio/fares_abbad",
+  "group": "reciter"
+ },
+ {
+  "id": 53,
+  "nameAr": "ناصر القطامي",
+  "nameEn": "Nasser Alqatami",
+  "url": "https://backup.qurango.net/radio/nasser_alqatami",
+  "group": "reciter"
+ },
+ {
+  "id": 54,
+  "nameAr": "نبيل الرفاعي",
+  "nameEn": "Nabil Al Rifay",
+  "url": "https://backup.qurango.net/radio/nabil_al_rifay",
+  "group": "reciter"
+ },
+ {
+  "id": 55,
+  "nameAr": "نعمة الحسان",
+  "nameEn": "Neamah Al-Hassan",
+  "url": "https://backup.qurango.net/radio/neamah_alhassan",
+  "group": "reciter"
+ },
+ {
+  "id": 56,
+  "nameAr": "هاني الرفاعي",
+  "nameEn": "Hani Arrifai",
+  "url": "https://backup.qurango.net/radio/hani_arrifai",
+  "group": "reciter"
+ },
+ {
+  "id": 57,
+  "nameAr": "وليد النائحي",
+  "nameEn": "Waleed Alnaehi",
+  "url": "https://backup.qurango.net/radio/waleed_alnaehi",
+  "group": "reciter"
+ },
+ {
+  "id": 58,
+  "nameAr": "ياسر الدوسري",
+  "nameEn": "Yasser Al-Dosari",
+  "url": "https://backup.qurango.net/radio/yasser_aldosari",
+  "group": "reciter"
+ },
+ {
+  "id": 59,
+  "nameAr": "ياسر القرشي",
+  "nameEn": "Yasser Al-Qurashi",
+  "url": "https://backup.qurango.net/radio/yasser_alqurashi",
+  "group": "reciter"
+ },
+ {
+  "id": 60,
+  "nameAr": "ياسر المزروعي",
+  "nameEn": "Yasser Al-Mazroyee",
+  "url": "https://backup.qurango.net/radio/yasser_almazroyee",
+  "group": "reciter"
+ },
+ {
+  "id": 61,
+  "nameAr": "يحيى حوا",
+  "nameEn": "Yahya Hawwa",
+  "url": "https://backup.qurango.net/radio/yahya_hawwa",
+  "group": "reciter"
+ },
+ {
+  "id": 62,
+  "nameAr": "يوسف الشويعي",
+  "nameEn": "Yousef Alshoaey",
+  "url": "https://backup.qurango.net/radio/yousef_alshoaey",
+  "group": "reciter"
+ },
+ {
+  "id": 63,
+  "nameAr": "ماهر المعيقلي",
+  "nameEn": "Maher Al Meaqli",
+  "url": "https://backup.qurango.net/radio/maher",
+  "group": "reciter"
+ },
+ {
+  "id": 64,
+  "nameAr": "محمد الطبلاوي",
+  "nameEn": "Mohammad Al-Tablaway",
+  "url": "https://backup.qurango.net/radio/mohammad_altablaway",
+  "group": "reciter"
+ },
+ {
+  "id": 65,
+  "nameAr": "محمد اللحيدان",
+  "nameEn": "Mohammed Al-Lohaidan",
+  "url": "https://backup.qurango.net/radio/mohammed_allohaidan",
+  "group": "reciter"
+ },
+ {
+  "id": 66,
+  "nameAr": "محمد أيوب",
+  "nameEn": "Mohammed Ayyub",
+  "url": "https://backup.qurango.net/radio/mohammed_ayyub",
+  "group": "reciter"
+ },
+ {
+  "id": 67,
+  "nameAr": "محمد صالح عالم شاه",
+  "nameEn": "Mohammad Saleh Alim Shah",
+  "url": "https://backup.qurango.net/radio/mohammad_saleh_alim_shah",
+  "group": "reciter"
+ },
+ {
+  "id": 68,
+  "nameAr": "محمد جبريل",
+  "nameEn": "Mohammed Jibreel",
+  "url": "https://backup.qurango.net/radio/mohammed_jibreel",
+  "group": "reciter"
+ },
+ {
+  "id": 69,
+  "nameAr": "محمد صديق المنشاوي",
+  "nameEn": "Mohammed Siddiq Al-Minshawi",
+  "url": "https://backup.qurango.net/radio/mohammed_siddiq_alminshawi",
+  "group": "reciter"
+ },
+ {
+  "id": 70,
+  "nameAr": "محمد صديق المنشاوي",
+  "nameEn": "Mohammed Siddiq Al-Minshawi",
+  "url": "https://backup.qurango.net/radio/mohammed_siddiq_alminshawi_mojawwad",
+  "group": "reciter",
+  "variant": "mujawwad"
+ },
+ {
+  "id": 71,
+  "nameAr": "محمد عبدالكريم",
+  "nameEn": "Mohammad Abdullkarem",
+  "url": "https://backup.qurango.net/radio/mohammad_abdullkarem",
+  "group": "reciter"
+ },
+ {
+  "id": 72,
+  "nameAr": "محمد عبدالحكيم سعيد العبدالله",
+  "nameEn": "Mohammad Al-Abdullah",
+  "url": "https://backup.qurango.net/radio/mohammad_alabdullah_albizi",
+  "group": "reciter",
+  "variant": "bazzi"
+ },
+ {
+  "id": 73,
+  "nameAr": "محمد عبدالحكيم سعيد العبدالله",
+  "nameEn": "Mohammad Al-Abdullah",
+  "url": "https://backup.qurango.net/radio/mohammad_alabdullah_aldorai",
+  "group": "reciter",
+  "variant": "doori-kisai"
+ },
+ {
+  "id": 74,
+  "nameAr": "محمود خليل الحصري",
+  "nameEn": "Mahmoud Khalil Al-Hussary",
+  "url": "https://backup.qurango.net/radio/mahmoud_khalil_alhussary",
+  "group": "reciter"
+ },
+ {
+  "id": 75,
+  "nameAr": "محمود خليل الحصري",
+  "nameEn": "Mahmoud Khalil Al-Hussary",
+  "url": "https://backup.qurango.net/radio/mahmoud_khalil_alhussary_mojawwad",
+  "group": "reciter",
+  "variant": "mujawwad"
+ },
+ {
+  "id": 76,
+  "nameAr": "محمود خليل الحصري",
+  "nameEn": "Mahmoud Khalil Al-Hussary",
+  "url": "https://backup.qurango.net/radio/mahmoud_khalil_alhussary_warsh",
+  "group": "reciter",
+  "variant": "warsh"
+ },
+ {
+  "id": 77,
+  "nameAr": "محمود علي البنا",
+  "nameEn": "Mahmoud Ali Albanna",
+  "url": "https://backup.qurango.net/radio/mahmoud_ali__albanna",
+  "group": "reciter"
+ },
+ {
+  "id": 78,
+  "nameAr": "محمود علي البنا",
+  "nameEn": "Mahmoud Ali Albanna",
+  "url": "https://backup.qurango.net/radio/mahmoud_ali__albanna_mojawwad",
+  "group": "reciter",
+  "variant": "mujawwad"
+ },
+ {
+  "id": 79,
+  "nameAr": "مشاري العفاسي",
+  "nameEn": "Mishary Alafasi",
+  "url": "https://backup.qurango.net/radio/mishary_alafasi",
+  "group": "reciter"
+ },
+ {
+  "id": 80,
+  "nameAr": "مصطفى إسماعيل",
+  "nameEn": "Mustafa Ismail",
+  "url": "https://backup.qurango.net/radio/mustafa_ismail",
+  "group": "reciter"
+ },
+ {
+  "id": 81,
+  "nameAr": "مصطفى اللاهوني",
+  "nameEn": "Mustafa Al-Lahoni",
+  "url": "https://backup.qurango.net/radio/mustafa_allahoni",
+  "group": "reciter"
+ },
+ {
+  "id": 82,
+  "nameAr": "مصطفى رعد العزاوي",
+  "nameEn": "Mustafa raad Alazawy",
+  "url": "https://backup.qurango.net/radio/mustafa_raad_alazawy",
+  "group": "reciter"
+ },
+ {
+  "id": 83,
+  "nameAr": "مفتاح السلطني",
+  "nameEn": "Muftah Alsaltany",
+  "url": "https://backup.qurango.net/radio/muftah_alsaltany_aldori_an_abi_amr",
+  "group": "reciter",
+  "variant": "doori-abi-amr"
+ },
+ {
+  "id": 84,
+  "nameAr": "ماهر شخاشيرو",
+  "nameEn": "Maher Shakhashero",
+  "url": "https://backup.qurango.net/radio/maher_shakhashero",
+  "group": "reciter"
+ },
+ {
+  "id": 85,
+  "nameAr": "محمود الشيمي",
+  "nameEn": "Mahmood AlSheimy",
+  "url": "https://backup.qurango.net/radio/mahmood_alsheimy",
+  "group": "reciter"
+ },
+ {
+  "id": 86,
+  "nameAr": "خالد المهنا",
+  "nameEn": "Khalid Almohana",
+  "url": "https://backup.qurango.net/radio/khalid_almohana",
+  "group": "reciter"
+ },
+ {
+  "id": 87,
+  "nameAr": "عادل الكلباني",
+  "nameEn": "Adel Al-Khalbany",
+  "url": "https://backup.qurango.net/radio/adel_alkhalbany",
+  "group": "reciter"
+ },
+ {
+  "id": 88,
+  "nameAr": "موسى بلال",
+  "nameEn": "Mousa Bilal",
+  "url": "https://backup.qurango.net/radio/mousa_bilal",
+  "group": "reciter"
+ },
+ {
+  "id": 89,
+  "nameAr": "حاتم فريد الواعر",
+  "nameEn": "Hatem Fareed Alwaer",
+  "url": "https://backup.qurango.net/radio/hatem_fareed_alwaer",
+  "group": "reciter"
+ },
+ {
+  "id": 90,
+  "nameAr": "محمود الرفاعي",
+  "nameEn": "Mahmood Al rifai",
+  "url": "https://backup.qurango.net/radio/mahmood_al_rifai",
+  "group": "reciter"
+ },
+ {
+  "id": 91,
+  "nameAr": "ابراهيم الدوسري",
+  "nameEn": "Ibrahim Aldosari",
+  "url": "https://backup.qurango.net/radio/ibrahim_aldosari",
+  "group": "reciter"
+ },
+ {
+  "id": 92,
+  "nameAr": "مفتاح السلطني",
+  "nameEn": "Muftah Alsaltany",
+  "url": "https://backup.qurango.net/radio/muftah_alsaltany_aldorai",
+  "group": "reciter",
+  "variant": "doori-kisai"
+ },
+ {
+  "id": 93,
+  "nameAr": "جمعان العصيمي",
+  "nameEn": "Jamaan Alosaimi",
+  "url": "https://backup.qurango.net/radio/jamaan_alosaimi",
+  "group": "reciter"
+ },
+ {
+  "id": 95,
+  "nameAr": "يوسف بن نوح أحمد",
+  "nameEn": "Yousef Bin Noah Ahmad",
+  "url": "https://backup.qurango.net/radio/yousef_bin_noah_ahmad",
+  "group": "reciter"
+ },
+ {
+  "id": 96,
+  "nameAr": "مفتاح السلطني",
+  "nameEn": "Muftah Alsaltany",
+  "url": "https://backup.qurango.net/radio/muftah_alsaltany_ibn_thakwan_an_ibn_amr",
+  "group": "reciter",
+  "variant": "ibn-thakwan"
+ },
+ {
+  "id": 97,
+  "nameAr": "معيض الحارثي",
+  "nameEn": "Moeedh Alharthi",
+  "url": "https://backup.qurango.net/radio/moeedh_alharthi",
+  "group": "reciter"
+ },
+ {
+  "id": 98,
+  "nameAr": "محمد رشاد الشريف",
+  "nameEn": "Mohammad Rashad Alshareef",
+  "url": "https://backup.qurango.net/radio/mohammad_rashad_alshareef",
+  "group": "reciter"
+ },
+ {
+  "id": 99,
+  "nameAr": "أحمد خضر الطرابلسي",
+  "nameEn": "Ahmad Khader Al-Tarabulsi",
+  "url": "https://backup.qurango.net/radio/ahmad_khader_altarabulsi",
+  "group": "reciter"
+ },
+ {
+  "id": 100,
+  "nameAr": "أحمد الطرابلسي",
+  "nameEn": "Ahmed Al-trabulsi",
+  "url": "https://backup.qurango.net/radio/ahmed_altrabulsi",
+  "group": "reciter"
+ },
+ {
+  "id": 101,
+  "nameAr": "عبدالله الكندري",
+  "nameEn": "Abdullah Al-Kandari",
+  "url": "https://backup.qurango.net/radio/abdullah_alkandari",
+  "group": "reciter"
+ },
+ {
+  "id": 102,
+  "nameAr": "أحمد عامر",
+  "nameEn": "Ahmed Amer",
+  "url": "https://backup.qurango.net/radio/ahmed_amer",
+  "group": "reciter"
+ },
+ {
+  "id": 103,
+  "nameAr": "محمد عثمان خان",
+  "nameEn": "Mohammed Osman Khan",
+  "url": "https://backup.qurango.net/radio/mohammed_osman_khan",
+  "group": "reciter"
+ },
+ {
+  "id": 104,
+  "nameAr": "الدوكالي محمد العالم",
+  "nameEn": "Addokali Mohammad Alalim",
+  "url": "https://backup.qurango.net/radio/addokali_mohammad_alalim",
+  "group": "reciter"
+ },
+ {
+  "id": 105,
+  "nameAr": "محمد عبدالكريم",
+  "nameEn": "Mohammad Abdullkarem",
+  "url": "https://backup.qurango.net/radio/mohammad_abdullkarem_alasbahani",
+  "group": "reciter",
+  "variant": "asbahani"
+ },
+ {
+  "id": 106,
+  "nameAr": "الفاتح محمد الزبير",
+  "nameEn": "Alfateh Alzubair",
+  "url": "https://backup.qurango.net/radio/alfateh_alzubair",
+  "group": "reciter"
+ },
+ {
+  "id": 107,
+  "nameAr": "طارق عبدالغني دعوب",
+  "nameEn": "Tareq Abdulgani daawob",
+  "url": "https://backup.qurango.net/radio/tareq_abdulgani_daawob",
+  "group": "reciter"
+ },
+ {
+  "id": 111,
+  "nameAr": "عبدالرحمن الماجد",
+  "nameEn": "Abdulrahman Al-Majed",
+  "url": "https://backup.qurango.net/radio/abdulrahman_almajed",
+  "group": "reciter"
+ },
+ {
+  "id": 117,
+  "nameAr": "خالد الجليل",
+  "nameEn": "Khalid Al-Jileel",
+  "url": "https://backup.qurango.net/radio/khalid_aljileel",
+  "group": "reciter"
+ },
+ {
+  "id": 118,
+  "nameAr": "ناصر الماجد",
+  "nameEn": "Nasser Almajed",
+  "url": "https://backup.qurango.net/radio/nasser_almajed",
+  "group": "reciter"
+ },
+ {
+  "id": 119,
+  "nameAr": "هيثم الجدعاني",
+  "nameEn": "Haitham Aljudaany",
+  "url": "https://backup.qurango.net/radio/hitham_aljadani",
+  "group": "reciter"
+ },
+ {
+  "id": 120,
+  "nameAr": "أحمد خليل شاهين",
+  "nameEn": "Ahmad Shaheen",
+  "url": "https://backup.qurango.net/radio/ahmad_shaheen",
+  "group": "reciter"
+ },
+ {
+  "id": 121,
+  "nameAr": "عبدالله الموسى",
+  "nameEn": "Abdullah Al-Mousa",
+  "url": "https://backup.qurango.net/radio/abdullah_almousa",
+  "group": "reciter"
+ },
+ {
+  "id": 122,
+  "nameAr": "عبدالله الخلف",
+  "nameEn": "Abdullah Al-Khalaf",
+  "url": "https://backup.qurango.net/radio/abdullah_alkhalaf",
+  "group": "reciter"
+ },
+ {
+  "id": 139,
+  "nameAr": "ماجد الزامل",
+  "nameEn": "Majed Al-Zamil",
+  "url": "https://backup.qurango.net/radio/majed_alzamel",
+  "group": "reciter"
+ },
+ {
+  "id": 217,
+  "nameAr": "بندر بليلة",
+  "nameEn": "Bandar Balilah",
+  "url": "https://backup.qurango.net/radio/bandar_balilah",
+  "group": "reciter"
+ },
+ {
+  "id": 248,
+  "nameAr": "ناصر العصفور",
+  "nameEn": "Nasser Alosfor",
+  "url": "https://backup.qurango.net/radio/nasser_alosfor",
+  "group": "reciter"
+ },
+ {
+  "id": 261,
+  "nameAr": "محمد أيوب - قراءة مميزة",
+  "nameEn": "Mohammed Ayyub — distinctive reading",
+  "url": "https://backup.qurango.net/radio/ayyoub2",
+  "group": "reciter"
+ },
+ {
+  "id": 265,
+  "nameAr": "أحمد ديبان",
+  "nameEn": "Ahmad Deban",
+  "url": "https://backup.qurango.net/radio/ahmad_deban",
+  "group": "reciter"
+ },
+ {
+  "id": 274,
+  "nameAr": "إذاعة محمد أبو سنينة",
+  "nameEn": "Muhammad Abu Sneina",
+  "url": "https://backup.qurango.net/radio/sneineh",
+  "group": "reciter"
+ },
+ {
+  "id": 275,
+  "nameAr": "محمد الأمين قنيوة",
+  "nameEn": "Mohammed Al-Amin Qeniwa",
+  "url": "https://backup.qurango.net/radio/qeniwa",
+  "group": "reciter"
+ },
+ {
+  "id": 287,
+  "nameAr": "عبدالرحمن الشحات",
+  "nameEn": "Abdulrahman Alshahhat",
+  "url": "https://backup.qurango.net/radio/a_alshahhat",
+  "group": "reciter"
+ },
+ {
+  "id": 307,
+  "nameAr": "عبدالعزيز سحيم",
+  "nameEn": "Abdulaziz Sheim",
+  "url": "https://backup.qurango.net/radio/a_sheim",
+  "group": "reciter"
+ },
+ {
+  "id": 109038,
+  "nameAr": "صالح الهبدان",
+  "nameEn": "Saleh Al-Habdan",
+  "url": "https://backup.qurango.net/radio/saleh_alhabdan",
+  "group": "reciter"
+ },
+ {
+  "id": 109074,
+  "nameAr": "عبدالله البعيجان",
+  "nameEn": "Abdullah Albuajan",
+  "url": "https://backup.qurango.net/radio/buajan",
+  "group": "reciter"
+ },
+ {
+  "id": 109075,
+  "nameAr": "أحمد طالب بن حميد",
+  "nameEn": "Ahmad Talib bin Humaid",
+  "url": "https://backup.qurango.net/radio/a_binhameed",
+  "group": "reciter"
+ },
+ {
+  "id": 109077,
+  "nameAr": "بدر التركي",
+  "nameEn": "Bader Alturki",
+  "url": "https://backup.qurango.net/radio/bader",
+  "group": "reciter"
+ },
+ {
+  "id": 109078,
+  "nameAr": "هزاع البلوشي",
+  "nameEn": "Hazza Al-Balushi",
+  "url": "https://backup.qurango.net/radio/hazza",
+  "group": "reciter"
+ },
+ {
+  "id": 113,
+  "nameAr": "الفتاوى العامة",
+  "nameEn": "General Fatwa Radio",
+  "url": "https://backup.qurango.net/radio/fatwa",
+  "group": "knowledge"
+ },
+ {
+  "id": 116,
+  "nameAr": "تفسير القران الكريم",
+  "nameEn": "Quran Tafseer",
+  "url": "https://backup.qurango.net/radio/tafseer",
+  "group": "knowledge"
+ },
+ {
+  "id": 10903,
+  "nameAr": "صور من حياة الصحابة والتابعين رضوان الله عليهم",
+  "nameEn": "Stories of the Companions and the Followers",
+  "url": "https://backup.qurango.net/radio/sahabah",
+  "group": "knowledge"
+ },
+ {
+  "id": 10904,
+  "nameAr": "المختصر في تفسير القرآن الكريم",
+  "nameEn": "A summary of the interpretation of the Holy Quran",
+  "url": "https://backup.qurango.net/radio/mukhtasartafsir",
+  "group": "knowledge"
+ },
+ {
+  "id": 21114,
+  "nameAr": "في ظلال السيرة النبوية - 400 حلقة عن سيرة نبينا محمد صلى الله عليه وسلم",
+  "nameEn": "In the shadows of the Prophet's biography — 400 episodes",
+  "url": "https://backup.qurango.net/radio/fi_zilal_alsiyra",
+  "group": "knowledge"
+ },
+ {
+  "id": 21115,
+  "nameAr": "المختصر في السيرة النبوية",
+  "nameEn": "The Abridged Biography of the Prophet",
+  "url": "https://backup.qurango.net/radio/almukhtasar_fi_alsiyra",
+  "group": "knowledge"
+ },
+ {
+  "id": 21116,
+  "nameAr": "كتاب الاختيارات الفقهية في مسائل العبادات والمعاملات",
+  "nameEn": "The book of jurisprudential choices in matters of worship and transactions",
+  "url": "https://backup.qurango.net/radio/alaikhtiarat_alfiqhayh_bin_baz",
+  "group": "knowledge"
+ },
+ {
+  "id": 21117,
+  "nameAr": "تفسير القران الكريم-الخلاصة من تفسير الطبري",
+  "nameEn": "Interpretation of the Holy Qur’an - Conclusion from Tafsir al-Tabari",
+  "url": "https://backup.qurango.net/radio/tabri",
+  "group": "knowledge"
+ },
+ {
+  "id": 109061,
+  "nameAr": "فضل شهر رمضان",
+  "nameEn": "The virtue of the month of Ramadan",
+  "url": "https://backup.qurango.net/radio/ramadan",
+  "group": "knowledge"
+ },
+ {
+  "id": 109066,
+  "nameAr": "صحيح مسلم",
+  "nameEn": "Sahih Muslim",
+  "url": "https://backup.qurango.net/radio/saheh-muslim",
+  "group": "knowledge"
+ },
+ {
+  "id": 109069,
+  "nameAr": "قصص الأنبياء",
+  "nameEn": "Stories of the Prophets",
+  "url": "https://backup.qurango.net/radio/alanbiya",
+  "group": "knowledge"
+ },
+ {
+  "id": 109073,
+  "nameAr": "رياض الصالحين",
+  "nameEn": "Riyad as-Salihin",
+  "url": "https://backup.qurango.net/radio/riyad",
+  "group": "knowledge"
+ },
+ {
+  "id": 109083,
+  "nameAr": "الشمائل المحمدية",
+  "nameEn": "Ash-Shama'il al-Muhammadiyyah",
+  "url": "https://backup.qurango.net/radio/shmaeel",
+  "group": "knowledge"
+ },
+ {
+  "id": 114,
+  "nameAr": "الرقية الشرعية",
+  "nameEn": "Sharia ruqyah",
+  "url": "https://backup.qurango.net/radio/roqiah",
+  "group": "azkar"
+ },
+ {
+  "id": 10906,
+  "nameAr": "أذكار الصباح",
+  "nameEn": "Words of remembrance for morning",
+  "url": "https://backup.qurango.net/radio/athkar_sabah",
+  "group": "azkar"
+ },
+ {
+  "id": 10907,
+  "nameAr": "أذكار المساء",
+  "nameEn": "Words of remembrance for evening",
+  "url": "https://backup.qurango.net/radio/athkar_masa",
+  "group": "azkar"
+ },
+ {
+  "id": 109039,
+  "nameAr": "ترجمة معاني القرآن باللغة الأوردية - عبدالباسط عبدالصمد",
+  "nameEn": "Quran translation into Urdu - Abdulbasit",
+  "url": "https://backup.qurango.net/radio/translation_quran_urdu_basit",
+  "group": "translation"
+ },
+ {
+  "id": 109040,
+  "nameAr": "ترجمة معاني القرآن باللغة الأسبانية",
+  "nameEn": "Quran translation into Spanish",
+  "url": "https://backup.qurango.net/radio/translation_quran_spanish_afs",
+  "group": "translation"
+ },
+ {
+  "id": 109041,
+  "nameAr": "ترجمة معاني القرآن باللغة الألبانية",
+  "nameEn": "Quran translation into Albanian",
+  "url": "https://backup.qurango.net/radio/translation_quran_albanian",
+  "group": "translation"
+ },
+ {
+  "id": 109042,
+  "nameAr": "ترجمة معاني القرآن باللغة الألمانية",
+  "nameEn": "Quran translation into German",
+  "url": "https://backup.qurango.net/radio/translation_quran_german",
+  "group": "translation"
+ },
+ {
+  "id": 109043,
+  "nameAr": "ترجمة معاني القرآن باللغة الأمازيغية",
+  "nameEn": "Quran translation into Amazigh",
+  "url": "https://backup.qurango.net/radio/translation_quran_tamazight",
+  "group": "translation"
+ },
+ {
+  "id": 109044,
+  "nameAr": "ترجمة معاني القرآن باللغة الأوردية - الشريم والسديس",
+  "nameEn": "Quran translation into Urdu - Al-Shuraim and Al-Sudais",
+  "url": "https://backup.qurango.net/radio/translation_quran_urdu_sds_shur",
+  "group": "translation"
+ },
+ {
+  "id": 109045,
+  "nameAr": "ترجمة معاني القرآن باللغة الأوردية - المنشاوي",
+  "nameEn": "Quran translation into Urdu - Al-Minshawi",
+  "url": "https://backup.qurango.net/radio/translation_quran_urdu_minsh",
+  "group": "translation"
+ },
+ {
+  "id": 109046,
+  "nameAr": "ترجمة معاني القرآن باللغة الإنجليزية - عبدالباسط عبدالصمد",
+  "nameEn": "Quran translation into English - AbdulBasit Abdul Samad",
+  "url": "https://backup.qurango.net/radio/translation_quran_english_basit",
+  "group": "translation"
+ },
+ {
+  "id": 109047,
+  "nameAr": "ترجمة معاني القرآن باللغة الإنجليزية - عبدالله بصفر",
+  "nameEn": "Quran translation into English - Abdullah Basfar",
+  "url": "https://backup.qurango.net/radio/translation_quran_english_bsfr",
+  "group": "translation"
+ },
+ {
+  "id": 109048,
+  "nameAr": "ترجمة معاني القرآن باللغة الإنجليزية - ترجمة والك",
+  "nameEn": "Quran translation into English - translated by Walk",
+  "url": "https://backup.qurango.net/radio/translation_quran_english_walk_basit",
+  "group": "translation"
+ },
+ {
+  "id": 109049,
+  "nameAr": "ترجمة معاني القرآن باللغة البرتغالية",
+  "nameEn": "Quran translation into Portuguese",
+  "url": "https://backup.qurango.net/radio/translation_quran_portuguese",
+  "group": "translation"
+ },
+ {
+  "id": 109050,
+  "nameAr": "ترجمة معاني القرآن باللغة البوسنية",
+  "nameEn": "Quran translation into Bosnian",
+  "url": "https://backup.qurango.net/radio/translation_quran_bosnia",
+  "group": "translation"
+ },
+ {
+  "id": 109051,
+  "nameAr": "ترجمة معاني القرآن باللغة التركية",
+  "nameEn": "Quran translation into Turkish",
+  "url": "https://backup.qurango.net/radio/translation_quran_turkish",
+  "group": "translation"
+ },
+ {
+  "id": 109052,
+  "nameAr": "ترجمة معاني القرآن باللغة الروسية",
+  "nameEn": "Quran translation into Russian",
+  "url": "https://backup.qurango.net/radio/translation_quran_Russia",
+  "group": "translation"
+ },
+ {
+  "id": 109053,
+  "nameAr": "ترجمة معاني القرآن باللغة الصينية",
+  "nameEn": "Quran translation into Chinese",
+  "url": "https://backup.qurango.net/radio/translation_quran_chinese",
+  "group": "translation"
+ },
+ {
+  "id": 109054,
+  "nameAr": "ترجمة معاني القرآن باللغة الفارسية",
+  "nameEn": "Quran translation into Persian",
+  "url": "https://backup.qurango.net/radio/translation_quran_farsi",
+  "group": "translation"
+ },
+ {
+  "id": 109055,
+  "nameAr": "ترجمة معاني القرآن باللغة الفرنسية",
+  "nameEn": "Quran translation into French",
+  "url": "https://backup.qurango.net/radio/translation_quran_french",
+  "group": "translation"
+ },
+ {
+  "id": 109056,
+  "nameAr": "ترجمة معاني القرآن باللغة الكردية",
+  "nameEn": "Quran translation into Kurdish",
+  "url": "https://backup.qurango.net/radio/translation_quran_kurdish",
+  "group": "translation"
+ },
+ {
+  "id": 109058,
+  "nameAr": "ترجمة معاني القرآن باللغة المجرية",
+  "nameEn": "Quran translation into Hungarian",
+  "url": "https://backup.qurango.net/radio/translation_quran_hungarian",
+  "group": "translation"
+ },
+ {
+  "id": 109059,
+  "nameAr": "ترجمة معاني القرآن باللغة اليونانية",
+  "nameEn": "Quran translation into Greek",
+  "url": "https://backup.qurango.net/radio/translation_quran_greek",
+  "group": "translation"
+ },
+ {
+  "id": 109062,
+  "nameAr": "ترجمة معاني القرآن باللغة الهوسا",
+  "nameEn": "Translation of the meanings of the Quran in Hausa",
+  "url": "https://backup.qurango.net/radio/Translation_Quran_Hausa",
+  "group": "translation"
+ }
+]

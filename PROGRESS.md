@@ -124,7 +124,7 @@ Orchestration logic that glues a pure decision function to a platform API is ref
 ### Phase 2 — Growth — ⬜ not started
 
 - [ ] Azkar engine v2: richer customization (per-category remap to any time/trigger, custom dua playlists, notification style choice, snooze)
-- [ ] Radio module: curated live Quran stations + MP3Quran.net catalog player, persists across tabs/screen-off
+- [x] Radio module: live Quran stations (172, from MP3Quran.net's catalogue incl. Saudi Quran Radio), keeps playing across pages, lock-screen controls — ✅ done 2026-11-07 (web; see "Radio" below). *Not in the extension yet.*
 - [ ] Memorization mode: mic-based recitation tracking via `MediaRecorder`/`SpeechRecognition` (free/on-device, no paid speech service), hide/reveal verses, hifz progress dashboard
 - [ ] Multi-translation library, offline audio downloads cached in IndexedDB *(multi-tafsir: ✅ done via reader roadmap step 5 — Jalalayn isn't on Quran.com's API, so not included)*
 - [ ] Desktop: Tauri build wired up, system tray + native azan notifications
@@ -454,6 +454,16 @@ Also caught: the tasbih count was black on a dark background in dark mode (a `<b
 - **Reciters عبدالله الأسمر and فيصل بن جذيان:** neither is in EveryAyah (what the app streams from), mp3quran.net, Quran.com or Quranic Audio — checked their live listings. Adding them needs a source with a licence we can stream from; none was found. Needs the user to point to one (or the reciters' own permission/host).
 - **Calmer azkar Listen voice:** the current recordings (hisnmuslim.com) are the only complete per-dhikr human set found; no better-sounding set with an open licence was found. One honest option not yet built: for the Quranic items (Ayat al-Kursi, the three Quls, verses) play the user's chosen Quran reciter via EveryAyah instead.
 - **Evidence/virtue for every hadith:** the Hadith section already shows the Arabic, source book + number and scholars' gradings for all six books. A verified "virtue" per hadith for ~35,000 hadith can't be written without a sourced dataset; sunnah.com (which has it) blocks automated checks, so links to it were not added unverified.
+
+## Radio — ✅ done (2026-11-07, on request: "is the radio in the plan?")
+
+**What it is.** A **Radio** section (under "More" on a phone, in the sidebar elsewhere): **172 live stations** — the Saudi Quran Radio first, a station for each of ~125 reciters (with the reading shown when one reciter has several: Warsh, Qalon, Al-Doori …, Mujawwad), plus tafsir / seerah / Riyad as-Salihin / Sahih Muslim lessons, the **Morning and Evening azkar** and ruqyah stations, and Quran translations in 20 languages. Search (Arabic however it is spelled, or English), kinds as chips, a ★ to keep favourites, and "Continue with …" for the last one. Tapping the playing station pauses it.
+
+**It keeps playing.** The audio lives at the app level, not in the page: go to Quran or Prayer and a small player (name, Live / Paused, play-pause, stop) stays above the tab bar; the phone's lock screen and headphone buttons control it (Media Session). A live stream has nothing to seek, so pause means "stop listening" and play reconnects to *now*. **It steps aside** when a verse recitation or an azkar recording starts (so two voices never play together). No connection says so and **reconnects by itself** when the network returns; a station that will not play says that instead.
+
+**Where the stations come from, and what was checked.** MP3Quran.net's public catalogue (177 stations), snapshotted into the app (`data/radio/stations.json`) **after opening every stream**: 172 answered with live audio, the 5 that returned 404/401/500 were left out (a test pins that). A snapshot, not a live fetch, so the list works offline and a change at the source cannot silently change what plays. Names were tidied; readings come from MP3Quran's own reading names for each reciter, and one (Muftah al-Saltany's "al-Doori", id 92 → from al-Kisai) is inferred by elimination, noted in the file. Verified in Chrome with the **real Saudi Quran Radio stream**: plays, mini-player follows to other pages, pause/resume/stop, favourites and "Continue" survive a reload, offline → message → recovers, Arabic/RTL, desktop.
+
+**Limits, stated honestly.** Needs a connection (live streams can't be cached). On a phone, background/screen-off playback is up to the browser: it generally continues for an audio stream with Media Session, but iOS Safari may pause it after a while — not tested on a real phone. Not in the browser extension yet. **Faisal bin Judhyan and Abdullah Al-Asmari are not in this catalogue** (the user asked for them for the azkar voice — still open, see above). Radio audio is *streamed*, never stored or re-hosted, from the stations' own servers.
 
 ## Notifications — where it stands and what is worth adding (2026-11-05)
 

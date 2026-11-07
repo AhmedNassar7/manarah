@@ -4,9 +4,13 @@ import {
   applyEvent,
   AZKAR_PROGRESS_STORAGE_KEY,
   TASBIH_STORAGE_KEY,
+  RADIO_STORAGE_KEY,
   dayKey,
   emptyAzkarProgress,
   emptyTasbih,
+  emptyRadio,
+  normalizeRadio,
+  pruneRadio,
   normalizeAzkarProgress,
   normalizeTasbih,
   setCounts as setAzkarCounts,
@@ -41,6 +45,7 @@ import {
   type ReciterStyle,
   type SavedLocation,
   type TasbihState,
+  type RadioState,
   type Translation,
   type UserSettings,
   type Verse,
@@ -57,14 +62,16 @@ import {
   getSurah,
   getTranslationForSurah,
   getVersesForSurah,
+  RADIO_STATIONS,
 } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { InstallBanner, InstallButton, LanguageProvider, LanguageSwitcher, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
+import { InstallBanner, InstallButton, LanguageProvider, LanguageSwitcher, RadioMiniPlayer, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
 import { useInstall } from "./install.js";
 import { useInstallNudge } from "./install-nudge.js";
+import { useRadioPlayer } from "./radio-player.js";
 import { appShareUrl } from "./share-url.js";
 import { withViewTransition } from "./view-transition.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
@@ -73,6 +80,7 @@ import { PrayerPage } from "./pages/PrayerPage.js";
 import { QiblaPage } from "./pages/QiblaPage.js";
 import { CalendarPage } from "./pages/CalendarPage.js";
 import { ChallengePage } from "./pages/ChallengePage.js";
+import { RadioPage } from "./pages/RadioPage.js";
 import { HadithPage } from "./pages/HadithPage.js";
 import { QuranPage } from "./pages/QuranPage.js";
 import { SettingsPage } from "./pages/SettingsPage.js";
@@ -117,6 +125,7 @@ export function App() {
   const [toast, setToast] = useState<{ message: string; id: number } | undefined>(undefined);
   const dismissToast = useCallback(() => setToast(undefined), []);
   const [tasbih, setTasbih] = useState<TasbihState>(emptyTasbih);
+  const [radio, setRadio] = useState<RadioState>(emptyRadio);
   const [azkarProgress, setAzkarProgress] = useState<AzkarProgressState>(() => emptyAzkarProgress(new Date()));
 
   useEffect(() => {
@@ -129,10 +138,12 @@ export function App() {
       const storedProgress = normalizeProgress(await store.get<unknown>(PROGRESS_STORAGE_KEY));
       const storedTasbih = await store.get<unknown>(TASBIH_STORAGE_KEY);
       const storedAzkar = await store.get<unknown>(AZKAR_PROGRESS_STORAGE_KEY);
+      const storedRadio = await store.get<unknown>(RADIO_STORAGE_KEY);
       if (cancelled) return;
       progressRef.current = storedProgress;
       setProgress(storedProgress);
       setTasbih(normalizeTasbih(storedTasbih));
+      setRadio(pruneRadio(normalizeRadio(storedRadio), RADIO_STATIONS));
       setAzkarProgress(normalizeAzkarProgress(storedAzkar, new Date()));
       setSettings(stored);
       setZakatForm(withDefaultZakatForm(storedZakat));
@@ -457,6 +468,11 @@ export function App() {
     void store.set(TASBIH_STORAGE_KEY, next);
   }
 
+  function handleRadioChange(next: RadioState) {
+    setRadio(next);
+    void store.set(RADIO_STORAGE_KEY, next);
+  }
+
   /** Saves one azkar list's tallies for today (a new day starts every list from zero). */
   function handleAzkarCounts(categoryId: string, counts: Record<string, number>) {
     setAzkarProgress((prev) => {
@@ -610,6 +626,7 @@ export function App() {
               path="/tasbih"
               element={<TasbihPage state={tasbih} onChange={handleTasbihChange} onMilestone={() => award({ type: "tasbih-milestone" })} />}
             />
+            <Route path="/radio" element={<RadioPage state={radio} onChange={handleRadioChange} />} />
             <Route
               path="/challenge"
               element={<ChallengePage progress={progress} onQuizAnswer={(correct) => award({ type: "quiz-answer", correct })} />}
@@ -629,7 +646,11 @@ function AppShell({ children }: { children: ReactNode }) {
   // Each section has its own colour (see "Joy layer" in styles.css); the router path says which one we're in.
   const section = useLocation().pathname.split("/")[1] || "home";
   // The invitation to install: not on the tasbih, where the thumb taps the lower half of the screen.
-  const nudge = useInstallNudge(install, section === "tasbih");
+  const radio = useRadioPlayer();
+  const radioStation = radio.stationId !== undefined ? RADIO_STATIONS.find((s) => s.id === radio.stationId) : undefined;
+  // The small radio player shows wherever the radio is not the page itself.
+  const miniPlayer = radioStation !== undefined && radio.status !== "idle" && section !== "radio";
+  const nudge = useInstallNudge(install, section === "tasbih" || miniPlayer);
 
   // The tab title follows the language too.
   useEffect(() => {
@@ -655,6 +676,14 @@ function AppShell({ children }: { children: ReactNode }) {
         <NotificationPrompt />
         {children}
       </div>
+      {miniPlayer && radioStation && (
+        <RadioMiniPlayer
+          station={radioStation}
+          status={radio.status}
+          onToggle={() => (radio.status === "playing" || radio.status === "loading" ? radio.pause() : void radio.resume())}
+          onStop={radio.stop}
+        />
+      )}
       {nudge.show && (
         <InstallBanner
           platform={install.platform}

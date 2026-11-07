@@ -12,6 +12,7 @@ const PRIMARY_ITEMS = [
 
 /** On a phone these sit behind a "More" button; on larger screens every item is shown in the nav. */
 const SECONDARY_ITEMS = [
+  { to: "/radio", icon: "radio", labelKey: "app.sectionRadio", end: false, hue: "radio" },
   { to: "/tasbih", icon: "tasbih", labelKey: "app.sectionTasbih", end: false, hue: "tasbih" },
   { to: "/qibla", icon: "qibla", labelKey: "app.sectionQibla", end: false, hue: "qibla" },
   { to: "/hadith", icon: "hadith", labelKey: "app.sectionHadith", end: false, hue: "hadith" },

@@ -23,4 +23,5 @@ export * from "./azkar-progress/index.js";
 export * from "./share/index.js";
 export * from "./install/index.js";
 export * from "./install/nudge.js";
+export * from "./radio/index.js";
 export * from "./quiz/index.js";

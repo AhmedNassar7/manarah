@@ -57,6 +57,15 @@ export const CUSTOM_ICONS = {
     ["path", { d: "M8 21.5l4-4.5 4 4.5" }],
   ],
 
+  /** Radio: a dot with a pair of waves on each side — a station broadcasting. */
+  radio: [
+    ["circle", { cx: "12", cy: "12", r: "2" }],
+    ["path", { d: "M16.2 7.8a6 6 0 0 1 0 8.4" }],
+    ["path", { d: "M7.8 16.2a6 6 0 0 1 0-8.4" }],
+    ["path", { d: "M19.1 4.9a10 10 0 0 1 0 14.2" }],
+    ["path", { d: "M4.9 19.1a10 10 0 0 1 0-14.2" }],
+  ],
+
   /** Azkar: a tasbih — a loop of beads with a guide bead and tassel. */
   tasbih: [
     ...beads,
