@@ -47,7 +47,7 @@ export function AzkarPage({
   const { t, language } = useTranslation();
   // The recordings are files of the app itself (public/azkar-audio), found next to the page.
   const voicesFor = (categoryId: string) =>
-    voicesForCategory(categoryId).map((v) => ({ id: v.id, name: language === "ar" ? v.nameAr : v.nameEn, src: new URL(`azkar-audio/${v.file}`, document.baseURI).href }));
+    voicesForCategory(categoryId).map((v) => ({ id: v.id, name: language === "ar" ? v.nameAr : v.nameEn, credit: language === "ar" ? v.creditAr : v.creditEn, src: new URL(`azkar-audio/${v.file}`, document.baseURI).href }));
 
   return (
     <>

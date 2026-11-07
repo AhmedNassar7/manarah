@@ -5,6 +5,8 @@ import { Icon } from "./icons/Icon.js";
 export interface AzkarVoiceChoice {
   id: string;
   name: string;
+  /** Who the recording is from, shown under the reciter's name. */
+  credit?: string;
   /** Where the recording is served from. */
   src: string;
 }
@@ -55,6 +57,7 @@ export function AzkarVoicePlayer({ choices, initialId, onChoose }: AzkarVoicePla
         </div>
       )}
       {choices.length === 1 && <p className="azkar-voice-name">{chosen.name}</p>}
+      {chosen.credit && <p className="azkar-voice-credit">{chosen.credit}</p>}
       {/* Keyed so choosing another reciter loads his recording rather than carrying on with the old one. */}
       <audio key={chosen.id} className="azkar-voice-audio" controls preload="none" src={chosen.src} aria-label={`${t("azkarVoice.title")} — ${chosen.name}`} />
     </section>

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "./i18n/index.js";
 import { AzkarVoicePlayer } from "./AzkarVoicePlayer.js";
 
-const a = { id: "asmari", name: "Abdullah Al-Asmari", src: "azkar-audio/asmari-morning.mp3" };
+const a = { id: "asmari", name: "Abdullah Al-Asmari", credit: "From the Holy Quran Radio", src: "azkar-audio/asmari-morning.mp3" };
 const j = { id: "judhyan", name: "Faisal bin Judhyan", src: "azkar-audio/judhyan-morning.mp3" };
 const audio = () => document.querySelector("audio") as HTMLAudioElement;
 
@@ -31,6 +31,11 @@ describe("AzkarVoicePlayer", () => {
     fireEvent.click(within(group).getByRole("radio", { name: "Abdullah Al-Asmari" }));
     expect(audio()).toHaveAttribute("src", a.src);
     expect(onChoose).toHaveBeenCalledWith("asmari");
+  });
+
+  it("says who the recording is from", () => {
+    render(<AzkarVoicePlayer choices={[a, j]} />);
+    expect(screen.getByText("From the Holy Quran Radio")).toBeInTheDocument();
   });
 
   it("falls back to the first reciter if the remembered one has no recording of this list", () => {

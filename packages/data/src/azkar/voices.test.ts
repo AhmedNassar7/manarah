@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { AZKAR_VOICES, voicesForCategory, type AzkarVoice } from "./voices.js";
 import { EVENING_CATEGORY_ID, MORNING_CATEGORY_ID } from "./morning-evening.js";
 
-const asmari: AzkarVoice = { id: "a", nameAr: "أ", nameEn: "A", files: { morning: "a-morning.mp3", evening: "a-evening.mp3" } };
-const judhyan: AzkarVoice = { id: "j", nameAr: "ج", nameEn: "J", files: { evening: "j-evening.mp3" } };
+const asmari: AzkarVoice = { id: "a", nameAr: "أ", nameEn: "A", creditAr: "م", creditEn: "C", files: { morning: "a-morning.mp3", evening: "a-evening.mp3" } };
+const judhyan: AzkarVoice = { id: "j", nameAr: "ج", nameEn: "J", creditAr: "م", creditEn: "C", files: { evening: "j-evening.mp3" } };
 
 describe("voicesForCategory", () => {
   it("lists the voices that have a recording of this list, in order", () => {
@@ -31,7 +31,7 @@ declare global {
   }
 }
 
-const recordings = Object.keys(import.meta.glob(["../../../../apps/web/public/azkar-audio/*.mp3"], { query: "?url", import: "default" })).map((path) => path.split("/").pop());
+const recordings = Object.keys(import.meta.glob(["../../../../apps/web/public/azkar-audio/*.{mp3,m4a}"], { query: "?url", import: "default" })).map((path) => path.split("/").pop());
 
 describe("AZKAR_VOICES", () => {
   it("every recording it names exists in the app's azkar-audio folder, and ids are unique", () => {
@@ -39,7 +39,7 @@ describe("AZKAR_VOICES", () => {
     for (const v of AZKAR_VOICES) {
       expect(Object.keys(v.files).length, v.id).toBeGreaterThan(0);
       for (const file of Object.values(v.files)) {
-        expect(file, v.id).toMatch(/^[\w.-]+\.mp3$/);
+        expect(file, v.id).toMatch(/^[\w.-]+\.(mp3|m4a)$/);
         expect(recordings, `${v.id}: ${file}`).toContain(file);
       }
     }

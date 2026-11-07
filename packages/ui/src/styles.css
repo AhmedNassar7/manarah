@@ -7821,3 +7821,8 @@ select {
 .hadith-english {
   white-space: pre-line;
 }
+.azkar-voice-credit {
+  margin: -4px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
