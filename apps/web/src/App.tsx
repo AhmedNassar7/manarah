@@ -65,13 +65,14 @@ import {
   RADIO_STATIONS,
 } from "@manarah/data";
 import { IndexedDbStore } from "@manarah/storage";
-import { InstallBanner, InstallButton, LanguageProvider, LanguageSwitcher, RadioMiniPlayer, ShareButton, Toast, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
+import { InstallBanner, InstallButton, LanguageProvider, LanguageSwitcher, RadioMiniPlayer, ShareButton, Toast, VolumeProvider, encouragementText, translate, useTranslation, type LocationSummaryProps } from "@manarah/ui";
 import { Nav } from "./Nav.js";
 import { NotificationPrompt } from "./NotificationPrompt.js";
 import { startNotificationLoop } from "./notifications.js";
 import { useInstall } from "./install.js";
 import { useInstallNudge } from "./install-nudge.js";
 import { useRadioPlayer } from "./radio-player.js";
+import { useVolumeState } from "./volume.js";
 import { appShareUrl } from "./share-url.js";
 import { withViewTransition } from "./view-transition.js";
 import { AzkarPage } from "./pages/AzkarPage.js";
@@ -495,9 +496,11 @@ export function App() {
   }
 
   const selectedSurah = selectedSurahNumber !== null ? getSurah(selectedSurahNumber) : undefined;
+  const volume = useVolumeState();
 
   return (
     <LanguageProvider language={settings.language} onLanguageChange={handleLanguageChange}>
+      <VolumeProvider value={volume}>
       <HashRouter>
         <AppShell>
           <Routes>
@@ -635,6 +638,7 @@ export function App() {
           <Toast message={toast?.message} id={toast?.id ?? 0} onDismiss={dismissToast} />
         </AppShell>
       </HashRouter>
+      </VolumeProvider>
     </LanguageProvider>
   );
 }
@@ -648,8 +652,9 @@ function AppShell({ children }: { children: ReactNode }) {
   // The invitation to install: not on the tasbih, where the thumb taps the lower half of the screen.
   const radio = useRadioPlayer();
   const radioStation = radio.stationId !== undefined ? RADIO_STATIONS.find((s) => s.id === radio.stationId) : undefined;
-  // The small radio player shows wherever the radio is not the page itself.
-  const miniPlayer = radioStation !== undefined && radio.status !== "idle" && section !== "radio";
+  // The small radio player shows wherever the radio is not the page itself — except the Quran page,
+  // whose own recitation bar sits in the same place (and pauses the radio when it starts anyway).
+  const miniPlayer = radioStation !== undefined && radio.status !== "idle" && section !== "radio" && section !== "quran";
   const nudge = useInstallNudge(install, section === "tasbih" || miniPlayer);
 
   // The tab title follows the language too.

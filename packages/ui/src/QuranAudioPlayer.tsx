@@ -12,6 +12,7 @@ import {
 } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
+import { VolumeControl } from "./Volume.js";
 
 const REPEAT_OPTIONS = [1, 2, 3, 5];
 const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5, 2];
@@ -260,6 +261,8 @@ export const QuranAudioPlayer = forwardRef<QuranAudioPlayerHandle, QuranAudioPla
           </select>
         </label>
       </div>
+
+      <VolumeControl className="quran-audio-player-volume" />
 
       {translationAudio && (
         <label className="quran-audio-player-translation">

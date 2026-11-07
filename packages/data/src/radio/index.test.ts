@@ -3,9 +3,14 @@ import { RADIO_GROUPS } from "@manarah/core";
 import { RADIO_STATIONS } from "./index.js";
 
 describe("RADIO_STATIONS", () => {
-  it("has the 172 stations that were checked live, each with a unique id", () => {
-    expect(RADIO_STATIONS).toHaveLength(172);
-    expect(new Set(RADIO_STATIONS.map((s) => s.id)).size).toBe(172);
+  it("has the 172 MP3Quran stations that were checked live plus 4 national radios, each with a unique id", () => {
+    expect(RADIO_STATIONS).toHaveLength(176);
+    expect(new Set(RADIO_STATIONS.map((s) => s.id)).size).toBe(176);
+    expect(RADIO_STATIONS.filter((s) => s.id >= 900000).map((s) => s.id)).toEqual([900001, 900002, 900003, 900004]);
+  });
+
+  it("has the Cairo Quran Radio, right after the Saudi one", () => {
+    expect(RADIO_STATIONS[1]).toMatchObject({ id: 900001, nameAr: "إذاعة القرآن الكريم من القاهرة (مصر)", url: "https://stream.radiojar.com/8s5u5tpdtwzuv", group: "general" });
   });
 
   it("starts with the Saudi Quran Radio", () => {
@@ -17,9 +22,9 @@ describe("RADIO_STATIONS", () => {
     for (const dead of [94, 109057, 109067, 109076, 109084]) expect(ids.has(dead)).toBe(false);
   });
 
-  it("has only secure streams from the two hosts that were checked", () => {
+  it("has only secure streams, from the hosts that were checked", () => {
     for (const s of RADIO_STATIONS) {
-      expect(s.url, s.nameEn).toMatch(/^https:\/\/(backup\.qurango\.net\/radio\/|stream\.radiojar\.com\/)[\w.-]+$/);
+      expect(s.url, s.nameEn).toMatch(/^https:\/\/(backup\.qurango\.net\/radio\/|stream\.radiojar\.com\/|l3\.itworkscdn\.net\/smcquranlive\/|webradio1\.tda\.dz:8001\/|whmsonic\.radio\.gov\.pk:7002\/)[\w./-]+$/);
     }
   });
 

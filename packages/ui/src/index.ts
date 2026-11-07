@@ -33,6 +33,7 @@ export * from "./SharePanel.js";
 export * from "./Modal.js";
 export * from "./Install.js";
 export * from "./Radio.js";
+export * from "./Volume.js";
 export * from "./AzkarVoicePlayer.js";
 export * from "./encouragement.js";
 export * from "./ZakatCalculator.js";

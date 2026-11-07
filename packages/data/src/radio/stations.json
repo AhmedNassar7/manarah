@@ -7,6 +7,34 @@
   "group": "general"
  },
  {
+  "id": 900001,
+  "nameAr": "إذاعة القرآن الكريم من القاهرة (مصر)",
+  "nameEn": "Holy Quran Radio from Cairo (Egypt)",
+  "url": "https://stream.radiojar.com/8s5u5tpdtwzuv",
+  "group": "general"
+ },
+ {
+  "id": 900002,
+  "nameAr": "إذاعة القرآن الكريم من الشارقة (الإمارات)",
+  "nameEn": "Quran Radio from Sharjah (UAE)",
+  "url": "https://l3.itworkscdn.net/smcquranlive/quranradiolive/icecast.audio",
+  "group": "general"
+ },
+ {
+  "id": 900003,
+  "nameAr": "إذاعة القرآن الكريم (الجزائر)",
+  "nameEn": "Quran Radio (Algeria)",
+  "url": "https://webradio1.tda.dz:8001/Coran_64K.mp3",
+  "group": "general"
+ },
+ {
+  "id": 900004,
+  "nameAr": "صوت القرآن - إذاعة باكستان",
+  "nameEn": "Sawt-ul-Quran (Pakistan Broadcasting Corporation)",
+  "url": "https://whmsonic.radio.gov.pk:7002/stream",
+  "group": "general"
+ },
+ {
   "id": 108,
   "nameAr": "العامة - متنوعة لمختلف القراء",
   "nameEn": "General — many reciters",

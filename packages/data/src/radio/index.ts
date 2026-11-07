@@ -18,6 +18,15 @@ import stationsData from "./stations.json";
  * catalogue's own entry for it (a radiojar stream). A station that stops working later shows
  * "this station is not available right now" rather than failing silently.
  *
- * Not here, and the reason: Faisal bin Judhyan and Abdullah Al-Asmari are not in this catalogue.
+ * Four national radios MP3Quran does not carry were added (ids from 900001, ours): Cairo, Sharjah,
+ * Algeria and Pakistan's Sawt-ul-Quran, found in the community Radio Browser directory — chosen
+ * only where the stream's own host names the broadcaster (a government or broadcaster domain), and
+ * each opened **from a real https page** in Chrome (the radiojar ones redirect to http; Chrome
+ * upgrades it, which was checked rather than assumed). The directory's *labels* are not trusted: the
+ * same Saudi stream is filed there under Algeria, Egypt and the UAE.
+ *
+ * Not here, and the reason: Kuwait, Jordan, Oman and Bahrain broadcast only as HLS (.m3u8), which
+ * Chrome cannot play in an audio element; Morocco, Qatar, Sudan and others had no usable stream
+ * found; Faisal bin Judhyan and Abdullah Al-Asmari are not in this catalogue.
  */
 export const RADIO_STATIONS = stationsData as RadioStation[];

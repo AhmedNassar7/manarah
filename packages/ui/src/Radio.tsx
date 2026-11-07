@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { RADIO_GROUPS, filterStations, stationName, type RadioGroup, type RadioStation } from "@manarah/core";
 import { useTranslation } from "./i18n/index.js";
 import { Icon } from "./icons/Icon.js";
+import { VolumeControl } from "./Volume.js";
 
 /** Where the player stands. "offline" is a state of its own: the fix (get a connection) differs from a dead station. */
 export type RadioStatus = "idle" | "loading" | "playing" | "paused" | "error" | "offline";
@@ -94,6 +95,7 @@ export function RadioBrowser({ stations, favorites, lastId, currentId, status, o
             <small>{t("radio.nowPlaying")}</small>
             <strong>{label(current).name}</strong>
             <span role="status">{statusText(t, status)}</span>
+            <VolumeControl className="radio-now-volume" />
           </div>
           <button
             type="button"
@@ -134,7 +136,7 @@ export function RadioBrowser({ stations, favorites, lastId, currentId, status, o
         <p className="radio-empty">{show === "favorites" && !query ? t("radio.emptyFavorites") : t("radio.empty")}</p>
       ) : (
         <>
-          <p className="radio-count">{t("radio.count", { count: visible.length })}</p>
+          <p className="radio-count">{visible.length === 1 ? t("radio.countOne") : t("radio.count", { count: visible.length })}</p>
           <ul className="radio-list">
             {visible.map((station) => {
               const { name, variant } = label(station);
@@ -202,6 +204,7 @@ export function RadioMiniPlayer({ station, status, onToggle, onStop }: RadioMini
         <strong>{name}</strong>
         <span role="status">{statusText(t, status) || t("radio.status.paused")}</span>
       </a>
+      <VolumeControl className="radio-mini-volume" />
       <button type="button" className="radio-mini-toggle" aria-label={playing ? t("radio.pause") : t("radio.play", { name })} onClick={onToggle}>
         <Icon name={playing ? "pause" : "play"} size={20} filled />
       </button>
