@@ -162,7 +162,7 @@ export function App() {
       // location at all) is refreshed.
       if (!shouldRefreshLocationFromGps(stored.location)) return;
       if (!geolocationAvailable) {
-        if (!stored.coordinates) setError(translate(stored.language, "app.geolocationUnavailable"));
+        if (!stored.coordinates) setError("app.geolocationUnavailable");
         return;
       }
       locateWithGps({ quietIfAlreadyLocated: stored.coordinates !== undefined, isCancelled: () => cancelled });
@@ -295,7 +295,8 @@ export function App() {
       },
       (geoError) => {
         setLocating(false);
-        if (!isCancelled() && !quietIfAlreadyLocated) setError(geoError.message);
+        // The browser's own message is English-only ("User denied Geolocation"); say it in the person's language instead.
+        if (!isCancelled() && !quietIfAlreadyLocated) setError(geoError.code === 1 ? "app.geoDenied" : geoError.code === 3 ? "app.geoTimeout" : "app.geoUnavailable");
       }
     );
   }
@@ -343,7 +344,7 @@ export function App() {
     onCitySelect: handleCitySelect,
     onUseCurrentLocation: geolocationAvailable ? () => locateWithGps() : undefined,
     locating,
-    error,
+    error: error ? translate(settings.language, error) : null,
   };
 
   function handleQuranNavigate(ref: VerseRef) {

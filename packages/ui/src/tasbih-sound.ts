@@ -7,7 +7,7 @@ import type { TasbihSoundId } from "@manarah/core";
  *  - **click**: a very short, dry tick — a little noise and a tiny high tone, nothing that rings.
  *  - **wood**: a bead on a bead — a few partials at the inharmonic ratios of struck wood
  *    (1 : 2.35 : 4.1), each dying away at its own speed, so it "knocks" rather than beeps.
- *  - **bell**: a soft little "ting" that fades in about a third of a second.
+ *  - **bell**: a soft little "ting" that fades in about a fifth of a second (measured: ~0.2 s).
  *
  * Every sound goes through a gentle low-pass filter (the harshness of a plain synthesised
  * tone lives above a few kHz), is kept quiet, and varies about 3% in pitch from bead to bead so a

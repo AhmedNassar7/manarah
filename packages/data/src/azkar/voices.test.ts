@@ -1,5 +1,3 @@
-import { existsSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { AZKAR_VOICES, voicesForCategory, type AzkarVoice } from "./voices.js";
 import { EVENING_CATEGORY_ID, MORNING_CATEGORY_ID } from "./morning-evening.js";
@@ -22,16 +20,27 @@ describe("voicesForCategory", () => {
   });
 });
 
-describe("AZKAR_VOICES", () => {
-  const folder = resolve(__dirname, "../../../../apps/web/public/azkar-audio");
+/*
+ * The recordings are found with Vite's import.meta.glob (which only lists the files — nothing is
+ * loaded) rather than node:fs, so this package needs no Node typings (same approach as the
+ * no-emoji guard in @manarah/ui).
+ */
+declare global {
+  interface ImportMeta {
+    glob(patterns: string[], options: { query: string; import: string }): Record<string, unknown>;
+  }
+}
 
+const recordings = Object.keys(import.meta.glob(["../../../../apps/web/public/azkar-audio/*.mp3"], { query: "?url", import: "default" })).map((path) => path.split("/").pop());
+
+describe("AZKAR_VOICES", () => {
   it("every recording it names exists in the app's azkar-audio folder, and ids are unique", () => {
     expect(new Set(AZKAR_VOICES.map((v) => v.id)).size).toBe(AZKAR_VOICES.length);
     for (const v of AZKAR_VOICES) {
       expect(Object.keys(v.files).length, v.id).toBeGreaterThan(0);
       for (const file of Object.values(v.files)) {
         expect(file, v.id).toMatch(/^[\w.-]+\.mp3$/);
-        expect(existsSync(resolve(folder, file!)), `${v.id}: ${file}`).toBe(true);
+        expect(recordings, `${v.id}: ${file}`).toContain(file);
       }
     }
   });
